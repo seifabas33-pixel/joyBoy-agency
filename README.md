@@ -9,6 +9,18 @@ animation management for Red Sea resorts.
 | --- | --- |
 | `anjum-dashboard.html` | Pitch dashboard for the SUNRISE Anjum Resort meeting, 22 Aug 2026 |
 
+## Live
+
+**https://seifabas33-pixel.github.io/joyBoy-agency/**
+
+Published by GitHub Pages from `main` via `.github/workflows/pages.yml`, which
+copies `anjum-dashboard.html` to the site root as `index.html`. Any push to
+`main` that touches the dashboard redeploys it automatically.
+
+The page carries a `noindex` tag: the link works for anyone it is sent to, but
+Joy Boy's payroll and rate figures stay out of search results. Note that the
+repository is public, so treat anything committed here as publicly readable.
+
 ## anjum-dashboard.html
 
 A self-contained single-page dashboard. Open it in any browser — no build step,
