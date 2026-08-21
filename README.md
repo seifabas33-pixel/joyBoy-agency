@@ -49,11 +49,11 @@ place that score is defended. Joy Boy runs that department.
 dashboard makes the operating-discipline case without disclosing the agency's
 own numbers to a prospect. Keep it that way.
 
-**Before presenting** — two things are still placeholders:
+**Logo:** the masthead carries the Joy Boy emblem, embedded as a base64 data
+URI so the page stays self-contained. Only the circular emblem is used — the
+supplied artwork's wordmark reads "Entertainmarnt", so the name is set in the
+page's own typeface instead. Swap in the full lockup once that is corrected.
 
-1. The logo lockup top-left renders a `JB` monogram. Replace it with the real
-   mark: swap the `<div class="logoslot">JB</div>` for an `<img>`, or set the
-   logo as its `background-image` via a data URI so the page stays
-   self-contained.
-2. The commercial terms are not filled in. The dashed panel at the end of the
-   "What we are asking for" section lists exactly which figures are needed.
+**Before presenting** — one thing is still a placeholder: the commercial terms.
+The dashed panel at the end of the "What we are asking for" section lists
+exactly which figures are needed.
