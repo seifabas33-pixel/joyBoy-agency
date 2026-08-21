@@ -51,8 +51,9 @@ own numbers to a prospect. Keep it that way.
 
 **Logo:** the masthead carries the Joy Boy emblem, embedded as a base64 data
 URI so the page stays self-contained. Only the circular emblem is used — the
-supplied artwork's wordmark reads "Entertainmarnt", so the name is set in the
-page's own typeface instead. Swap in the full lockup once that is corrected.
+supplied artwork's wordmark reads "Entertainmarnt", so the trading name —
+Joy Boy Agency — is set in the page's own typeface instead. Swap in the full
+lockup once the artwork is corrected.
 
 **Before presenting** — one thing is still a placeholder: the commercial terms.
 The dashed panel at the end of the "What we are asking for" section lists
