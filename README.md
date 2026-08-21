@@ -37,11 +37,16 @@ place that score is defended. Joy Boy runs that department.
 
 - TripAdvisor data for SUNRISE Anjum Resort and a 17-property Marsa Alam
   comparison set, pulled 21 Aug 2026.
-- Joy Boy operating records: attendance registers, shows calendars, payroll
-  control sheet and ancillary cash-flow ledger for True Beach Resort
-  (Jul – Aug 2026) and Casa Blue Beach Resort (2024). These two resorts are
-  Joy Boy's complete client record and nothing on the page draws on any other
-  engagement.
+- Joy Boy operating records: attendance registers, shows calendars and payroll
+  control sheet for True Beach Resort (Jul – Aug 2026) and Casa Blue Beach
+  Resort (2024). These two resorts are Joy Boy's complete client record and
+  nothing on the page draws on any other engagement.
+
+**Deliberately not on the page:** Joy Boy's own ancillary sales (lottery,
+disco, merchandise) and payroll totals. Both are Joy Boy's internal
+commercials. Showing a prospect what the agency earns from their guests
+invites a claim on it; showing labour cost hands them a number to anchor the
+fee against. The operating-discipline claims stay — the figures do not.
 
 **Before presenting** — two things are still placeholders:
 
