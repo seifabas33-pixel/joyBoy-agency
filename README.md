@@ -17,15 +17,18 @@ Published by GitHub Pages from `main` via `.github/workflows/pages.yml`, which
 copies `anjum-dashboard.html` to the site root as `index.html`. Any push to
 `main` that touches the dashboard redeploys it automatically.
 
-The page carries a `noindex` tag: the link works for anyone it is sent to, but
-Joy Boy's payroll and rate figures stay out of search results. Note that the
-repository is public, so treat anything committed here as publicly readable.
+The page carries a `noindex` tag, so the link works for anyone it is sent to
+but does not surface in search results.
+
+> **This repository is public.** Treat everything committed here as readable by
+> anyone, including the hotels being pitched. Do not commit contracts, crew
+> personal details, or Joy Boy's internal figures.
 
 ## anjum-dashboard.html
 
 A self-contained single-page dashboard. Open it in any browser — no build step,
 no dependencies. It follows the viewer's light/dark setting and has a manual
-theme toggle. It also prints cleanly if you need paper copies.
+theme toggle, and it prints cleanly if paper copies are needed.
 
 **Argument:** Anjum is already at 4.9 on TripAdvisor, so the rating has no
 meaningful upside left — only downside. Entertainment is the most-mentioned
@@ -42,11 +45,9 @@ place that score is defended. Joy Boy runs that department.
   Resort (2024). These two resorts are Joy Boy's complete client record and
   nothing on the page draws on any other engagement.
 
-**Deliberately not on the page:** Joy Boy's own ancillary sales (lottery,
-disco, merchandise) and payroll totals. Both are Joy Boy's internal
-commercials. Showing a prospect what the agency earns from their guests
-invites a claim on it; showing labour cost hands them a number to anchor the
-fee against. The operating-discipline claims stay — the figures do not.
+**Deliberately not on the page:** Joy Boy's internal commercial figures. The
+dashboard makes the operating-discipline case without disclosing the agency's
+own numbers to a prospect. Keep it that way.
 
 **Before presenting** — two things are still placeholders:
 
@@ -55,5 +56,4 @@ fee against. The operating-discipline claims stay — the figures do not.
    logo as its `background-image` via a data URI so the page stays
    self-contained.
 2. The commercial terms are not filled in. The dashed panel at the end of the
-   "What we are asking for" section lists exactly which figures to take from
-   the last True Beach proposal.
+   "What we are asking for" section lists exactly which figures are needed.
