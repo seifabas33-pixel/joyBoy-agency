@@ -1,0 +1,1058 @@
+<title>Anjum at 4.9</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* ─────────── tokens: light is the base, dark redefines only values ─────────── */
+:root{
+  --ground:#F7FAFA;
+  --surface:#FFFFFF;
+  --raised:#EDF3F3;
+  --line:#D6E2E3;
+  --line-soft:#E6EEEE;
+
+  --ink:#0E2229;
+  --ink-2:#3C5760;
+  --ink-3:#66808A;
+
+  --accent:#D9502C;
+  --accent-soft:#FBEAE4;
+  --accent-line:#F0C4B5;
+
+  --good:#1F8A5F;
+  --warn:#B5822A;
+  --crit:#C33B28;
+  --good-bg:#E4F2EB;
+  --warn-bg:#F6EEDC;
+  --crit-bg:#F9E6E2;
+
+  --track:#DFE9EA;
+  --peer:#94AEB5;
+
+  --shadow:0 1px 2px rgba(14,34,41,.05), 0 8px 24px -12px rgba(14,34,41,.16);
+  --radius:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0B1D24;
+    --surface:#11292F;
+    --raised:#173840;
+    --line:#274850;
+    --line-soft:#1D3C44;
+
+    --ink:#EAF2F2;
+    --ink-2:#A7BFC5;
+    --ink-3:#7E99A1;
+
+    --accent:#F0703F;
+    --accent-soft:#33221C;
+    --accent-line:#5E3524;
+
+    --good:#3FB283;
+    --warn:#DFA94A;
+    --crit:#F0705C;
+    --good-bg:#12302A;
+    --warn-bg:#302713;
+    --crit-bg:#33201C;
+
+    --track:#1F434B;
+    --peer:#5D808A;
+
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0B1D24;
+  --surface:#11292F;
+  --raised:#173840;
+  --line:#274850;
+  --line-soft:#1D3C44;
+
+  --ink:#EAF2F2;
+  --ink-2:#A7BFC5;
+  --ink-3:#7E99A1;
+
+  --accent:#F0703F;
+  --accent-soft:#33221C;
+  --accent-line:#5E3524;
+
+  --good:#3FB283;
+  --warn:#DFA94A;
+  --crit:#F0705C;
+  --good-bg:#12302A;
+  --warn-bg:#302713;
+  --crit-bg:#33201C;
+
+  --track:#1F434B;
+  --peer:#5D808A;
+
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{
+  font-family:"Bricolage Grotesque","Instrument Sans",ui-sans-serif,system-ui,sans-serif;
+  text-wrap:balance;
+  margin:0;
+  line-height:1.1;
+  letter-spacing:-.02em;
+}
+p{margin:0}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:500;
+}
+
+/* ─────────── shell ─────────── */
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:color-mix(in srgb, var(--ground) 88%, transparent);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line-soft);
+}
+.topbar-inner{
+  max-width:1080px;margin:0 auto;padding:10px 24px;
+  display:flex;align-items:center;gap:20px;
+}
+.navchips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1}
+.navchips::-webkit-scrollbar{display:none}
+.navchips a{
+  flex:none;text-decoration:none;color:var(--ink-2);
+  font-size:12.5px;font-weight:500;white-space:nowrap;
+  padding:6px 11px;border-radius:99px;border:1px solid transparent;
+}
+.navchips a:hover{background:var(--raised);color:var(--ink);border-color:var(--line-soft)}
+.themetoggle{
+  flex:none;background:var(--surface);border:1px solid var(--line);color:var(--ink-2);
+  border-radius:99px;padding:6px 12px;font:inherit;font-size:12.5px;cursor:pointer;
+}
+.themetoggle:hover{color:var(--ink);border-color:var(--ink-3)}
+
+/* ─────────── masthead ─────────── */
+.masthead{padding:48px 0 40px}
+.lockup{display:flex;align-items:center;gap:16px;margin-bottom:40px;flex-wrap:wrap}
+.logoslot{
+  width:60px;height:60px;flex:none;border-radius:15px;
+  background:var(--accent);color:#fff;
+  display:grid;place-items:center;
+  font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:23px;letter-spacing:-.04em;
+  position:relative;
+}
+.logoslot::after{
+  content:"logo";position:absolute;bottom:-19px;left:0;right:0;text-align:center;
+  font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.1em;
+  color:var(--ink-3);text-transform:uppercase;
+}
+.lockup-txt strong{display:block;font-size:15px;font-weight:600;letter-spacing:-.01em}
+.lockup-txt span{display:block;font-size:13px;color:var(--ink-3)}
+.arrow{color:var(--ink-3);font-size:20px}
+
+h1{font-size:clamp(38px,6.4vw,68px);font-weight:800;max-width:15ch}
+.thesis{
+  margin-top:22px;max-width:60ch;font-size:clamp(17px,2.2vw,20px);
+  line-height:1.55;color:var(--ink-2);
+}
+.thesis b{color:var(--ink);font-weight:600}
+.meta-row{
+  margin-top:32px;display:flex;flex-wrap:wrap;gap:8px 10px;
+}
+.tag{
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;
+  padding:5px 10px;border-radius:6px;border:1px solid var(--line);
+  color:var(--ink-2);background:var(--surface);
+}
+.tag.hot{border-color:var(--accent-line);background:var(--accent-soft);color:var(--accent)}
+
+/* ─────────── boards ─────────── */
+.board{padding:52px 0;border-top:1px solid var(--line-soft)}
+.board-head{margin-bottom:28px;max-width:64ch}
+.board-head h2{font-size:clamp(25px,3.4vw,34px);font-weight:700;margin-top:9px}
+.board-head p{margin-top:12px;color:var(--ink-2);font-size:16.5px}
+
+.card{
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);
+}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(158px,1fr))}
+.jobs{grid-template-columns:repeat(auto-fit,minmax(390px,1fr))}
+
+/* stat tiles */
+.stat{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 18px 16px;display:flex;flex-direction:column;gap:4px;
+}
+.stat .k{
+  font-family:"Bricolage Grotesque",sans-serif;font-weight:700;
+  font-size:clamp(28px,4.2vw,38px);letter-spacing:-.03em;line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.stat .k small{font-size:.48em;font-weight:600;color:var(--ink-3);letter-spacing:0;margin-left:3px}
+.stat .lab{font-size:13px;color:var(--ink-2);font-weight:500;line-height:1.35}
+.stat .sub{font-size:12px;color:var(--ink-3);line-height:1.4;margin-top:2px}
+.stat.flag{border-color:var(--accent-line);background:var(--accent-soft)}
+.stat.flag .k{color:var(--accent)}
+
+/* hero stat */
+.hero-stat{
+  display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;
+  background:var(--surface);border:1px solid var(--accent-line);
+  border-radius:var(--radius);padding:30px;box-shadow:var(--shadow);
+}
+.hero-stat .num{
+  font-family:"Bricolage Grotesque",sans-serif;font-weight:800;
+  font-size:clamp(66px,13vw,112px);line-height:.85;letter-spacing:-.05em;
+  color:var(--accent);font-variant-numeric:tabular-nums;
+}
+.hero-stat .txt h3{font-size:20px;font-weight:700;margin-bottom:9px}
+.hero-stat .txt p{color:var(--ink-2);font-size:15px;max-width:52ch}
+@media(max-width:560px){.hero-stat{grid-template-columns:1fr;gap:14px;padding:24px}}
+
+/* ─────────── charts ─────────── */
+.chart{display:flex;flex-direction:column;gap:9px;margin-top:6px}
+.chart-title{font-size:14.5px;font-weight:600;letter-spacing:-.01em}
+.chart-note{font-size:12.5px;color:var(--ink-3);line-height:1.45}
+
+.row{
+  display:grid;grid-template-columns:minmax(112px,168px) 1fr auto;
+  gap:12px;align-items:center;position:relative;
+}
+.row .name{font-size:13px;color:var(--ink-2);text-align:right;line-height:1.25}
+.row .val{
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-variant-numeric:tabular-nums;
+  color:var(--ink-2);min-width:52px;text-align:right;
+}
+.bartrack{background:var(--track);border-radius:4px;height:20px;overflow:hidden}
+.bar{
+  height:100%;width:var(--w);background:var(--peer);
+  border-radius:0 4px 4px 0;transition:filter .15s;
+}
+.row.me .name{color:var(--ink);font-weight:600}
+.row.me .val{color:var(--accent);font-weight:600}
+.row.me .bar{background:var(--accent)}
+.row:hover .bar{filter:brightness(1.12)}
+
+/* dot plot */
+.dotrow{
+  display:grid;grid-template-columns:minmax(96px,124px) 1fr auto;
+  gap:12px;align-items:center;
+}
+.dotrow .name{font-size:13px;color:var(--ink-2);text-align:right}
+.dottrack{
+  position:relative;height:22px;
+  background:linear-gradient(var(--track),var(--track)) center/100% 2px no-repeat;
+}
+.dot{
+  position:absolute;top:50%;left:var(--x);
+  width:13px;height:13px;margin:-6.5px 0 0 -6.5px;border-radius:50%;
+  background:var(--accent);border:2px solid var(--surface);
+}
+.dot.low{background:var(--warn)}
+.dotrow .val{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.axis{
+  display:grid;grid-template-columns:minmax(96px,124px) 1fr auto;gap:12px;
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3);
+}
+.axis .ticks{display:flex;justify-content:space-between}
+.axis .spacer{min-width:52px}
+
+/* ─────────── quotes ─────────── */
+.quotes{display:grid;gap:12px}
+.quote{
+  border-left:3px solid var(--good);background:var(--surface);
+  border-radius:0 10px 10px 0;padding:15px 18px;
+  border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+}
+.quote.bad{border-left-color:var(--accent)}
+.quote q{font-size:15px;line-height:1.55;display:block;color:var(--ink)}
+.quote q::before{content:"\201C"}
+.quote q::after{content:"\201D"}
+.quote .who{
+  margin-top:9px;font-family:"IBM Plex Mono",monospace;font-size:11px;
+  color:var(--ink-3);display:flex;gap:9px;flex-wrap:wrap;align-items:center;
+}
+.stars{color:var(--warn);letter-spacing:.05em}
+
+.pill{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:500;
+  padding:3px 8px;border-radius:99px;letter-spacing:.03em;text-transform:uppercase;
+}
+.pill.ok{background:var(--good-bg);color:var(--good)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.crit{background:var(--crit-bg);color:var(--crit)}
+
+/* ─────────── tables ─────────── */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{padding:11px 15px;text-align:left;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:500;background:var(--raised);white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:none}
+td.num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.me td{background:var(--accent-soft)}
+tr.me td:first-child{font-weight:600;box-shadow:inset 3px 0 0 var(--accent)}
+
+/* ─────────── track record ─────────── */
+.job{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:22px;display:flex;flex-direction:column;gap:12px;
+}
+.job-top{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.job h3{font-size:18px;font-weight:700}
+.job .when{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);white-space:nowrap}
+.job .role{font-size:13.5px;color:var(--ink-2)}
+.job ul{margin:0;padding-left:17px;display:flex;flex-direction:column;gap:5px}
+.job li{font-size:13.5px;color:var(--ink-2);line-height:1.5}
+.job li b{color:var(--ink);font-weight:600}
+.jobstats{display:flex;gap:20px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--line-soft)}
+.jobstats div{display:flex;flex-direction:column;gap:1px}
+.jobstats .n{font-family:"IBM Plex Mono",monospace;font-size:17px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+.jobstats .l{font-size:11px;color:var(--ink-3);line-height:1.3}
+
+/* ─────────── plan ─────────── */
+.plan{display:grid;gap:12px}
+.step{
+  display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;
+}
+.step .day{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;color:var(--accent);
+  background:var(--accent-soft);border:1px solid var(--accent-line);
+  padding:5px 9px;border-radius:7px;white-space:nowrap;
+}
+.step h4{font-size:15.5px;font-weight:700;margin-bottom:6px}
+.step p{font-size:13.5px;color:var(--ink-2)}
+
+.fill{
+  background:var(--warn-bg);border:1px dashed var(--warn);
+  border-radius:var(--radius);padding:18px 20px;
+}
+.fill h4{font-size:14px;font-weight:700;color:var(--warn);margin-bottom:7px}
+.fill p{font-size:13.5px;color:var(--ink-2)}
+.fill ul{margin:9px 0 0;padding-left:18px;font-size:13.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:4px}
+
+/* ─────────── footer ─────────── */
+footer{
+  border-top:1px solid var(--line-soft);padding:36px 0 60px;
+  font-size:12.5px;color:var(--ink-3);line-height:1.6;
+}
+footer h4{font-size:12px;color:var(--ink-2);margin-bottom:8px;font-family:"IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;font-weight:500}
+footer ul{margin:0 0 20px;padding-left:17px;display:flex;flex-direction:column;gap:5px}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none !important;transition:none !important;scroll-behavior:auto !important}
+}
+html{scroll-behavior:smooth}
+
+@media print{
+  .topbar{display:none}
+  body{background:#fff;color:#000;font-size:11pt}
+  .board{page-break-inside:avoid;padding:22px 0}
+  .card,.stat,.job,.step,.quote,.hero-stat{box-shadow:none}
+}
+</style>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <nav class="navchips">
+      <a href="#standing">Where Anjum stands</a>
+      <a href="#risk">The 4.9 problem</a>
+      <a href="#voice">What guests say</a>
+      <a href="#gaps">The two gaps</a>
+      <a href="#record">Our record</a>
+      <a href="#how">How we run it</a>
+      <a href="#money">Revenue</a>
+      <a href="#offer">The offer</a>
+    </nav>
+    <button class="themetoggle" id="tt" type="button">Theme</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="lockup">
+      <div class="logoslot">JB</div>
+      <div class="lockup-txt">
+        <strong>Joy Boy Agency</strong>
+        <span>Entertainment &amp; animation · Red Sea</span>
+      </div>
+      <span class="arrow">→</span>
+      <div class="lockup-txt">
+        <strong>SUNRISE Anjum Resort</strong>
+        <span>Ras Dory, Marsa Alam</span>
+      </div>
+    </div>
+
+    <h1>You are at 4.9. There is nothing left to win.</h1>
+
+    <p class="thesis">
+      Anjum sits at the top of the Marsa Alam rating table with a
+      <b>4.9 from 1,602 reviews</b>. From here the score cannot meaningfully go up — it can
+      only be defended. And in the ten most recent reviews, <b>entertainment is the single
+      most-mentioned subject</b>: praised five times, and named in two of the three reviews
+      that stopped short of five stars. That is where the score will be won or lost.
+      <b>Running that department properly is what Joy Boy does.</b>
+    </p>
+
+    <div class="meta-row">
+      <span class="tag hot">Prepared for 22 Aug 2026</span>
+      <span class="tag">TripAdvisor data pulled 21 Aug 2026</span>
+      <span class="tag">17-property Marsa Alam sample</span>
+    </div>
+  </header>
+
+  <!-- ══════════ STANDING ══════════ -->
+  <section class="board" id="standing">
+    <div class="board-head">
+      <span class="eyebrow">Position</span>
+      <h2>Where Anjum stands today</h2>
+      <p>
+        A strong property with a premium price — carrying less social proof than the
+        hotels it is priced against.
+      </p>
+    </div>
+
+    <div class="grid g4" style="margin-bottom:14px">
+      <div class="stat flag">
+        <span class="k">4.9</span>
+        <span class="lab">TripAdvisor bubble rating</span>
+        <span class="sub">Top tier in Marsa Alam</span>
+      </div>
+      <div class="stat">
+        <span class="k">1,602</span>
+        <span class="lab">Total reviews</span>
+        <span class="sub">Below the 4.9-cluster median of 1,779</span>
+      </div>
+      <div class="stat">
+        <span class="k">$222<small>–318</small></span>
+        <span class="lab">Nightly rate range</span>
+        <span class="sub">11% above the 4.9-cluster median of $200</span>
+      </div>
+      <div class="stat">
+        <span class="k">0</span>
+        <span class="lab">Travellers' Choice awards</span>
+        <span class="sub">None recorded for the current year</span>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="chart-title">Review volume across Marsa Alam's 4.9-rated properties</div>
+      <p class="chart-note" style="margin:5px 0 16px">
+        All eight hotels below show the same 4.9 badge. The badge is identical; the weight
+        behind it is not. Anjum ranks sixth of eight on review volume.
+      </p>
+      <div class="chart" role="img" aria-label="Horizontal bar chart of review counts for eight 4.9-rated Marsa Alam hotels. JAZ Costa Mares 3,500; JAZ Elite Maraya 2,724; Steigenberger Alaya 2,668; Casa Blue 1,862; JAZ Elite Amara 1,695; SUNRISE Anjum 1,602; Pickalbatros Villaggio Portofino 1,591; JAZ Elite Riviera 890.">
+        <div class="row"><span class="name">JAZ Costa Mares</span><div class="bartrack"><div class="bar" style="--w:100%"></div></div><span class="val">3,500</span></div>
+        <div class="row"><span class="name">JAZ Elite Maraya</span><div class="bartrack"><div class="bar" style="--w:77.8%"></div></div><span class="val">2,724</span></div>
+        <div class="row"><span class="name">Steigenberger Alaya</span><div class="bartrack"><div class="bar" style="--w:76.2%"></div></div><span class="val">2,668</span></div>
+        <div class="row"><span class="name">Casa Blue Beach</span><div class="bartrack"><div class="bar" style="--w:53.2%"></div></div><span class="val">1,862</span></div>
+        <div class="row"><span class="name">JAZ Elite Amara</span><div class="bartrack"><div class="bar" style="--w:48.4%"></div></div><span class="val">1,695</span></div>
+        <div class="row me"><span class="name">SUNRISE Anjum</span><div class="bartrack"><div class="bar" style="--w:45.8%"></div></div><span class="val">1,602</span></div>
+        <div class="row"><span class="name">Villaggio Portofino</span><div class="bartrack"><div class="bar" style="--w:45.5%"></div></div><span class="val">1,591</span></div>
+        <div class="row"><span class="name">JAZ Elite Riviera</span><div class="bartrack"><div class="bar" style="--w:25.4%"></div></div><span class="val">890</span></div>
+      </div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <div class="chart-title">Anjum's sub-ratings</div>
+        <p class="chart-note" style="margin:5px 0 18px">
+          Rooms, service and value are all excellent. Location is the outlier — and location
+          is the one thing nobody can fix. Ras Dory is remote, and guests feel it.
+          <b style="color:var(--ink)">What fills a remote resort's evening is the programme.</b>
+        </p>
+        <div class="chart" role="img" aria-label="Dot plot of Anjum sub-ratings on a 4.6 to 5.0 scale: Rooms 4.92, Service 4.91, Value 4.89, Cleanliness 4.89, Sleep quality 4.85, Location 4.69.">
+          <div class="dotrow"><span class="name">Rooms</span><div class="dottrack"><span class="dot" style="--x:79.2%"></span></div><span class="val">4.92</span></div>
+          <div class="dotrow"><span class="name">Service</span><div class="dottrack"><span class="dot" style="--x:78.6%"></span></div><span class="val">4.91</span></div>
+          <div class="dotrow"><span class="name">Value</span><div class="dottrack"><span class="dot" style="--x:72.7%"></span></div><span class="val">4.89</span></div>
+          <div class="dotrow"><span class="name">Cleanliness</span><div class="dottrack"><span class="dot" style="--x:71.4%"></span></div><span class="val">4.89</span></div>
+          <div class="dotrow"><span class="name">Sleep quality</span><div class="dottrack"><span class="dot" style="--x:62.7%"></span></div><span class="val">4.85</span></div>
+          <div class="dotrow"><span class="name">Location</span><div class="dottrack"><span class="dot low" style="--x:22.9%"></span></div><span class="val">4.69</span></div>
+          <div class="axis"><span></span><span class="ticks"><span>4.6</span><span>4.7</span><span>4.8</span><span>4.9</span><span>5.0</span></span><span class="spacer"></span></div>
+        </div>
+        <p class="chart-note" style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line-soft)">
+          Note what is missing from this list: <b style="color:var(--ink)">TripAdvisor has no
+          sub-rating for entertainment</b>. It does not disappear — it is absorbed into
+          <b style="color:var(--ink)">Service</b> and, above all, <b style="color:var(--ink)">Value</b>.
+          A guest with nothing to do after dinner does not mark down "entertainment";
+          they mark down what they got for $222.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="chart-title">Your nearest neighbour is 600 metres away</div>
+        <p class="chart-note" style="margin:5px 0 16px">
+          Sentido Reef Oasis Suakin sits on the same stretch of coast — same beach, same
+          reef, same airport transfer. A guest choosing between you is comparing two
+          near-identical settings at very different prices.
+        </p>
+        <div class="grid g2" style="gap:10px">
+          <div class="stat" style="border-color:var(--accent-line);background:var(--accent-soft)">
+            <span class="k" style="font-size:26px;color:var(--accent)">$222</span>
+            <span class="lab">SUNRISE Anjum</span>
+            <span class="sub">4.9 · 1,602 reviews</span>
+          </div>
+          <div class="stat">
+            <span class="k" style="font-size:26px">$162</span>
+            <span class="lab">Sentido Reef Oasis Suakin</span>
+            <span class="sub">4.8 · 1,418 reviews</span>
+          </div>
+        </div>
+        <p class="chart-note" style="margin-top:14px">
+          Anjum asks <b style="color:var(--ink)">37% more</b> for one tenth of a rating point.
+          That premium has to be felt somewhere the guest can name — and after dinner,
+          the only thing left to feel is the programme.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ RISK ══════════ -->
+  <section class="board" id="risk">
+    <div class="board-head">
+      <span class="eyebrow">The asymmetry</span>
+      <h2>A 4.9 is a liability, not a trophy</h2>
+      <p>
+        Rating movement at the top is one-directional. You cannot climb — 5.0 is
+        unreachable at this review volume — so every point of effort goes into not falling.
+      </p>
+    </div>
+
+    <div class="hero-stat" style="margin-bottom:14px">
+      <div class="num">21</div>
+      <div class="txt">
+        <h3>One-star reviews away from showing 4.8</h3>
+        <p>
+          At 1,602 reviews, as few as 21 one-star reviews pull the displayed score below
+          4.85 and the badge flips to 4.8. In a bad season that is a fortnight of
+          unattended evenings. The badge is what a guest filters on before they ever
+          read a word.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid g3">
+      <div class="stat">
+        <span class="k">21–42</span>
+        <span class="lab">Honest range for that threshold</span>
+        <span class="sub">A displayed 4.9 means a true average between 4.85 and 4.95. At the low end it takes 21 one-star reviews; at the high end, 42. Either way it is a countable number, not an abstraction.</span>
+      </div>
+      <div class="stat">
+        <span class="k">0</span>
+        <span class="lab">Realistic upside in the score</span>
+        <span class="sub">Displaying 5.0 would require a near-perfect average across 1,600+ reviews. No resort at this scale holds it. The score is a ceiling you defend.</span>
+      </div>
+      <div class="stat flag">
+        <span class="k">1</span>
+        <span class="lab">Prize actually still available</span>
+        <span class="sub">Travellers' Choice. Anjum has none recorded this year. It rewards sustained review quality and volume — exactly what a well-run evening programme produces.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ VOICE ══════════ -->
+  <section class="board" id="voice">
+    <div class="board-head">
+      <span class="eyebrow">Guest evidence</span>
+      <h2>Your guests are already reviewing the entertainment</h2>
+      <p>
+        From the ten most recent TripAdvisor reviews (12–19 August 2026). Entertainment
+        appears in seven of them — more than food, more than the beach, more than the rooms.
+        This is not us arguing that animation matters here. It is your guests saying so.
+      </p>
+    </div>
+
+    <div class="grid g2">
+      <div>
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px">
+          <span class="pill ok">Working — protect it</span>
+          <span class="chart-note">5 of 10 reviews</span>
+        </div>
+        <div class="quotes">
+          <div class="quote">
+            <q>The entertainment team was very fun and certainly Sonic and Adam, because they always made it a party. Definitely a recommendation for young and old!</q>
+            <div class="who"><span class="stars">★★★★★</span><span>18 Aug 2026</span></div>
+          </div>
+          <div class="quote">
+            <q>Everyone was very helpful and the entertainment was present with shows organized every evening.</q>
+            <div class="who"><span class="stars">★★★★★</span><span>18 Aug 2026</span></div>
+          </div>
+          <div class="quote">
+            <q>Exelent animation, the team Is top. Good food end you sure find Friends in this beautyful place</q>
+            <div class="who"><span class="stars">★★★★★</span><span>13 Aug 2026</span></div>
+          </div>
+          <div class="quote">
+            <q>Very nice hotel, cool animators, delicious food</q>
+            <div class="who"><span class="stars">★★★★★</span><span>13 Aug 2026</span></div>
+          </div>
+          <div class="quote">
+            <q>Many activities available and entertainment, recommended for discovering the Red Sea and the history of Egypt.</q>
+            <div class="who"><span class="stars">★★★★★</span><span>13 Aug 2026</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px">
+          <span class="pill crit">Leaking — fixable</span>
+          <span class="chart-note">2 of the 3 non-5★ reviews</span>
+        </div>
+        <div class="quotes">
+          <div class="quote bad">
+            <q>All of the service is kind, animators are good and speak in many languages but sometimes they are late for their programmes.</q>
+            <div class="who"><span class="stars">★★★★☆</span><span>14 Aug 2026</span><span class="pill warn">Punctuality</span></div>
+          </div>
+          <div class="quote bad">
+            <q>Food wise and kids entertainment wise they need to grow further now. Top 10 hotel in this area!</q>
+            <div class="who"><span class="stars">★★★★☆</span><span>12 Aug 2026</span><span class="pill warn">Kids programme</span></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px;background:var(--raised)">
+          <p style="font-size:14px;color:var(--ink-2);line-height:1.55">
+            Read those two again. Neither guest disliked the team — both called the
+            animators good. They marked the hotel down for
+            <b style="color:var(--ink)">operations</b>: programmes starting late, and a
+            children's offer that has not caught up with the rest of the resort.
+            Those are management problems, and they are the two we are best at solving.
+          </p>
+          <p class="chart-note" style="margin-top:12px">
+            The remaining criticisms in the sample — construction noise, one room-cleaning
+            miss, extra charges, remoteness — sit outside an entertainment brief. We are
+            not claiming them.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ GAPS ══════════ -->
+  <section class="board" id="gaps">
+    <div class="board-head">
+      <span class="eyebrow">The work</span>
+      <h2>Two named gaps, and exactly how we close them</h2>
+      <p>
+        We are not proposing to replace something that is working. We are proposing to
+        put a management layer around it — the same one we already run elsewhere.
+      </p>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <span class="pill crit">Gap 01</span>
+        <h3 style="font-size:20px;font-weight:700;margin:12px 0 8px">Programmes start late</h3>
+        <p style="font-size:14.5px;color:var(--ink-2);margin-bottom:16px">
+          A guest who walks to the amphitheatre for a 21:00 show and waits until 21:20
+          writes a four-star review. It is the cheapest star on the board to win back.
+        </p>
+        <div style="border-top:1px solid var(--line-soft);padding-top:14px">
+          <span class="eyebrow">Our fix — already in service</span>
+          <p style="font-size:14px;color:var(--ink-2);margin-top:9px">
+            Every event in our weekly action plan carries four hard times before its start
+            time: stage set by, costume and props checked by, soundcheck by, and a
+            <b style="color:var(--ink)">named person who owns the running order</b>.
+            Nothing is scheduled without an owner. This is the format we publish weekly at
+            Gravity Sahl Hasheesh.
+          </p>
+          <ul style="margin:12px 0 0;padding-left:17px;font-size:13.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:5px">
+            <li>Stage fully set and lit by <span class="mono">20:45</span></li>
+            <li>Costume and props check with cast by <span class="mono">20:30</span></li>
+            <li>Team welcomes and seats guests from <span class="mono">20:45</span></li>
+            <li>Mini Disco precedes the show at <span class="mono">20:30</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="pill crit">Gap 02</span>
+        <h3 style="font-size:20px;font-weight:700;margin:12px 0 8px">Kids entertainment lags the resort</h3>
+        <p style="font-size:14.5px;color:var(--ink-2);margin-bottom:16px">
+          Anjum markets itself as a family resort. A guest called the kids offer the part
+          that "needs to grow further" — while praising everything else. Families book on
+          the children's programme and rebook on it.
+        </p>
+        <div style="border-top:1px solid var(--line-soft);padding-top:14px">
+          <span class="eyebrow">Our fix — already in service</span>
+          <p style="font-size:14px;color:var(--ink-2);margin-top:9px">
+            A children's line that runs every day, not as an afterthought to the adult
+            programme. At Gravity we run all of the below on a fixed weekly cycle.
+          </p>
+          <ul style="margin:12px 0 0;padding-left:17px;font-size:13.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:5px">
+            <li><b style="color:var(--ink)">Kids Carnival</b> — 8 costumed characters, staffed activity stations, safe zones</li>
+            <li><b style="color:var(--ink)">Kids musicals</b> — Lion King and Moana, full cast and props</li>
+            <li><b style="color:var(--ink)">Mini Disco</b> — nightly, immediately before the main show</li>
+            <li>Daytime: Olympic Games, Foam Party, Pink Party</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px;background:var(--raised)">
+      <span class="eyebrow">The third thing, and it is free</span>
+      <h3 style="font-size:18px;font-weight:700;margin:10px 0 8px">Guests remember names, and names carry reviews</h3>
+      <p style="font-size:14.5px;color:var(--ink-2);max-width:72ch">
+        Look at what your five-star reviewers wrote down: <b style="color:var(--ink)">Sonic</b>
+        and <b style="color:var(--ink)">Adam</b> from entertainment, <b style="color:var(--ink)">Mahomed</b>
+        at the pool bar, <b style="color:var(--ink)">Ahmed</b> on towels, <b style="color:var(--ink)">Sony</b>
+        on service. A guest only writes a name when the same face was there all week. Named
+        mentions are the strongest repeat-booking signal a resort gets — and they are a
+        product of roster continuity, which is a scheduling decision, not a budget one.
+        We schedule for it deliberately and we track attendance daily to hold it.
+      </p>
+    </div>
+  </section>
+
+  <!-- ══════════ RECORD ══════════ -->
+  <section class="board" id="record">
+    <div class="board-head">
+      <span class="eyebrow">Track record</span>
+      <h2>What we have been through</h2>
+      <p>
+        Four Red Sea properties across Hurghada, Sahl Hasheesh, Port Ghalib and Marsa
+        Alam. Every figure below comes from our own operating records.
+      </p>
+    </div>
+
+    <div class="grid g2 jobs">
+      <div class="job">
+        <div class="job-top">
+          <h3>Gravity Sahl Hasheesh</h3>
+          <span class="when">Apr – May 2026</span>
+        </div>
+        <p class="role">Full animation department — programme, cast, venues and running order</p>
+        <ul>
+          <li><b>Four headline theme nights in May alone:</b> Royal Karnak Pharaoh Night, Gypsy Moon Boho Night, Moulin Rouge Night, Jackpot Casino Night — each with full-day decoration, costume briefing and live acts</li>
+          <li><b>Rotating amphitheatre repertoire:</b> Mix Latin, Georgian Tbilis, Oriental, Night of Chicago, Pirates of the Caribbean</li>
+          <li><b>Live music across four venues</b> — guitar, flute and a full Zaffa band (mezmar, rababa, tabla, tanoura)</li>
+          <li><b>Published weekly action plans</b> with per-event setup deadlines, soundcheck times and a named running-order owner</li>
+        </ul>
+        <div class="jobstats">
+          <div><span class="n">4</span><span class="l">venues<br>run in parallel</span></div>
+          <div><span class="n">8</span><span class="l">costumed characters<br>in Kids Carnival</span></div>
+          <div><span class="n">2</span><span class="l">kids musicals<br>in repertoire</span></div>
+        </div>
+      </div>
+
+      <div class="job">
+        <div class="job-top">
+          <h3>True Beach Resort</h3>
+          <span class="when">Jul – Aug 2026 · current</span>
+        </div>
+        <p class="role">Entertainment team, shows calendar, roster and ancillary revenue desk</p>
+        <ul>
+          <li><b>24 show nights in July</b> across 31 days — 8 live singer, 5 oriental, 4 fire, 4 beach party, 3 dance show</li>
+          <li><b>Daily attendance register</b> per crew member with presence, day-off, vacation, half-day and absence codes</li>
+          <li><b>Two resident DJs</b> held on roster through the peak</li>
+          <li><b>An ancillary revenue line</b> run alongside the programme — detailed further down</li>
+        </ul>
+        <div class="jobstats">
+          <div><span class="n">155</span><span class="l">staff-days<br>delivered in July</span></div>
+          <div><span class="n">13</span><span class="l">crew<br>on the July roster</span></div>
+          <div><span class="n">7</span><span class="l">peak crew<br>on duty per day</span></div>
+        </div>
+      </div>
+
+      <div class="job">
+        <div class="job-top">
+          <h3>Casa Blue Beach Resort</h3>
+          <span class="when">2024 · Marsa Alam</span>
+        </div>
+        <p class="role">Shows programme — we have already worked in your market</p>
+        <ul>
+          <li><b>54 show slots in May, 61 in June</b> — Latin, Indian, Shaharzad, oriental, belly and fire</li>
+          <li><b>Live instrumentalists on rotation</b> — violin, flute, sax, guitar, solo and duo singers</li>
+          <li>Same guest mix, same transfer times, same season shape as Ras Dory</li>
+        </ul>
+        <div class="jobstats">
+          <div><span class="n">4.9</span><span class="l">Casa Blue's rating today<br>(market context, not our claim)</span></div>
+          <div><span class="n">1,862</span><span class="l">reviews<br>at that property now</span></div>
+        </div>
+      </div>
+
+      <div class="job">
+        <div class="job-top">
+          <h3>Larimar Port Ghalib &amp; Amarina</h3>
+          <span class="when">2026</span>
+        </div>
+        <p class="role">Guest-facing programme collateral</p>
+        <ul>
+          <li><b>QR-code programme</b> built and deployed for Larimar Port Ghalib, so guests read the night's schedule from their phone instead of a lobby board</li>
+          <li><b>Event flyer sets</b> produced for Amarina</li>
+          <li>Relevant to Anjum directly: a published, always-current programme is the other half of the punctuality fix — guests cannot be late to something they can actually see</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ HOW ══════════ -->
+  <section class="board" id="how">
+    <div class="board-head">
+      <span class="eyebrow">Operating model</span>
+      <h2>We run a department, not a troupe</h2>
+      <p>
+        The difference between animation that holds a 4.9 and animation that costs you one
+        is administrative. Here is what we actually keep.
+      </p>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>What we keep</th><th>What is in it</th><th>What it prevents</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Weekly action plan</b></td>
+            <td>Every event with date, venue, cast, setup deadline, costume-check time, soundcheck time and a named owner of the running order</td>
+            <td>Late starts. Missing props. "Who was supposed to run this?"</td>
+          </tr>
+          <tr>
+            <td><b>Daily attendance register</b></td>
+            <td>Per-person presence, day off, vacation, half day, sick leave and absence, totalled monthly</td>
+            <td>Thin nights. Roster gaps that guests notice before management does.</td>
+          </tr>
+          <tr>
+            <td><b>Payroll and debit control</b></td>
+            <td>Per-person salary in its own currency, debits and advances tracked, net payable computed against a single stated FX rate</td>
+            <td>Month-end disputes. Untracked advances. Budget drift.</td>
+          </tr>
+          <tr>
+            <td><b>Ancillary revenue ledger</b></td>
+            <td>Every lottery draw, disco ticket and merchandise sale logged as credit or debit, per currency</td>
+            <td>An entertainment budget that can only ever be a cost line.</td>
+          </tr>
+          <tr>
+            <td><b>Guest-facing programme</b></td>
+            <td>Published schedule, on a board and by QR code</td>
+            <td>Guests missing the thing you paid to stage.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid g4" style="margin-top:14px">
+      <div class="stat">
+        <span class="k">11</span>
+        <span class="lab">Crew on the last payroll run</span>
+        <span class="sub">Tracked individually, dual currency</span>
+      </div>
+      <div class="stat">
+        <span class="k">$1,973</span>
+        <span class="lab">Gross payroll, that period</span>
+        <span class="sub">EGP 98,254 at a stated rate of 49.80</span>
+      </div>
+      <div class="stat">
+        <span class="k">100%</span>
+        <span class="lab">Of crew with a net-payable line</span>
+        <span class="sub">Salary, debits and balance per person</span>
+      </div>
+      <div class="stat">
+        <span class="k">Daily</span>
+        <span class="lab">Attendance recorded</span>
+        <span class="sub">Not weekly, not on memory</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ MONEY ══════════ -->
+  <section class="board" id="money">
+    <div class="board-head">
+      <span class="eyebrow">Commercials</span>
+      <h2>Entertainment does not have to be a cost line</h2>
+      <p>
+        At True Beach we run a small revenue desk alongside the programme. Four weeks of
+        real, logged activity — no capital spend, no new facilities.
+      </p>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <div class="chart-title">Ancillary revenue generated, 22 Jul – 19 Aug 2026</div>
+        <p class="chart-note" style="margin:5px 0 18px">
+          Shown as euro equivalent at 57.7 EGP to the euro. Native totals were
+          <span class="mono">€406</span> + <span class="mono">$8</span> +
+          <span class="mono">EGP 1,400</span> in credits.
+        </p>
+        <div class="chart" role="img" aria-label="Bar chart of ancillary revenue by source: lottery about 302 euro, disco 120 euro, merchandise 15 euro.">
+          <div class="row me"><span class="name">Lottery</span><div class="bartrack"><div class="bar" style="--w:100%"></div></div><span class="val">€302</span></div>
+          <div class="row"><span class="name">Disco tickets</span><div class="bartrack"><div class="bar" style="--w:39.7%"></div></div><span class="val">€120</span></div>
+          <div class="row"><span class="name">Merchandise</span><div class="bartrack"><div class="bar" style="--w:5%"></div></div><span class="val">€15</span></div>
+        </div>
+        <p class="chart-note" style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line-soft)">
+          <b style="color:var(--ink)">The lottery figure is understated.</b> 193 tickets sold
+          across four draws, but the fourth draw — 74 tickets on 19 August — was not yet
+          booked when this was pulled. The real four-week total is higher.
+        </p>
+      </div>
+
+      <div>
+        <div class="grid g2" style="gap:12px;margin-bottom:12px">
+          <div class="stat flag">
+            <span class="k">€437</span>
+            <span class="lab">Credits logged in four weeks</span>
+            <span class="sub">Across three currencies, three of four draws</span>
+          </div>
+          <div class="stat">
+            <span class="k">193</span>
+            <span class="lab">Lottery tickets sold</span>
+            <span class="sub">Four draws, one entertainment desk</span>
+          </div>
+        </div>
+        <div class="card">
+          <span class="eyebrow">What this means for Anjum</span>
+          <p style="font-size:14.5px;color:var(--ink-2);margin-top:10px;line-height:1.6">
+            True Beach is a smaller property than Anjum. The same three mechanics —
+            a weekly draw, a paid disco night and a small merchandise line — scale with
+            occupancy and with guest spend, and Anjum's guests are paying
+            <b style="color:var(--ink)">$222 a night</b>, not $136.
+          </p>
+          <p style="font-size:14.5px;color:var(--ink-2);margin-top:12px;line-height:1.6">
+            We are not pitching this as the reason to hire us. We are pitching it as the
+            reason the department should not be read as pure cost when you compare our fee
+            to an in-house team.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ OFFER ══════════ -->
+  <section class="board" id="offer">
+    <div class="board-head">
+      <span class="eyebrow">Proposal</span>
+      <h2>What we are asking for</h2>
+      <p>
+        A season contract for the full entertainment department at Anjum, held to numbers
+        you can check on TripAdvisor yourself.
+      </p>
+    </div>
+
+    <div class="plan" style="margin-bottom:14px">
+      <div class="step">
+        <span class="day">Days 1–30</span>
+        <div>
+          <h4>Take the department over without changing what guests already like</h4>
+          <p>
+            Roster audit and attendance register live from day one. Weekly action plan
+            published with hard setup, costume and soundcheck times against every event.
+            The existing team stays — Sonic and Adam are already earning you five-star
+            reviews and we are not touching that.
+          </p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="day">Days 31–60</span>
+        <div>
+          <h4>Close the kids gap</h4>
+          <p>
+            Daily children's line introduced: two staffed daytime slots, nightly Mini
+            Disco before the main show, Kids Carnival weekly with costumed characters,
+            and the first kids musical into the amphitheatre rotation.
+          </p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="day">Days 61–90</span>
+        <div>
+          <h4>Theme nights, published programme, and the revenue desk</h4>
+          <p>
+            One headline theme night per week on the Gravity model. Guest-facing programme
+            board and QR schedule live. Lottery, disco and merchandise ledger opened.
+            First review-mention report delivered against the day-one baseline.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <span class="eyebrow">Hold us to these</span>
+      <h3 style="font-size:19px;font-weight:700;margin:10px 0 16px">The numbers we will report on, monthly</h3>
+      <div class="tablewrap" style="border:none">
+        <table style="min-width:520px">
+          <thead><tr><th>Measure</th><th>Baseline today</th><th>Target</th></tr></thead>
+          <tbody>
+            <tr><td>Programmes starting on published time</td><td class="num">Not measured</td><td class="num">≥ 95%</td></tr>
+            <tr><td>Dedicated kids sessions per day</td><td class="num">Not published</td><td class="num">2 + nightly Mini Disco</td></tr>
+            <tr><td>Reviews mentioning entertainment positively</td><td class="num">5 of last 10</td><td class="num">7 of 10</td></tr>
+            <tr><td>Reviews naming an animator by name</td><td class="num">1 of last 10</td><td class="num">3 of 10</td></tr>
+            <tr><td>TripAdvisor bubble rating</td><td class="num">4.9</td><td class="num">Held at 4.9</td></tr>
+            <tr><td>Travellers' Choice</td><td class="num">None this year</td><td class="num">Won next cycle</td></tr>
+            <tr><td>Ancillary revenue per week</td><td class="num">€0</td><td class="num">Positive from month 3</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="fill">
+      <h4>⚑ Before the meeting — commercial terms to drop in</h4>
+      <p>
+        This dashboard was built from TripAdvisor data and Joy Boy's own operating records.
+        The commercial figures below were not available to it, so fill them from the True
+        Beach proposal before you present:
+      </p>
+      <ul>
+        <li>Monthly department fee, and what it includes</li>
+        <li>Crew headcount proposed for Anjum, by role</li>
+        <li>Contract length and notice period</li>
+        <li>What the hotel provides — accommodation, meals, transport, stage and sound</li>
+        <li>Revenue-share split on lottery, disco and merchandise</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <h4>Sources and honest limits</h4>
+    <ul>
+      <li><b>TripAdvisor figures</b> — SUNRISE Anjum Resort and the 17-property Marsa Alam comparison set, pulled 21 August 2026. Ratings, review counts, sub-ratings and rate ranges are as reported that day and will drift.</li>
+      <li><b>Guest quotes</b> — the ten most recent reviews available at pull time, dated 12–19 August 2026. This is a recent sample, not the full 1,602 reviews, so treat the seven-in-ten entertainment figure as indicative of current sentiment rather than a lifetime statistic.</li>
+      <li><b>Rating threshold maths</b> — a displayed 4.9 corresponds to a true average anywhere in 4.85–4.95. The 21-review figure assumes the low end of that band; 42 applies at the high end. Both are stated above.</li>
+      <li><b>No official rank is claimed.</b> The "4.9 cluster" is drawn from our own 17-property sample, not TripAdvisor's published ranking of Marsa Alam hotels.</li>
+      <li><b>Casa Blue's current 4.9 is market context, not attribution.</b> Joy Boy ran its shows programme in 2024; we are not claiming credit for the property's rating today.</li>
+      <li><b>Joy Boy operating figures</b> — attendance registers, shows calendars, payroll control sheet and cash-flow ledger for Gravity Sahl Hasheesh, True Beach Resort and Casa Blue Beach Resort, Apr 2024 – Aug 2026.</li>
+    </ul>
+    <p>Joy Boy Agency · prepared 21 August 2026 for the SUNRISE Anjum Resort meeting, 22 August 2026.</p>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var b=document.getElementById("tt");
+  function cur(){
+    var e=document.documentElement.getAttribute("data-theme");
+    if(e) return e;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";
+  }
+  try{
+    var s=localStorage.getItem("anjum-theme");
+    if(s) document.documentElement.setAttribute("data-theme",s);
+  }catch(e){}
+  b.addEventListener("click",function(){
+    var n=cur()==="dark"?"light":"dark";
+    document.documentElement.setAttribute("data-theme",n);
+    try{localStorage.setItem("anjum-theme",n);}catch(e){}
+  });
+})();
+</script>
