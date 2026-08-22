@@ -8,14 +8,22 @@ animation management for Red Sea resorts.
 | File | What it is |
 | --- | --- |
 | `anjum-dashboard.html` | Pitch dashboard for the SUNRISE Anjum Resort meeting, 22 Aug 2026 |
+| `anjum-proposal.html` | Sendable three-section proposal: the agency, reels, price list & budget |
 
 ## Live
 
-**https://seifabas33-pixel.github.io/joyBoy-agency/**
+- Dashboard: **https://seifabas33-pixel.github.io/joyBoy-agency/**
+- Proposal: **https://seifabas33-pixel.github.io/joyBoy-agency/proposal.html**
 
 Published by GitHub Pages from `main` via `.github/workflows/pages.yml`, which
-copies `anjum-dashboard.html` to the site root as `index.html`. Any push to
-`main` that touches the dashboard redeploys it automatically.
+copies `anjum-dashboard.html` to the site root as `index.html` and
+`anjum-proposal.html` to `proposal.html`. Any push to `main` that touches
+either page redeploys automatically.
+
+The proposal's reel links and every price cell are editable placeholders —
+fill them before sending. Prices typed into the published page are visible to
+anyone with the link, which is the intent (it is the quote), but remember the
+repository itself is public too.
 
 The page carries a `noindex` tag, so the link works for anyone it is sent to
 but does not surface in search results.
