@@ -8,7 +8,7 @@ animation management for Red Sea resorts.
 | File | What it is |
 | --- | --- |
 | `anjum-dashboard.html` | Pitch dashboard for the SUNRISE Anjum Resort meeting, 22 Aug 2026 |
-| `anjum-proposal.html` | Sendable three-section proposal: the agency, reels, price list & budget |
+| `anjum-proposal.html` | Sendable three-section proposal: the agency, reels, price list |
 
 ## Live
 

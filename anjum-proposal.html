@@ -219,7 +219,7 @@ html{scroll-behavior:smooth}
     <nav class="navchips">
       <a href="#agency">1 · The agency</a>
       <a href="#reels">2 · The shows on film</a>
-      <a href="#prices">3 · Price list &amp; budget</a>
+      <a href="#prices">3 · Price list</a>
     </nav>
     <button class="themetoggle" id="tt" type="button">Theme</button>
   </div>
@@ -238,7 +238,7 @@ html{scroll-behavior:smooth}
     <h1>Entertainment proposal for SUNRISE Anjum Resort</h1>
     <p class="lede">
       Three things, in the order you would ask for them: <b>who we are</b>,
-      <b>what our shows look like on stage</b>, and <b>what the programme costs</b>.
+      <b>what our shows look like on stage</b>, and <b>what each show and the team cost</b>.
       The evidence behind this proposal — your reviews across three platforms, the gaps
       they name and how we close them — lives in the companion dashboard.
     </p>
@@ -397,11 +397,10 @@ html{scroll-behavior:smooth}
   <section class="board" id="prices">
     <div class="board-head">
       <span class="eyebrow">Section 03</span>
-      <h2><span class="secnum">3</span>Price list &amp; entertainment budget</h2>
+      <h2><span class="secnum">3</span>Price list</h2>
       <p>
-        Two tables. The first prices each show as a one-off, so you can see exactly what
-        anything costs. The second builds them into a monthly programme with the team —
-        one budget line for the whole department.
+        The team as a fixed monthly line, and every show and event priced per
+        performance — so any programme you choose can be costed from this one page.
       </p>
     </div>
 
@@ -416,20 +415,47 @@ html{scroll-behavior:smooth}
 
     <h3 style="font-size:18px;font-weight:700;margin:4px 0 12px">The team</h3>
     <p style="font-size:13.5px;color:var(--ink-2);max-width:76ch;margin-bottom:14px">
-      A permanent team of seven, resident at the hotel — not visiting acts. The kids club
-      entertainer and the DJ are dedicated roles, not shared duties.
+      A permanent team of <span class="mono" id="headcount">9</span>, resident at the
+      hotel — not visiting acts. The kids club entertainer and the DJ are dedicated
+      roles, not shared duties. Headcounts and salaries are editable; the totals are
+      calculated, not typed.
     </p>
     <div class="tablewrap" style="margin-bottom:26px">
-      <table>
+      <table id="team">
         <thead>
-          <tr><th>Role</th><th style="text-align:center">Headcount</th><th style="text-align:right">Monthly</th></tr>
+          <tr><th>Role</th><th style="text-align:center">Headcount</th><th style="text-align:right">Monthly each</th><th style="text-align:right">Monthly</th></tr>
         </thead>
         <tbody>
-          <tr><td><b>Team Leader</b><span class="why">Runs the programme, the running order and the weekly action plan</span></td><td class="num" style="text-align:center">1</td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">700</span></td></tr>
-          <tr><td><b>DJ</b><span class="why">Resident — daytime energy, mini disco, evening sets</span></td><td class="num" style="text-align:center">1</td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">500</span></td></tr>
-          <tr><td><b>Kids club entertainer</b><span class="why">Dedicated to the children's line, every day</span></td><td class="num" style="text-align:center">1</td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">500</span></td></tr>
-          <tr><td><b>Fitness / sport entertainers</b><span class="why">Aqua gym, sports, games, hosting — per entertainer</span></td><td class="num" style="text-align:center">4</td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">500</span></td></tr>
-          <tr class="total"><td colspan="2"><b>Team of 7 — monthly total</b></td><td class="price mono"><span class="cur">€</span> 3,700</td></tr>
+          <tr>
+            <td><b>Team Leader</b><span class="why">Runs the programme, the running order and the weekly action plan</span></td>
+            <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">1</span></td>
+            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">700</span></td>
+            <td class="price row-total mono">—</td>
+          </tr>
+          <tr>
+            <td><b>DJ</b><span class="why">Resident — daytime energy, mini disco, evening sets</span></td>
+            <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">1</span></td>
+            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">500</span></td>
+            <td class="price row-total mono">—</td>
+          </tr>
+          <tr>
+            <td><b>Kids club entertainer</b><span class="why">Dedicated to the children's line, every day</span></td>
+            <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">1</span></td>
+            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">500</span></td>
+            <td class="price row-total mono">—</td>
+          </tr>
+          <tr>
+            <td><b>Fitness / sport entertainers</b><span class="why">Aqua gym, sports, games, hosting — per entertainer</span></td>
+            <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">6</span></td>
+            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">500</span></td>
+            <td class="price row-total mono">—</td>
+          </tr>
+          <tr class="total">
+            <td><b>Team of <span id="headcount2">9</span> — monthly total</b></td>
+            <td class="num" style="text-align:center" id="headcount3">9</td>
+            <td></td>
+            <td class="price mono" id="teamtotal">—</td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -460,74 +486,6 @@ html{scroll-behavior:smooth}
           </tbody>
         </table>
       </div>
-    </div>
-
-    <h3 style="font-size:18px;font-weight:700;margin:0 0 12px">Monthly entertainment budget</h3>
-    <p style="font-size:13.5px;color:var(--ink-2);max-width:76ch;margin-bottom:14px">
-      The programme as we would run it at Anjum, priced from the list above.
-      Quantities are per month and editable — the totals recalculate as you type.
-    </p>
-    <div class="tablewrap">
-      <table id="budget">
-        <thead>
-          <tr><th>Line</th><th>What it covers</th><th style="text-align:center">Qty / month</th><th style="text-align:right">Unit</th><th style="text-align:right">Monthly</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><b>Team of 7</b></td>
-            <td>Team Leader, DJ, kids club entertainer, 4 fitness/sport entertainers — daytime line, kids line, mini disco, hosting, weekly action plan, attendance register, monthly report<span class="why"></span></td>
-            <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">1</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">3700</span></td>
-            <td class="price row-total mono">—</td>
-          </tr>
-          <tr>
-            <td><b>Broadway Show</b></td>
-            <td>Weekly on the evening rotation<span class="why"></span></td>
-            <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">4</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">220</span></td>
-            <td class="price row-total mono">—</td>
-          </tr>
-          <tr>
-            <td><b>Echo of Egypt Show</b></td>
-            <td>Weekly on the evening rotation<span class="why"></span></td>
-            <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">4</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">220</span></td>
-            <td class="price row-total mono">—</td>
-          </tr>
-          <tr>
-            <td><b>Fire Show</b></td>
-            <td>Weekly beachfront fire night<span class="why"></span></td>
-            <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">4</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">150</span></td>
-            <td class="price row-total mono">—</td>
-          </tr>
-          <tr>
-            <td><b>Light Show</b></td>
-            <td>Weekly after-dark light choreography<span class="why"></span></td>
-            <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">4</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">150</span></td>
-            <td class="price row-total mono">—</td>
-          </tr>
-          <tr>
-            <td><b>Live Singer</b></td>
-            <td>Two evenings a week on the terrace or bar<span class="why"></span></td>
-            <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">8</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">80</span></td>
-            <td class="price row-total mono">—</td>
-          </tr>
-          <tr>
-            <td><b>Headline theme party</b></td>
-            <td>One per week, rotating — Pink Pool (400), Boho (300), White Sensation (500), Aloha Afro (500), Echo of Egypt Night (500–800)<span class="why">Unit shown is an average; each event billed at its list price</span></td>
-            <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">4</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">425</span></td>
-            <td class="price row-total mono">—</td>
-          </tr>
-          <tr class="total">
-            <td colspan="4"><b>Monthly total</b></td>
-            <td class="price mono" id="grand">—</td>
-          </tr>
-        </tbody>
-      </table>
     </div>
 
     <div class="grid g2" style="margin-top:16px">
@@ -583,7 +541,7 @@ html{scroll-behavior:smooth}
   }
   curField.addEventListener("input",syncCur);
 
-  // budget math: qty × unit per row, then grand total
+  // team payroll: headcount × salary per row, then totals — calculated, never typed
   function num(el){
     if(!el) return NaN;
     var t=(el.textContent||"").replace(/[^\d.,-]/g,"").replace(/,/g,"");
@@ -595,11 +553,12 @@ html{scroll-behavior:smooth}
   }
   function recalc(){
     var c=(curField.textContent||"€").trim()||"€";
-    var sum=0, any=false;
-    document.querySelectorAll("#budget tbody tr").forEach(function(tr){
+    var sum=0, heads=0, any=false;
+    document.querySelectorAll("#team tbody tr").forEach(function(tr){
       if(tr.classList.contains("total")) return;
       var q=num(tr.querySelector(".q")), u=num(tr.querySelector(".u"));
       var cell=tr.querySelector(".row-total");
+      if(!isNaN(q)) heads+=q;
       if(!isNaN(q)&&!isNaN(u)){
         var t=q*u; sum+=t; any=true;
         cell.textContent=c+" "+fmt(t);
@@ -607,9 +566,12 @@ html{scroll-behavior:smooth}
         cell.textContent="—";
       }
     });
-    document.getElementById("grand").textContent=any?(c+" "+fmt(sum)):"—";
+    document.getElementById("teamtotal").textContent=any?(c+" "+fmt(sum)):"—";
+    ["headcount","headcount2","headcount3"].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.textContent=fmt(heads);
+    });
   }
-  document.querySelectorAll("#budget .q, #budget .u").forEach(function(el){
+  document.querySelectorAll("#team .q, #team .u").forEach(function(el){
     el.addEventListener("input",recalc);
   });
   recalc();
