@@ -407,72 +407,65 @@ html{scroll-behavior:smooth}
 
     <div class="hint noprint">
       <span>⚑</span>
-      <div><b>Before sending:</b> click any yellow cell and type the figure — totals
-      update by themselves. Set the currency here:
+      <div><b>Rates are from Joy Boy's standard price list.</b> Every yellow cell is
+      still editable if you agree different terms with Anjum — totals update by
+      themselves. Set the currency here:
       <span class="mono" style="background:var(--edit-bg);border:1px dashed var(--edit-line);border-radius:6px;padding:2px 8px" contenteditable="true" id="cur">€</span>
       &nbsp;Print or save as PDF when done and the yellow marking disappears.</div>
     </div>
 
-    <h3 style="font-size:18px;font-weight:700;margin:4px 0 12px">Shows — per performance</h3>
+    <h3 style="font-size:18px;font-weight:700;margin:4px 0 12px">The team</h3>
+    <p style="font-size:13.5px;color:var(--ink-2);max-width:76ch;margin-bottom:14px">
+      A permanent team of seven, resident at the hotel — not visiting acts. The kids club
+      entertainer and the DJ are dedicated roles, not shared duties.
+    </p>
     <div class="tablewrap" style="margin-bottom:26px">
-      <table id="showtable">
+      <table>
         <thead>
-          <tr><th>Show</th><th>What's included</th><th style="text-align:right">Price</th></tr>
+          <tr><th>Role</th><th style="text-align:center">Headcount</th><th style="text-align:right">Monthly</th></tr>
         </thead>
         <tbody>
-          <tr>
-            <td><b>Dance Show</b></td>
-            <td>Choreographed stage show, full cast, costumes and music<span class="why">30 min · amphitheatre or stage</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="p"></span></td>
-          </tr>
-          <tr>
-            <td><b>Oriental Show</b></td>
-            <td>Belly dance and tanoura with percussion<span class="why">30–45 min · stage or poolside</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="p"></span></td>
-          </tr>
-          <tr>
-            <td><b>Fire Show</b></td>
-            <td>Beachfront fire performance with safety crew and zone setup<span class="why">20–30 min · beach</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="p"></span></td>
-          </tr>
-          <tr>
-            <td><b>Live Singer</b></td>
-            <td>Evening vocalist, two sets with soundcheck<span class="why">2 × 45 min · terrace or bar</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="p"></span></td>
-          </tr>
-          <tr>
-            <td><b>Beach Party</b></td>
-            <td>Daytime activation — games crew, music, hosting<span class="why">2 hrs · beach or pool deck</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="p"></span></td>
-          </tr>
-          <tr>
-            <td><b>Foam Party</b></td>
-            <td>Foam machine, crew, safety zones and hosting<span class="why">90 min · beach or pool</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="p"></span></td>
-          </tr>
-          <tr>
-            <td><b>DJ Night</b></td>
-            <td>Resident DJ set with equipment<span class="why">3 hrs · bar or disco</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="p"></span></td>
-          </tr>
-          <tr>
-            <td><b>Headline Theme Night</b></td>
-            <td>Full-resort themed event — decoration, costume, live acts, running order<span class="why">Full evening · hotel grounds</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="p"></span></td>
-          </tr>
-          <tr>
-            <td><b>Kids Event</b></td>
-            <td>Costumed characters, activity stations and safe zones<span class="why">2 hrs · pool area or miniclub</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="p"></span></td>
-          </tr>
+          <tr><td><b>Team Leader</b><span class="why">Runs the programme, the running order and the weekly action plan</span></td><td class="num" style="text-align:center">1</td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">700</span></td></tr>
+          <tr><td><b>DJ</b><span class="why">Resident — daytime energy, mini disco, evening sets</span></td><td class="num" style="text-align:center">1</td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">500</span></td></tr>
+          <tr><td><b>Kids club entertainer</b><span class="why">Dedicated to the children's line, every day</span></td><td class="num" style="text-align:center">1</td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">500</span></td></tr>
+          <tr><td><b>Fitness / sport entertainers</b><span class="why">Aqua gym, sports, games, hosting — per entertainer</span></td><td class="num" style="text-align:center">4</td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">500</span></td></tr>
+          <tr class="total"><td colspan="2"><b>Team of 7 — monthly total</b></td><td class="price mono"><span class="cur">€</span> 3,700</td></tr>
         </tbody>
       </table>
     </div>
 
+    <h3 style="font-size:18px;font-weight:700;margin:0 0 12px">Shows &amp; events — per performance</h3>
+    <div class="grid g2" style="margin-bottom:26px">
+      <div class="tablewrap">
+        <table style="min-width:0">
+          <thead><tr><th>Stage shows</th><th style="text-align:right">Price</th></tr></thead>
+          <tbody>
+            <tr><td><b>Broadway Show</b><span class="why">Theatrical dance production, full cast</span></td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">220</span></td></tr>
+            <tr><td><b>Echo of Egypt Show</b><span class="why">Egyptian heritage — the show your guests came for</span></td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">220</span></td></tr>
+            <tr><td><b>Fire Show</b><span class="why">Beachfront fire performance with safety crew</span></td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">150</span></td></tr>
+            <tr><td><b>Light Show</b><span class="why">LED and light choreography after dark</span></td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">150</span></td></tr>
+            <tr><td><b>Live Singer</b><span class="why">Multilingual repertoire — English, Italian, Russian, French</span></td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">80</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tablewrap">
+        <table style="min-width:0">
+          <thead><tr><th>Theme parties &amp; events</th><th style="text-align:right">Price</th></tr></thead>
+          <tbody>
+            <tr><td><b>Pink Pool Party</b><span class="why">Full pink takeover of the pool deck</span></td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">400</span></td></tr>
+            <tr><td><b>Boho Theme Night</b><span class="why">Macramé, lanterns and live acoustic sets</span></td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">300</span></td></tr>
+            <tr><td><b>White Sensation</b><span class="why">All-white dress-code night</span></td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">500</span></td></tr>
+            <tr><td><b>Aloha Afro Night</b><span class="why">Tropical percussion-led party</span></td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">500</span></td></tr>
+            <tr><td><b>Echo of Egypt Night</b><span class="why">The full-evening event version — band, zaffa, tanoura</span></td><td class="price"><span class="cur">€</span> <span contenteditable="true" class="p">500–800</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <h3 style="font-size:18px;font-weight:700;margin:0 0 12px">Monthly entertainment budget</h3>
     <p style="font-size:13.5px;color:var(--ink-2);max-width:76ch;margin-bottom:14px">
-      The programme as we would actually run it at Anjum. Quantities are per month and
-      editable — the totals recalculate as you type.
+      The programme as we would run it at Anjum, priced from the list above.
+      Quantities are per month and editable — the totals recalculate as you type.
     </p>
     <div class="tablewrap">
       <table id="budget">
@@ -481,52 +474,52 @@ html{scroll-behavior:smooth}
         </thead>
         <tbody>
           <tr>
-            <td><b>Animation team &amp; management</b></td>
-            <td>Full crew on site — daytime line, Mini Disco, hosting, weekly action plan, attendance register, monthly report<span class="why">The department itself; headcount agreed by season</span></td>
+            <td><b>Team of 7</b></td>
+            <td>Team Leader, DJ, kids club entertainer, 4 fitness/sport entertainers — daytime line, kids line, mini disco, hosting, weekly action plan, attendance register, monthly report<span class="why"></span></td>
             <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">1</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u"></span></td>
+            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">3700</span></td>
             <td class="price row-total mono">—</td>
           </tr>
           <tr>
-            <td><b>Evening shows</b></td>
-            <td>Dance, oriental and guest performers on the weekly rotation<span class="why">Priced from the show list above</span></td>
-            <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">12</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u"></span></td>
+            <td><b>Broadway Show</b></td>
+            <td>Weekly on the evening rotation<span class="why"></span></td>
+            <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">4</span></td>
+            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">220</span></td>
             <td class="price row-total mono">—</td>
           </tr>
           <tr>
-            <td><b>Fire shows</b></td>
+            <td><b>Echo of Egypt Show</b></td>
+            <td>Weekly on the evening rotation<span class="why"></span></td>
+            <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">4</span></td>
+            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">220</span></td>
+            <td class="price row-total mono">—</td>
+          </tr>
+          <tr>
+            <td><b>Fire Show</b></td>
             <td>Weekly beachfront fire night<span class="why"></span></td>
             <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">4</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u"></span></td>
+            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">150</span></td>
             <td class="price row-total mono">—</td>
           </tr>
           <tr>
-            <td><b>Live singers</b></td>
-            <td>Evening vocalist sets across the week<span class="why"></span></td>
+            <td><b>Light Show</b></td>
+            <td>Weekly after-dark light choreography<span class="why"></span></td>
+            <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">4</span></td>
+            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">150</span></td>
+            <td class="price row-total mono">—</td>
+          </tr>
+          <tr>
+            <td><b>Live Singer</b></td>
+            <td>Two evenings a week on the terrace or bar<span class="why"></span></td>
             <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">8</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u"></span></td>
+            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">80</span></td>
             <td class="price row-total mono">—</td>
           </tr>
           <tr>
-            <td><b>Beach &amp; foam parties</b></td>
-            <td>Daytime activations on the weekly cycle<span class="why"></span></td>
-            <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">6</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u"></span></td>
-            <td class="price row-total mono">—</td>
-          </tr>
-          <tr>
-            <td><b>Headline theme night</b></td>
-            <td>One full-resort themed event per week<span class="why"></span></td>
+            <td><b>Headline theme party</b></td>
+            <td>One per week, rotating — Pink Pool (400), Boho (300), White Sensation (500), Aloha Afro (500), Echo of Egypt Night (500–800)<span class="why">Unit shown is an average; each event billed at its list price</span></td>
             <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">4</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u"></span></td>
-            <td class="price row-total mono">—</td>
-          </tr>
-          <tr>
-            <td><b>Kids events</b></td>
-            <td>Weekly character event on top of the daily kids line<span class="why"></span></td>
-            <td class="num qty" style="text-align:center"><span contenteditable="true" class="q">4</span></td>
-            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u"></span></td>
+            <td class="price"><span class="cur">€</span> <span contenteditable="true" class="u">425</span></td>
             <td class="price row-total mono">—</td>
           </tr>
           <tr class="total">
