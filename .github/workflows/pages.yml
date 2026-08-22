@@ -6,6 +6,7 @@ on:
     paths:
       - "anjum-dashboard.html"
       - "anjum-proposal.html"
+      - "media/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -32,6 +33,7 @@ jobs:
           mkdir -p _site
           cp anjum-dashboard.html _site/index.html
           cp anjum-proposal.html _site/proposal.html
+          cp -r media _site/media
           touch _site/.nojekyll
 
       # Pages has to be switched on once by hand, under
