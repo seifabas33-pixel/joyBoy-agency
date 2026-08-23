@@ -1,6 +1,6 @@
 # Joy Boy Agency
 
-Client-facing decks and dashboards for Joy Boy Agency — entertainment and
+Client-facing decks and proposals for Joy Boy Agency — entertainment and
 animation management for Red Sea resorts.
 
 ## Contents
@@ -8,61 +8,52 @@ animation management for Red Sea resorts.
 | File | What it is |
 | --- | --- |
 | `anjum-dashboard.html` | Pitch dashboard for the SUNRISE Anjum Resort meeting, 22 Aug 2026 |
-| `anjum-proposal.html` | Sendable three-section proposal: the agency, reels, price list |
+| `anjum-proposal.html` | The Anjum proposal as sent — kept as the record, no longer deployed |
+| `proposal-template.html` | Reusable proposal template for the next hotel |
+| `media/` | Show reels and clips (MP4), embedded by the proposals |
 
 ## Live
 
 - Dashboard: **https://seifabas33-pixel.github.io/joyBoy-agency/**
-- Proposal: **https://seifabas33-pixel.github.io/joyBoy-agency/proposal.html**
+- ~~Proposal~~ — deactivated. The old `/proposal.html` link now returns 404.
+  The Anjum PDF remains valid wherever it was already sent.
 
-Published by GitHub Pages from `main` via `.github/workflows/pages.yml`, which
-copies `anjum-dashboard.html` to the site root as `index.html` and
-`anjum-proposal.html` to `proposal.html`. Any push to `main` that touches
-either page redeploys automatically.
+Published by GitHub Pages from `main` via `.github/workflows/pages.yml`.
+Any push to `main` that touches the dashboard redeploys automatically.
 
-The proposal's reel links and every price cell are editable placeholders —
-fill them before sending. Prices typed into the published page are visible to
-anyone with the link, which is the intent (it is the quote), but remember the
-repository itself is public too.
+## Making a proposal for a new hotel
 
-The page carries a `noindex` tag, so the link works for anyone it is sent to
-but does not surface in search results.
+`proposal-template.html` is the finished Anjum proposal with the
+hotel-specific text replaced by tokens. To produce a new one, copy it to
+`<hotel>-proposal.html`, replace the tokens, and (if it should go live) add a
+copy line for it in `.github/workflows/pages.yml`:
 
-> **This repository is public.** Treat everything committed here as readable by
-> anyone, including the hotels being pitched. Do not commit contracts, crew
-> personal details, or Joy Boy's internal figures.
+| Token | Example |
+| --- | --- |
+| `[[HOTEL_NAME]]` | SUNRISE Anjum Resort |
+| `[[HOTEL_SHORT_NAME]]` | Anjum |
+| `[[HOTEL_LOCATION]]` | Ras Dory · Marsa Alam |
+| `[[MONTH_YEAR]]` | August 2026 |
+
+Everything else in the template is Joy Boy stock: the agency section, the
+Casa Blue awards grid, the five reels and the gallery, the standard price
+list (locked, non-editable), the budget call-out and the contact block.
+Review the price list per hotel before sending — the rates in the template
+are the Anjum quote.
+
+The easiest path: tell Claude the four token values and any price changes,
+and it generates, deploys and PDFs the new proposal.
 
 ## anjum-dashboard.html
 
-A self-contained single-page dashboard. Open it in any browser — no build step,
-no dependencies. It follows the viewer's light/dark setting and has a manual
-theme toggle, and it prints cleanly if paper copies are needed.
+Anjum-specific pitch dashboard: TripAdvisor/HolidayCheck/Booking evidence,
+the seven guest-named gaps, Joy Boy's operating record, and the 90-day plan.
+Carries a `noindex` tag, as do the proposals.
 
-**Argument:** Anjum is already at 4.9 on TripAdvisor, so the rating has no
-meaningful upside left — only downside. Entertainment is the most-mentioned
-subject in its recent reviews and the named cause of two of its three most
-recent non-five-star reviews, which makes the entertainment department the
-place that score is defended. Joy Boy runs that department.
+**Deliberately not in this repository:** Joy Boy's internal figures —
+payroll, ancillary revenue, margins. The pages make the operating-discipline
+case without them.
 
-**Sources**
-
-- TripAdvisor data for SUNRISE Anjum Resort and a 17-property Marsa Alam
-  comparison set, pulled 21 Aug 2026.
-- Joy Boy operating records: attendance registers, shows calendars and payroll
-  control sheet for True Beach Resort (Jul – Aug 2026) and Casa Blue Beach
-  Resort (2024). These two resorts are Joy Boy's complete client record and
-  nothing on the page draws on any other engagement.
-
-**Deliberately not on the page:** Joy Boy's internal commercial figures. The
-dashboard makes the operating-discipline case without disclosing the agency's
-own numbers to a prospect. Keep it that way.
-
-**Logo:** the masthead carries the Joy Boy emblem, embedded as a base64 data
-URI so the page stays self-contained. Only the circular emblem is used — the
-supplied artwork's wordmark reads "Entertainmarnt", so the trading name —
-Joy Boy Agency — is set in the page's own typeface instead. Swap in the full
-lockup once the artwork is corrected.
-
-**Before presenting** — one thing is still a placeholder: the commercial terms.
-The dashed panel at the end of the "What we are asking for" section lists
-exactly which figures are needed.
+> **This repository is public.** Treat everything committed here as readable
+> by anyone, including the hotels being pitched. Do not commit contracts,
+> crew personal details, or Joy Boy's internal figures.
