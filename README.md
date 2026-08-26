@@ -25,8 +25,15 @@ Casa Blue awards, the reels and gallery, and the service catalogue with **no
 prices** — it closes with "ask us for a tailored programme and budget", so
 rates are only ever quoted per hotel in a proposal.
 
-Published by GitHub Pages from `main` via `.github/workflows/pages.yml`.
-Any push to `main` that touches the dashboard redeploys automatically.
+Published by GitHub Pages **from the `gh-pages` branch** (Settings → Pages →
+Deploy from a branch). To update the live site, copy the changed files
+(`index.html`, `portfolio.html`, `media/`) onto `gh-pages` and push — GitHub
+rebuilds the site automatically within a minute.
+
+`.github/workflows/pages.yml` is the previous Actions-based deploy; it is
+kept but currently inactive because Actions runs are blocked at the account
+level (check https://github.com/settings/billing). Once Actions works again,
+the Pages source can be switched back to "GitHub Actions".
 
 ## Making a proposal for a new hotel
 
