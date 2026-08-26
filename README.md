@@ -10,13 +10,20 @@ animation management for Red Sea resorts.
 | `anjum-dashboard.html` | Pitch dashboard for the SUNRISE Anjum Resort meeting, 22 Aug 2026 |
 | `anjum-proposal.html` | The Anjum proposal as sent — kept as the record, no longer deployed |
 | `proposal-template.html` | Reusable proposal template for the next hotel |
+| `portfolio.html` | The agency portfolio — no prices, sendable to any client |
 | `media/` | Show reels and clips (MP4), embedded by the proposals |
 
 ## Live
 
 - Dashboard: **https://seifabas33-pixel.github.io/joyBoy-agency/**
+- Portfolio: **https://seifabas33-pixel.github.io/joyBoy-agency/portfolio.html**
 - ~~Proposal~~ — deactivated. The old `/proposal.html` link now returns 404.
   The Anjum PDF remains valid wherever it was already sent.
+
+The portfolio is the general-purpose piece for any prospect: the agency, the
+Casa Blue awards, the reels and gallery, and the service catalogue with **no
+prices** — it closes with "ask us for a tailored programme and budget", so
+rates are only ever quoted per hotel in a proposal.
 
 Published by GitHub Pages from `main` via `.github/workflows/pages.yml`.
 Any push to `main` that touches the dashboard redeploys automatically.
