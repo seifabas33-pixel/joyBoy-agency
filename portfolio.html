@@ -363,7 +363,7 @@ html.loading{overflow:hidden}
 @keyframes plslide{to{left:100%}}
 html.loading .hero-copy>*,html.loading .hero-video{animation-play-state:paused}
 @media (prefers-reduced-motion: reduce){
-  #preloader{display:none}
+  #preloader .pl-ring,#preloader .pl-glow,#preloader .pl-bar{display:none}
 }
 
 /* ── scroll reveal ── */
@@ -704,7 +704,7 @@ html.loading .hero-copy>*,html.loading .hero-video{animation-play-state:paused}
   if (!pl) return;
   var t0 = Date.now(), fired = false;
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var MIN = reduce ? 0 : 1800;
+  var MIN = reduce ? 1200 : 1800;
   function go(){
     if (fired) return; fired = true;
     var wait = Math.max(0, MIN - (Date.now() - t0));
