@@ -368,7 +368,7 @@ html.loading{overflow:hidden}
   animation:plslide 1.1s cubic-bezier(.45,.1,.55,.9) infinite;
 }
 @keyframes plslide{to{left:100%}}
-html.loading .hero-copy>*,html.loading .hero-video{animation-play-state:paused}
+html.loading .hero-copy>*{animation-play-state:paused}
 @media (prefers-reduced-motion: reduce){
   #preloader .pl-ring,#preloader .pl-glow,#preloader .pl-bar{display:none}
 }
@@ -589,6 +589,74 @@ h1,h2,h3,h4{font-variation-settings:"opsz" 96}
 .tile.aqua.quote .qmark{color:var(--dark)}
 .tile.aqua.quote cite .stars{color:var(--dark)}
 
+/* ════════ GALLERY HERO: fan of cards ════════ */
+.hero{padding:96px 22px 96px}
+.hero-inner{display:flex;flex-direction:column;align-items:center}
+.hero-copy{max-width:880px;text-align:center;margin:0 auto}
+.hero .lede{margin:0 auto}
+.hero .tagrow,.hero .btnrow{justify-content:center}
+.fan{position:relative;width:100%;max-width:1100px;height:clamp(210px,33vw,372px);margin:0 auto 6px;pointer-events:none}
+.fan .card{
+  --w:clamp(96px,14vw,168px);
+  position:absolute;left:50%;bottom:calc(var(--w)*.72);width:var(--w);aspect-ratio:3/4;margin-left:calc(var(--w)/-2);
+  border-radius:clamp(10px,1.4vw,18px);overflow:hidden;background:var(--surface);
+  border:1px solid rgba(255,255,255,.22);box-shadow:0 30px 60px -24px rgba(0,0,0,.8);
+  transform-origin:50% 300%;transform:rotate(calc(var(--r)*1deg));
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1),box-shadow .4s;
+  pointer-events:auto;cursor:zoom-in;
+  animation:spread 1.1s cubic-bezier(.2,.8,.2,1) calc(.35s + var(--i)*80ms) both;
+}
+.fan .card img{width:100%;height:100%;object-fit:cover;display:block}
+.fan .card figcaption{
+  position:absolute;left:0;right:0;bottom:0;padding:22px 10px 8px;
+  font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#fff;
+  background:linear-gradient(transparent,rgba(0,0,0,.7));opacity:0;transition:opacity .3s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.fan .card:hover{transform:rotate(calc(var(--r)*1deg)) translateY(-26px) scale(1.12);z-index:5;box-shadow:0 40px 80px -24px rgba(255,45,138,.55)}
+.fan .card:hover figcaption{opacity:1}
+@keyframes spread{from{transform:rotate(0deg) translateY(60px) scale(.6);opacity:0}}
+html.loading .fan .card{animation-play-state:paused}
+@media(max-width:560px){.fan .card:nth-child(1),.fan .card:nth-child(7){display:none}.fan{height:190px}}
+@media (prefers-reduced-motion: reduce){.fan .card{animation:none}}
+
+/* ════════ MASTHEAD: Our work ════════ */
+.masthead{grid-column:span 12;padding-top:74px;display:flex;flex-direction:column;gap:16px}
+.mh-top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;border-bottom:3px solid var(--ink);padding-bottom:6px}
+.mh-title{font-size:clamp(56px,11vw,150px);font-weight:800;letter-spacing:-.055em;line-height:.85;margin:0}
+.mh-title em{font-style:normal;color:var(--yellow)}
+.mh-year{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:clamp(34px,6vw,84px);letter-spacing:-.04em;line-height:.85;color:var(--pink)}
+.mh-meta{
+  display:flex;flex-wrap:wrap;gap:6px 26px;justify-content:space-between;
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
+  border-bottom:1px solid var(--line-2);padding-bottom:12px;
+}
+.mh-meta b{color:var(--ink);font-weight:500}
+.mh-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;align-items:end}
+.mh-fig{margin:0;position:relative;overflow:hidden;border-radius:6px;background:var(--raised);cursor:zoom-in}
+.mh-fig img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .9s cubic-bezier(.2,.6,.2,1)}
+.mh-fig:hover img{transform:scale(1.05)}
+.mh-fig figcaption{
+  position:absolute;left:0;right:0;bottom:0;padding:34px 16px 14px;color:#fff;
+  background:linear-gradient(transparent,rgba(0,0,0,.72));
+  font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15px;letter-spacing:-.01em;
+}
+.mh-fig figcaption small{display:block;font-family:"Instrument Sans",sans-serif;font-weight:400;font-size:12px;color:rgba(255,255,255,.8);margin-top:2px}
+.mh-row .mh-fig{aspect-ratio:3/4}
+.mh-row .mh-fig:nth-child(1){aspect-ratio:3/4.4}
+.mh-row .mh-fig:nth-child(3){aspect-ratio:3/3.6}
+.mh-band{aspect-ratio:21/9;border-radius:6px}
+.mh-cols{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:26px;padding-top:6px;border-top:1px solid var(--line-2)}
+.mh-cols .tile.reelv{grid-row:span 2;border-radius:6px;border:0;background:var(--raised)}
+.mh-cols .reelv video{aspect-ratio:16/10}
+.mh-cols .col h4{font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin-bottom:8px}
+.mh-cols .col p{font-size:13px;color:var(--ink-2);line-height:1.55}
+.mh-cols .col .num{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:44px;letter-spacing:-.04em;line-height:1;color:var(--aqua);display:block;margin-bottom:6px}
+@media(max-width:920px){.mh-cols{grid-template-columns:1fr 1fr}.mh-cols .tile.reelv{grid-column:1/-1;grid-row:auto}}
+@media(max-width:560px){
+  .mh-row{grid-template-columns:1fr 1fr}.mh-row .mh-fig:nth-child(3){grid-column:1/-1;aspect-ratio:16/10}
+  .mh-cols{grid-template-columns:1fr}.mh-band{aspect-ratio:4/3}
+}
+
 /* ── scroll reveal ── */
 .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.6,.2,1),transform .7s cubic-bezier(.2,.6,.2,1)}
 .reveal.in{opacity:1;transform:none}
@@ -654,8 +722,16 @@ h1,h2,h3,h4{font-variation-settings:"opsz" 96}
   <div class="glow g1"></div><div class="glow g2"></div>
   <span class="hv-badge">Showreel &middot; live from the floor</span>
   <div class="hero-inner">
+  <div class="fan" aria-label="Photographs and clips from Joy Boy programmes">
+    <figure class="card" style="--i:0;--r:-36"><img src="media/img/gallery-white-sensation.jpg" alt="White Sensation" loading="eager" decoding="async" data-cap="The dress-code night in full swing — guests, not staff, filling the floor."><figcaption>White Sensation</figcaption></figure>
+    <figure class="card" style="--i:1;--r:-24"><img src="media/img/poster-reel-fire.jpg" alt="Fire Show" loading="eager" decoding="async" data-cap="Fire performance on the amphitheatre stage."><figcaption>Fire Show</figcaption></figure>
+    <figure class="card" style="--i:2;--r:-12"><img src="media/img/gallery-daytime-line.jpg" alt="The daytime line" loading="eager" decoding="async" data-cap="Oriental dance class on the pool lawn — twenty guests up and moving before lunch."><figcaption>The daytime line</figcaption></figure>
+    <figure class="card" style="--i:3;--r:0"><img src="media/img/gallery-curtain-call.jpg" alt="Curtain call, full house" loading="eager" decoding="async" data-cap="Taken moments after the evening show — the entire audience stays behind for the photograph with the team."><figcaption>Curtain call, full house</figcaption></figure>
+    <figure class="card" style="--i:4;--r:12"><img src="media/img/poster-reel-egypt.jpg" alt="Echo of Egypt Night" loading="eager" decoding="async" data-cap="The full-evening event — lanterns, lasers and the golden stage."><figcaption>Echo of Egypt Night</figcaption></figure>
+    <figure class="card" style="--i:5;--r:24"><img src="media/img/gallery-theme-night-sendoff.jpg" alt="Theme night send-off" loading="eager" decoding="async" data-cap="Sunset group photo before the evening programme — the guests ask for these."><figcaption>Theme night send-off</figcaption></figure>
+    <figure class="card" style="--i:6;--r:36"><img src="media/img/poster-reel-theme.jpg" alt="Theme Night Parade" loading="eager" decoding="async" data-cap="Costume parade through the evening crowd."><figcaption>Theme Night Parade</figcaption></figure>
+  </div>
   <div class="hero-copy">
-    <img class="herologo" src="media/img/logo.jpg" width="300" height="300" alt="Joy Boy Agency logo">
     <span class="eyebrow">Joy Boy Agency &middot; Entertainment &amp; animation &middot; Red Sea, Egypt</span>
     <h1>Entertainment that<br><span class="gx">earns its reviews.</span> <span class="sticker">&#9733; 7 nights a week</span></h1>
     <p class="lede">
@@ -823,35 +899,28 @@ h1,h2,h3,h4{font-variation-settings:"opsz" 96}
     <a class="btn ghost" href="#prices">See what we offer &darr;</a>
   </div>
 
-  <!-- ── section 6 · gallery ── -->
-  <div class="strip" id="gallery">
-    <span class="num mono">06</span>
-    <h2>Our work, in pictures</h2>
-    <span class="sub">The team on stage and on the floor — photos and clips from the resorts we run.</span>
-  </div>
+  <!-- ── section 6 · our work (masthead) ── -->
+  <section class="masthead" id="gallery" aria-labelledby="mh-h">
+    <div class="mh-top"><h2 class="mh-title" id="mh-h">Our <em>work</em></h2><span class="mh-year">2026</span></div>
+    <div class="mh-meta"><span><b>Red Sea</b> &middot; Marsa Alam</span><span>Casa Blue 2024 &middot; True Beach 2026</span><span>Photographs &amp; clips from the floor</span><span><b>7</b> nights a week</span></div>
+    <div class="mh-row">
+      <figure class="mh-fig"><img src="media/img/gallery-white-sensation.jpg" width="1200" height="1600" loading="lazy" decoding="async" alt="Guests dressed in white dancing at a night-time White Sensation party"><figcaption>White Sensation<small>The dress-code night in full swing &mdash; guests, not staff, filling the floor.</small></figcaption></figure>
+      <figure class="mh-fig"><img src="media/img/gallery-daytime-line.jpg" width="1600" height="1200" loading="lazy" decoding="async" alt="An animator leading a large outdoor dance class for guests wearing coin hip scarves"><figcaption>The daytime line<small>Oriental dance class on the pool lawn &mdash; twenty guests up and moving before lunch.</small></figcaption></figure>
+      <figure class="mh-fig"><img src="media/img/gallery-curtain-call.jpg" width="1600" height="1200" loading="lazy" decoding="async" alt="A full guest crowd with the Joy Boy team on a lit amphitheatre stage at night"><figcaption>Curtain call, full house<small>Moments after the evening show &mdash; the entire audience stays for the photograph.</small></figcaption></figure>
+    </div>
+    <figure class="mh-fig mh-band"><img src="media/img/gallery-theme-night-sendoff.jpg" width="1600" height="1200" loading="lazy" decoding="async" alt="Guests and costumed animators posing together at the resort entrance at sunset"><figcaption>Theme night send-off<small>Sunset group photo before the evening programme &mdash; the guests ask for these.</small></figcaption></figure>
+    <div class="mh-cols">
+      <div class="tile reelv">
+        <div class="frame"><video controls preload="none" playsinline poster="media/img/poster-gallery-aftershow.jpg"><source src="media/gallery-aftershow.mp4" type="video/mp4"></video><button class="playbtn" type="button" aria-label="Play: After the show"><span></span></button><span class="dur">0:07</span></div>
+        <div class="body"><h4>After the show</h4><p>0:07 &middot; the moment the evening programme ends &mdash; the audience stays, on its feet.</p></div>
+      </div>
+      <div class="col"><span class="num">2</span><h4>Resorts, one standard.</h4><p>Casa Blue Beach Resort in 2024, True Beach Resort in 2026 &mdash; the same weekly plan, the same register, the same faces all week.</p></div>
+      <div class="col"><span class="num">7/7</span><h4>Every night is programme night.</h4><p>What you see here is not a gala week. These are ordinary evenings, photographed because the guests asked for the photograph.</p></div>
+      <div class="col"><h4>No studio, no extras.</h4><p>Every image and clip on this page was taken on the floor at a resort we run. The crowds are real guests.</p></div>
+      <div class="col"><h4>Want the full album?</h4><p>Ask on WhatsApp and we will send the season's photo set and the reels in full resolution.</p></div>
+    </div>
+  </section>
 
-  <div class="tile ph filled s6">
-    <div class="frame"><img src="media/img/gallery-curtain-call.jpg" width="880" height="695" loading="lazy" decoding="async" alt="A full guest crowd with the Joy Boy team on a lit amphitheatre stage at night"></div>
-    <div class="body"><h4>Curtain call, full house</h4><p>Taken moments after the evening show — the entire audience stays behind for the photograph with the team.</p></div>
-  </div>
-  <div class="tile ph filled s6">
-    <div class="frame"><img src="media/img/gallery-daytime-line.jpg" width="880" height="660" loading="lazy" decoding="async" alt="An animator leading a large outdoor dance class for guests wearing coin hip scarves"></div>
-    <div class="body"><h4>The daytime line</h4><p>Oriental dance class on the pool lawn — twenty guests up and moving before lunch.</p></div>
-  </div>
-
-  <div class="tile ph filled s4">
-    <div class="frame"><img src="media/img/gallery-white-sensation.jpg" width="680" height="907" loading="lazy" decoding="async" alt="Guests dressed in white dancing at a night-time White Sensation party"></div>
-    <div class="body"><h4>White Sensation</h4><p>The dress-code night in full swing — guests, not staff, filling the floor.</p></div>
-  </div>
-  <div class="tile reelv s8">
-    <div class="frame"><video controls preload="none" playsinline poster="media/img/poster-gallery-aftershow.jpg"><source src="media/gallery-aftershow.mp4" type="video/mp4"></video><button class="playbtn" type="button" aria-label="Play: After the show"><span></span></button><span class="dur">0:07</span></div>
-    <div class="body"><h4>After the show</h4><p>0:07 · the moment the evening programme ends — the audience stays, on its feet.</p></div>
-  </div>
-
-  <div class="tile ph filled s12 wide">
-    <div class="frame"><img src="media/img/gallery-theme-night-sendoff.jpg" width="880" height="660" loading="lazy" decoding="async" alt="Guests and costumed animators posing together at the resort entrance at sunset"></div>
-    <div class="body"><h4>Theme night send-off</h4><p>Sunset group photo before the evening programme — the guests ask for these.</p></div>
-  </div>
   <!-- ── section 7 · prices ── -->
   <div class="strip" id="prices">
     <span class="num mono">07</span>
@@ -1101,12 +1170,15 @@ h1,h2,h3,h4{font-variation-settings:"opsz" 96}
   var lb = document.getElementById("lb"), lbimg = document.getElementById("lbimg"), lbcap = document.getElementById("lbcap");
   function closeLb(){ lb.classList.remove("open"); document.documentElement.style.overflow = ""; }
   if (lb){
-    document.querySelectorAll(".ph .frame img").forEach(function(img){
+    document.querySelectorAll(".ph .frame img, .fan .card img, .mh-fig img").forEach(function(img){
       img.addEventListener("click", function(){
-        var body = img.closest(".tile").querySelector(".body");
-        var h = body ? body.querySelector("h4") : null, p = body ? body.querySelector("p") : null;
+        var tile = img.closest(".tile"), body = tile ? tile.querySelector(".body") : null;
+        var fig = img.closest("figure"), fc = fig ? fig.querySelector("figcaption") : null;
+        var title = "", text = "";
+        if (body){ var h = body.querySelector("h4"), p = body.querySelector("p"); title = h ? h.textContent : ""; text = p ? p.textContent : ""; }
+        else if (fc){ var sm = fc.querySelector("small"); title = (sm ? fc.textContent.replace(sm.textContent, "") : fc.textContent).trim(); text = sm ? sm.textContent : (img.dataset.cap || ""); }
         lbimg.src = img.currentSrc || img.src; lbimg.alt = img.alt;
-        lbcap.innerHTML = (h ? "<b>" + h.textContent + "</b>" : "") + (p ? p.textContent : "");
+        lbcap.innerHTML = (title ? "<b>" + title + "</b>" : "") + text;
         lb.classList.add("open"); document.documentElement.style.overflow = "hidden";
       });
     });

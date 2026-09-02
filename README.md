@@ -28,8 +28,9 @@ Mr. Moaz on WhatsApp. Sections: the agency, how we work (five-step timeline),
 awards, what guests wrote (verbatim TripAdvisor reviews of True Beach Resort,
 Aug 2026), the reels, the gallery and what we offer.
 It has a dark and a light theme (sun/moon toggle),
-a branded preloader, the showreel as the hero background, a gallery
-lightbox and custom play buttons on the reels; all images are files under
+a branded preloader, the showreel as the hero background with a fan of
+photo cards spreading above the headline, a newspaper-style masthead for
+the Our work section, a lightbox and custom play buttons on the reels; all images are files under
 `media/img/` (the HTML itself is ~76 KB).
 
 Published by GitHub Pages **from the `gh-pages` branch** (Settings → Pages →
