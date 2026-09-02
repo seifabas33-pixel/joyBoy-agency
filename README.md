@@ -12,12 +12,15 @@ animation management for Red Sea resorts.
 | `proposal-template.html` | Reusable proposal template for the next hotel |
 | `portfolio.html` | The agency portfolio — no prices, sendable to any client |
 | `media/` | Show reels, the hero showreel (MP4) and `media/img/` — photos, posters, logo, favicons, social image |
+| `legal.html`, `404.html`, `robots.txt`, `sitemap.xml` | Privacy & terms, custom not-found page, crawler files |
+| `CLAUDE.md` | Project memory for Claude: deploy steps, hard rules, design direction, the 20-point launch checklist |
 
 ## Live
 
 - Portfolio (homepage): **https://seifabas33-pixel.github.io/joyBoy-agency/**
 - Anjum dashboard: **https://seifabas33-pixel.github.io/joyBoy-agency/anjum.html**
 - `/portfolio.html` still works — it redirects to the homepage.
+- Privacy & terms: **https://seifabas33-pixel.github.io/joyBoy-agency/legal.html**
 - ~~Proposal~~ — deactivated. The old `/proposal.html` link now returns 404.
   The Anjum PDF remains valid wherever it was already sent.
 
