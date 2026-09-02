@@ -11,7 +11,7 @@ animation management for Red Sea resorts.
 | `anjum-proposal.html` | The Anjum proposal as sent — kept as the record, no longer deployed |
 | `proposal-template.html` | Reusable proposal template for the next hotel |
 | `portfolio.html` | The agency portfolio — no prices, sendable to any client |
-| `media/` | Show reels and clips (MP4), embedded by the proposals |
+| `media/` | Show reels, the hero showreel (MP4) and `media/img/` — photos, posters, logo, favicons, social image |
 
 ## Live
 
@@ -23,11 +23,16 @@ animation management for Red Sea resorts.
 The portfolio is the general-purpose piece for any prospect: the agency, the
 Casa Blue awards, the reels and gallery, and the service catalogue with **no
 prices** — it closes with "ask us for a tailored programme and budget", so
-rates are only ever quoted per hotel in a proposal.
+rates are only ever quoted per hotel in a proposal. Proposal requests go to
+Mr. Moaz on WhatsApp. It has a dark and a light theme (sun/moon toggle),
+a branded preloader, the showreel as the hero background, a gallery
+lightbox and custom play buttons on the reels; all images are files under
+`media/img/` (the HTML itself is ~76 KB).
 
 Published by GitHub Pages **from the `gh-pages` branch** (Settings → Pages →
 Deploy from a branch). To update the live site, copy the changed files
-(`index.html`, `portfolio.html`, `media/`) onto `gh-pages` and push — GitHub
+(`index.html` = the dashboard, `portfolio.html`, `media/` including `media/img/`)
+onto `gh-pages` and push — GitHub
 rebuilds the site automatically within a minute.
 
 `.github/workflows/pages.yml` is the previous Actions-based deploy; it is
