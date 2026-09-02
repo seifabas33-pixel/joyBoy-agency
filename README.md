@@ -24,7 +24,10 @@ The portfolio is the general-purpose piece for any prospect: the agency, the
 Casa Blue awards, the reels and gallery, and the service catalogue with **no
 prices** — it closes with "ask us for a tailored programme and budget", so
 rates are only ever quoted per hotel in a proposal. Proposal requests go to
-Mr. Moaz on WhatsApp. It has a dark and a light theme (sun/moon toggle),
+Mr. Moaz on WhatsApp. Sections: the agency, how we work (five-step timeline),
+awards, what guests wrote (verbatim TripAdvisor reviews of True Beach Resort,
+Aug 2026), the reels, the gallery and what we offer.
+It has a dark and a light theme (sun/moon toggle),
 a branded preloader, the showreel as the hero background, a gallery
 lightbox and custom play buttons on the reels; all images are files under
 `media/img/` (the HTML itself is ~76 KB).
