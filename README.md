@@ -15,8 +15,9 @@ animation management for Red Sea resorts.
 
 ## Live
 
-- Dashboard: **https://seifabas33-pixel.github.io/joyBoy-agency/**
-- Portfolio: **https://seifabas33-pixel.github.io/joyBoy-agency/portfolio.html**
+- Portfolio (homepage): **https://seifabas33-pixel.github.io/joyBoy-agency/**
+- Anjum dashboard: **https://seifabas33-pixel.github.io/joyBoy-agency/anjum.html**
+- `/portfolio.html` still works — it redirects to the homepage.
 - ~~Proposal~~ — deactivated. The old `/proposal.html` link now returns 404.
   The Anjum PDF remains valid wherever it was already sent.
 
@@ -35,7 +36,7 @@ the Our work section, a lightbox and custom play buttons on the reels; all image
 
 Published by GitHub Pages **from the `gh-pages` branch** (Settings → Pages →
 Deploy from a branch). To update the live site, copy the changed files
-(`index.html` = the dashboard, `portfolio.html`, `media/` including `media/img/`)
+(`index.html` = the portfolio, `anjum.html` = the dashboard, `media/` including `media/img/`)
 onto `gh-pages` and push — GitHub
 rebuilds the site automatically within a minute.
 

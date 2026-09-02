@@ -31,8 +31,9 @@ jobs:
       - name: Assemble site
         run: |
           mkdir -p _site
-          cp anjum-dashboard.html _site/index.html
-          cp portfolio.html _site/portfolio.html
+          cp portfolio.html _site/index.html
+          cp anjum-dashboard.html _site/anjum.html
+          printf '%s\n' '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Joy Boy Agency</title><meta http-equiv="refresh" content="0; url=./"><link rel="canonical" href="./"></head><body><p>Moved to <a href="./">the homepage</a>.</p></body></html>' > _site/portfolio.html
           cp -r media _site/media
           touch _site/.nojekyll
 
