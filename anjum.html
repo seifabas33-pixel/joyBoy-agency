@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<title>Anjum at 4.9</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Joy Boy Agency's entertainment case for SUNRISE Anjum Resort: why a 4.9 rating is a liability rather than a trophy, and what the guest reviews say about the programme.">
+
+<!-- Link preview, so the URL renders as a card when it is sent to the hotel
+     rather than as a bare address. noindex still keeps it out of search. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Joy Boy Agency">
+<meta property="og:title" content="Anjum at 4.9 - the entertainment case">
+<meta property="og:description" content="Anjum sits at 4.9 from 1,602 reviews, so the score has no upside left - only downside. Entertainment is the most-mentioned subject in its recent reviews, and the named reason two guests marked it down.">
+<meta property="og:url" content="https://seifabas33-pixel.github.io/joyBoy-agency/">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* ─────────── tokens: light is the base, dark redefines only values ─────────── */
+:root{
+  --ground:#F7FAFA;
+  --surface:#FFFFFF;
+  --raised:#EDF3F3;
+  --line:#D6E2E3;
+  --line-soft:#E6EEEE;
+
+  --ink:#0E2229;
+  --ink-2:#3C5760;
+  --ink-3:#66808A;
+
+  --accent:#D9502C;
+  --accent-soft:#FBEAE4;
+  --accent-line:#F0C4B5;
+
+  --good:#1F8A5F;
+  --warn:#B5822A;
+  --crit:#C33B28;
+  --good-bg:#E4F2EB;
+  --warn-bg:#F6EEDC;
+  --crit-bg:#F9E6E2;
+
+  --track:#DFE9EA;
+  --peer:#94AEB5;
+
+  --shadow:0 1px 2px rgba(14,34,41,.05), 0 8px 24px -12px rgba(14,34,41,.16);
+  --radius:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0B1D24;
+    --surface:#11292F;
+    --raised:#173840;
+    --line:#274850;
+    --line-soft:#1D3C44;
+
+    --ink:#EAF2F2;
+    --ink-2:#A7BFC5;
+    --ink-3:#7E99A1;
+
+    --accent:#F0703F;
+    --accent-soft:#33221C;
+    --accent-line:#5E3524;
+
+    --good:#3FB283;
+    --warn:#DFA94A;
+    --crit:#F0705C;
+    --good-bg:#12302A;
+    --warn-bg:#302713;
+    --crit-bg:#33201C;
+
+    --track:#1F434B;
+    --peer:#5D808A;
+
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0B1D24;
+  --surface:#11292F;
+  --raised:#173840;
+  --line:#274850;
+  --line-soft:#1D3C44;
+
+  --ink:#EAF2F2;
+  --ink-2:#A7BFC5;
+  --ink-3:#7E99A1;
+
+  --accent:#F0703F;
+  --accent-soft:#33221C;
+  --accent-line:#5E3524;
+
+  --good:#3FB283;
+  --warn:#DFA94A;
+  --crit:#F0705C;
+  --good-bg:#12302A;
+  --warn-bg:#302713;
+  --crit-bg:#33201C;
+
+  --track:#1F434B;
+  --peer:#5D808A;
+
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{
+  font-family:"Bricolage Grotesque","Instrument Sans",ui-sans-serif,system-ui,sans-serif;
+  text-wrap:balance;
+  margin:0;
+  line-height:1.1;
+  letter-spacing:-.02em;
+}
+p{margin:0}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:500;
+}
+
+/* ─────────── shell ─────────── */
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:color-mix(in srgb, var(--ground) 88%, transparent);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line-soft);
+}
+.topbar-inner{
+  max-width:1080px;margin:0 auto;padding:10px 24px;
+  display:flex;align-items:center;gap:20px;
+}
+.navchips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1}
+.navchips::-webkit-scrollbar{display:none}
+.navchips a{
+  flex:none;text-decoration:none;color:var(--ink-2);
+  font-size:12.5px;font-weight:500;white-space:nowrap;
+  padding:6px 11px;border-radius:99px;border:1px solid transparent;
+}
+.navchips a:hover{background:var(--raised);color:var(--ink);border-color:var(--line-soft)}
+.themetoggle{
+  flex:none;background:var(--surface);border:1px solid var(--line);color:var(--ink-2);
+  border-radius:99px;padding:6px 12px;font:inherit;font-size:12.5px;cursor:pointer;
+}
+.themetoggle:hover{color:var(--ink);border-color:var(--ink-3)}
+
+/* ─────────── masthead ─────────── */
+.masthead{padding:48px 0 40px}
+.lockup{display:flex;align-items:center;gap:16px;margin-bottom:40px;flex-wrap:wrap}
+/* The emblem is circular art on a white ground, so it is clipped to a round
+   plaque. The plaque stays white in both themes — that is the mark's own
+   background, and inverting it would grey the artwork. */
+.logomark{
+  width:84px;height:84px;flex:none;border-radius:50%;
+  background:#FFFFFF;object-fit:cover;display:block;
+  border:1px solid var(--line);
+}
+:root[data-theme="dark"] .logomark,
+:root:not([data-theme="light"]) .logomark{box-shadow:0 0 0 3px rgba(255,255,255,.06)}
+.brandname{
+  font-family:"Bricolage Grotesque","Instrument Sans",sans-serif;
+  font-weight:700;font-size:16px;letter-spacing:-.02em;line-height:1.15;
+}
+.lockup-txt strong{display:block;font-size:15px;font-weight:600;letter-spacing:-.01em}
+.lockup-txt span{display:block;font-size:13px;color:var(--ink-3)}
+.arrow{color:var(--ink-3);font-size:20px}
+
+h1{font-size:clamp(38px,6.4vw,68px);font-weight:800;max-width:15ch}
+.thesis{
+  margin-top:22px;max-width:60ch;font-size:clamp(17px,2.2vw,20px);
+  line-height:1.55;color:var(--ink-2);
+}
+.thesis b{color:var(--ink);font-weight:600}
+.meta-row{
+  margin-top:32px;display:flex;flex-wrap:wrap;gap:8px 10px;
+}
+.tag{
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;
+  padding:5px 10px;border-radius:6px;border:1px solid var(--line);
+  color:var(--ink-2);background:var(--surface);
+}
+.tag.hot{border-color:var(--accent-line);background:var(--accent-soft);color:var(--accent)}
+
+/* ─────────── boards ─────────── */
+.board{padding:52px 0;border-top:1px solid var(--line-soft)}
+.board-head{margin-bottom:28px;max-width:64ch}
+.board-head h2{font-size:clamp(25px,3.4vw,34px);font-weight:700;margin-top:9px}
+.board-head p{margin-top:12px;color:var(--ink-2);font-size:16.5px}
+
+.card{
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);
+}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(158px,1fr))}
+.jobs{grid-template-columns:repeat(auto-fit,minmax(390px,1fr))}
+
+/* stat tiles */
+.stat{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 18px 16px;display:flex;flex-direction:column;gap:4px;
+}
+.stat .k{
+  font-family:"Bricolage Grotesque",sans-serif;font-weight:700;
+  font-size:clamp(28px,4.2vw,38px);letter-spacing:-.03em;line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.stat .k small{font-size:.48em;font-weight:600;color:var(--ink-3);letter-spacing:0;margin-left:3px}
+.stat .lab{font-size:13px;color:var(--ink-2);font-weight:500;line-height:1.35}
+.stat .sub{font-size:12px;color:var(--ink-3);line-height:1.4;margin-top:2px}
+.stat.flag{border-color:var(--accent-line);background:var(--accent-soft)}
+.stat.flag .k{color:var(--accent)}
+
+/* hero stat */
+.hero-stat{
+  display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;
+  background:var(--surface);border:1px solid var(--accent-line);
+  border-radius:var(--radius);padding:30px;box-shadow:var(--shadow);
+}
+.hero-stat .num{
+  font-family:"Bricolage Grotesque",sans-serif;font-weight:800;
+  font-size:clamp(66px,13vw,112px);line-height:.85;letter-spacing:-.05em;
+  color:var(--accent);font-variant-numeric:tabular-nums;
+}
+.hero-stat .txt h3{font-size:20px;font-weight:700;margin-bottom:9px}
+.hero-stat .txt p{color:var(--ink-2);font-size:15px;max-width:52ch}
+@media(max-width:560px){.hero-stat{grid-template-columns:1fr;gap:14px;padding:24px}}
+
+/* ─────────── charts ─────────── */
+.chart{display:flex;flex-direction:column;gap:9px;margin-top:6px}
+.chart-title{font-size:14.5px;font-weight:600;letter-spacing:-.01em}
+.chart-note{font-size:12.5px;color:var(--ink-3);line-height:1.45}
+
+.row{
+  display:grid;grid-template-columns:minmax(112px,168px) 1fr auto;
+  gap:12px;align-items:center;position:relative;
+}
+.row .name{font-size:13px;color:var(--ink-2);text-align:right;line-height:1.25}
+.row .val{
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-variant-numeric:tabular-nums;
+  color:var(--ink-2);min-width:52px;text-align:right;
+}
+.bartrack{background:var(--track);border-radius:4px;height:20px;overflow:hidden}
+.bar{
+  height:100%;width:var(--w);background:var(--peer);
+  border-radius:0 4px 4px 0;transition:filter .15s;
+}
+.row.me .name{color:var(--ink);font-weight:600}
+.row.me .val{color:var(--accent);font-weight:600}
+.row.me .bar{background:var(--accent)}
+.row:hover .bar{filter:brightness(1.12)}
+
+/* dot plot */
+.dotrow{
+  display:grid;grid-template-columns:minmax(96px,124px) 1fr auto;
+  gap:12px;align-items:center;
+}
+.dotrow .name{font-size:13px;color:var(--ink-2);text-align:right}
+.dottrack{
+  position:relative;height:22px;
+  background:linear-gradient(var(--track),var(--track)) center/100% 2px no-repeat;
+}
+.dot{
+  position:absolute;top:50%;left:var(--x);
+  width:13px;height:13px;margin:-6.5px 0 0 -6.5px;border-radius:50%;
+  background:var(--accent);border:2px solid var(--surface);
+}
+.dot.low{background:var(--warn)}
+.dotrow .val{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.axis{
+  display:grid;grid-template-columns:minmax(96px,124px) 1fr auto;gap:12px;
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3);
+}
+.axis .ticks{display:flex;justify-content:space-between}
+.axis .spacer{min-width:52px}
+
+/* ─────────── quotes ─────────── */
+.quotes{display:grid;gap:12px}
+.quote{
+  border-left:3px solid var(--good);background:var(--surface);
+  border-radius:0 10px 10px 0;padding:15px 18px;
+  border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+}
+.quote.bad{border-left-color:var(--accent)}
+.quote q{font-size:15px;line-height:1.55;display:block;color:var(--ink)}
+.quote q::before{content:"\201C"}
+.quote q::after{content:"\201D"}
+.quote .who{
+  margin-top:9px;font-family:"IBM Plex Mono",monospace;font-size:11px;
+  color:var(--ink-3);display:flex;gap:9px;flex-wrap:wrap;align-items:center;
+}
+.stars{color:var(--warn);letter-spacing:.05em}
+
+.pill{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:500;
+  padding:3px 8px;border-radius:99px;letter-spacing:.03em;text-transform:uppercase;
+}
+.pill.ok{background:var(--good-bg);color:var(--good)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.crit{background:var(--crit-bg);color:var(--crit)}
+
+/* ─────────── tables ─────────── */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{padding:11px 15px;text-align:left;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:500;background:var(--raised);white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:none}
+td.num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.me td{background:var(--accent-soft)}
+tr.me td:first-child{font-weight:600;box-shadow:inset 3px 0 0 var(--accent)}
+
+/* ─────────── track record ─────────── */
+.job{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:22px;display:flex;flex-direction:column;gap:12px;
+}
+.job-top{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.job h3{font-size:18px;font-weight:700}
+.job .when{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);white-space:nowrap}
+.job .role{font-size:13.5px;color:var(--ink-2)}
+.job ul{margin:0;padding-left:17px;display:flex;flex-direction:column;gap:5px}
+.job li{font-size:13.5px;color:var(--ink-2);line-height:1.5}
+.job li b{color:var(--ink);font-weight:600}
+.jobstats{display:flex;gap:20px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--line-soft)}
+.jobstats div{display:flex;flex-direction:column;gap:1px}
+.jobstats .n{font-family:"IBM Plex Mono",monospace;font-size:17px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+.jobstats .l{font-size:11px;color:var(--ink-3);line-height:1.3}
+
+/* ─────────── plan ─────────── */
+.plan{display:grid;gap:12px}
+.step{
+  display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;
+}
+.step .day{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;color:var(--accent);
+  background:var(--accent-soft);border:1px solid var(--accent-line);
+  padding:5px 9px;border-radius:7px;white-space:nowrap;
+}
+.step h4{font-size:15.5px;font-weight:700;margin-bottom:6px}
+.step p{font-size:13.5px;color:var(--ink-2)}
+
+.fill{
+  background:var(--warn-bg);border:1px dashed var(--warn);
+  border-radius:var(--radius);padding:18px 20px;
+}
+.fill h4{font-size:14px;font-weight:700;color:var(--warn);margin-bottom:7px}
+.fill p{font-size:13.5px;color:var(--ink-2)}
+.fill ul{margin:9px 0 0;padding-left:18px;font-size:13.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:4px}
+
+/* ─────────── footer ─────────── */
+footer{
+  border-top:1px solid var(--line-soft);padding:36px 0 60px;
+  font-size:12.5px;color:var(--ink-3);line-height:1.6;
+}
+footer h4{font-size:12px;color:var(--ink-2);margin-bottom:8px;font-family:"IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;font-weight:500}
+footer ul{margin:0 0 20px;padding-left:17px;display:flex;flex-direction:column;gap:5px}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none !important;transition:none !important;scroll-behavior:auto !important}
+}
+html{scroll-behavior:smooth}
+
+@media print{
+  .topbar{display:none}
+  body{background:#fff;color:#000;font-size:11pt}
+  .board{page-break-inside:avoid;padding:22px 0}
+  .card,.stat,.job,.step,.quote,.hero-stat{box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <nav class="navchips">
+      <a href="#standing">Where Anjum stands</a>
+      <a href="#risk">The 4.9 problem</a>
+      <a href="#voice">What guests say</a>
+      <a href="#gaps">The gaps</a>
+      <a href="#record">Our record</a>
+      <a href="#how">How we run it</a>
+      <a href="#offer">The offer</a>
+    </nav>
+    <button class="themetoggle" id="tt" type="button">Theme</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="lockup">
+      <img class="logomark" src="data:image/jpeg;base64,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" alt="Joy Boy Agency">
+      <div class="lockup-txt">
+        <strong class="brandname">Joy Boy Agency</strong>
+        <span>Entertainment &amp; animation · Red Sea</span>
+      </div>
+      <span class="arrow">→</span>
+      <div class="lockup-txt">
+        <strong>SUNRISE Anjum Resort</strong>
+        <span>Ras Dory, Marsa Alam</span>
+      </div>
+    </div>
+
+    <h1>You are at 4.9. There is nothing left to win.</h1>
+
+    <p class="thesis">
+      Anjum sits at the top of the Marsa Alam rating table with a
+      <b>4.9 from 1,602 reviews</b>. From here the score cannot meaningfully go up — it can
+      only be defended. And in the ten most recent reviews, <b>entertainment is the single
+      most-mentioned subject</b> — and the named reason in two of the three reviews
+      that stopped short of five stars. That is where the score will be won or lost.
+      <b>Running that department properly is what Joy Boy does.</b>
+    </p>
+
+    <div class="meta-row">
+      <span class="tag hot">Prepared for 22 Aug 2026</span>
+      <span class="tag">TripAdvisor data pulled 21 Aug 2026</span>
+      <span class="tag">17-property Marsa Alam sample</span>
+    </div>
+  </header>
+
+  <!-- ══════════ STANDING ══════════ -->
+  <section class="board" id="standing">
+    <div class="board-head">
+      <span class="eyebrow">Position</span>
+      <h2>Where Anjum stands today</h2>
+      <p>
+        A mid-sized property at a premium price, carrying less social proof than the
+        hotels it is priced against. Around 203 keys is the number that sizes
+        everything below — the crew, the venues and the nightly audience.
+      </p>
+    </div>
+
+    <div class="grid g4" style="margin-bottom:14px">
+      <div class="stat">
+        <span class="k">~203</span>
+        <span class="lab">Rooms and suites</span>
+        <span class="sub">Roughly 400 guests a night at double occupancy — the audience the programme has to hold</span>
+      </div>
+      <div class="stat flag">
+        <span class="k">4.9</span>
+        <span class="lab">TripAdvisor bubble rating</span>
+        <span class="sub">Top tier in Marsa Alam</span>
+      </div>
+      <div class="stat">
+        <span class="k">1,602</span>
+        <span class="lab">Total reviews</span>
+        <span class="sub">Below the 4.9-cluster median of 1,779</span>
+      </div>
+      <div class="stat">
+        <span class="k">$222<small>–318</small></span>
+        <span class="lab">Nightly rate range</span>
+        <span class="sub">11% above the 4.9-cluster median of $200</span>
+      </div>
+      <div class="stat">
+        <span class="k">0</span>
+        <span class="lab">Travellers' Choice awards</span>
+        <span class="sub">None recorded for the current year</span>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="chart-title">Review volume across Marsa Alam's 4.9-rated properties</div>
+      <p class="chart-note" style="margin:5px 0 16px">
+        All eight hotels below show the same 4.9 badge. The badge is identical; the weight
+        behind it is not. Anjum ranks sixth of eight on review volume.
+      </p>
+      <div class="chart" role="img" aria-label="Horizontal bar chart of review counts for eight 4.9-rated Marsa Alam hotels. JAZ Costa Mares 3,500; JAZ Elite Maraya 2,724; Steigenberger Alaya 2,668; Casa Blue 1,862; JAZ Elite Amara 1,695; SUNRISE Anjum 1,602; Pickalbatros Villaggio Portofino 1,591; JAZ Elite Riviera 890.">
+        <div class="row"><span class="name">JAZ Costa Mares</span><div class="bartrack"><div class="bar" style="--w:100%"></div></div><span class="val">3,500</span></div>
+        <div class="row"><span class="name">JAZ Elite Maraya</span><div class="bartrack"><div class="bar" style="--w:77.8%"></div></div><span class="val">2,724</span></div>
+        <div class="row"><span class="name">Steigenberger Alaya</span><div class="bartrack"><div class="bar" style="--w:76.2%"></div></div><span class="val">2,668</span></div>
+        <div class="row"><span class="name">Casa Blue Beach</span><div class="bartrack"><div class="bar" style="--w:53.2%"></div></div><span class="val">1,862</span></div>
+        <div class="row"><span class="name">JAZ Elite Amara</span><div class="bartrack"><div class="bar" style="--w:48.4%"></div></div><span class="val">1,695</span></div>
+        <div class="row me"><span class="name">SUNRISE Anjum</span><div class="bartrack"><div class="bar" style="--w:45.8%"></div></div><span class="val">1,602</span></div>
+        <div class="row"><span class="name">Villaggio Portofino</span><div class="bartrack"><div class="bar" style="--w:45.5%"></div></div><span class="val">1,591</span></div>
+        <div class="row"><span class="name">JAZ Elite Riviera</span><div class="bartrack"><div class="bar" style="--w:25.4%"></div></div><span class="val">890</span></div>
+      </div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <div class="chart-title">Anjum's sub-ratings</div>
+        <p class="chart-note" style="margin:5px 0 18px">
+          Rooms, service and value are all excellent. Location is the outlier — and location
+          is the one thing nobody can fix. Ras Dory is remote, and guests feel it.
+          <b style="color:var(--ink)">What fills a remote resort's evening is the programme.</b>
+        </p>
+        <div class="chart" role="img" aria-label="Dot plot of Anjum sub-ratings on a 4.6 to 5.0 scale: Rooms 4.92, Service 4.91, Value 4.89, Cleanliness 4.89, Sleep quality 4.85, Location 4.69.">
+          <div class="dotrow"><span class="name">Rooms</span><div class="dottrack"><span class="dot" style="--x:79.2%"></span></div><span class="val">4.92</span></div>
+          <div class="dotrow"><span class="name">Service</span><div class="dottrack"><span class="dot" style="--x:78.6%"></span></div><span class="val">4.91</span></div>
+          <div class="dotrow"><span class="name">Value</span><div class="dottrack"><span class="dot" style="--x:72.7%"></span></div><span class="val">4.89</span></div>
+          <div class="dotrow"><span class="name">Cleanliness</span><div class="dottrack"><span class="dot" style="--x:71.4%"></span></div><span class="val">4.89</span></div>
+          <div class="dotrow"><span class="name">Sleep quality</span><div class="dottrack"><span class="dot" style="--x:62.7%"></span></div><span class="val">4.85</span></div>
+          <div class="dotrow"><span class="name">Location</span><div class="dottrack"><span class="dot low" style="--x:22.9%"></span></div><span class="val">4.69</span></div>
+          <div class="axis"><span></span><span class="ticks"><span>4.6</span><span>4.7</span><span>4.8</span><span>4.9</span><span>5.0</span></span><span class="spacer"></span></div>
+        </div>
+        <p class="chart-note" style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line-soft)">
+          Note what is missing from this list: <b style="color:var(--ink)">TripAdvisor has no
+          sub-rating for entertainment</b>. It does not disappear — it is absorbed into
+          <b style="color:var(--ink)">Service</b> and, above all, <b style="color:var(--ink)">Value</b>.
+          A guest with nothing to do after dinner does not mark down "entertainment";
+          they mark down what they got for $222.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="chart-title">Your nearest neighbour is 600 metres away</div>
+        <p class="chart-note" style="margin:5px 0 16px">
+          Sentido Reef Oasis Suakin sits on the same stretch of coast — same beach, same
+          reef, same airport transfer. A guest choosing between you is comparing two
+          near-identical settings at very different prices.
+        </p>
+        <div class="grid g2" style="gap:10px">
+          <div class="stat" style="border-color:var(--accent-line);background:var(--accent-soft)">
+            <span class="k" style="font-size:26px;color:var(--accent)">$222</span>
+            <span class="lab">SUNRISE Anjum</span>
+            <span class="sub">4.9 · 1,602 reviews</span>
+          </div>
+          <div class="stat">
+            <span class="k" style="font-size:26px">$162</span>
+            <span class="lab">Sentido Reef Oasis Suakin</span>
+            <span class="sub">4.8 · 1,418 reviews</span>
+          </div>
+        </div>
+        <p class="chart-note" style="margin-top:14px">
+          Anjum asks <b style="color:var(--ink)">37% more</b> for one tenth of a rating point.
+          That premium has to be felt somewhere the guest can name — and after dinner,
+          the only thing left to feel is the programme.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ RISK ══════════ -->
+  <section class="board" id="risk">
+    <div class="board-head">
+      <span class="eyebrow">The asymmetry</span>
+      <h2>A 4.9 is a liability, not a trophy</h2>
+      <p>
+        Rating movement at the top is one-directional. You cannot climb — 5.0 is
+        unreachable at this review volume — so every point of effort goes into not falling.
+      </p>
+    </div>
+
+    <div class="hero-stat" style="margin-bottom:14px">
+      <div class="num">21</div>
+      <div class="txt">
+        <h3>One-star reviews away from showing 4.8</h3>
+        <p>
+          At 1,602 reviews, as few as 21 one-star reviews pull the displayed score below
+          4.85 and the badge flips to 4.8. In a bad season that is a fortnight of
+          unattended evenings. The badge is what a guest filters on before they ever
+          read a word.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid g3">
+      <div class="stat">
+        <span class="k">21–42</span>
+        <span class="lab">Honest range for that threshold</span>
+        <span class="sub">A displayed 4.9 means a true average between 4.85 and 4.95. At the low end it takes 21 one-star reviews; at the high end, 42. Either way it is a countable number, not an abstraction.</span>
+      </div>
+      <div class="stat">
+        <span class="k">0</span>
+        <span class="lab">Realistic upside in the score</span>
+        <span class="sub">Displaying 5.0 would require a near-perfect average across 1,600+ reviews. No resort at this scale holds it. The score is a ceiling you defend.</span>
+      </div>
+      <div class="stat flag">
+        <span class="k">1</span>
+        <span class="lab">Prize actually still available</span>
+        <span class="sub">Travellers' Choice. Anjum has none recorded this year. It rewards sustained review quality and volume — exactly what a well-run evening programme produces.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ VOICE ══════════ -->
+  <section class="board" id="voice">
+    <div class="board-head">
+      <span class="eyebrow">Guest evidence</span>
+      <h2>Your guests are already reviewing the entertainment</h2>
+      <p>
+        You are reviewed on three platforms, not one, and they agree with each other.
+        The quotes below are from the ten most recent TripAdvisor reviews (12–19 August
+        2026), where entertainment is the most-mentioned subject — more than food, more than the beach, more
+        than the rooms. And of the three guests who stopped short of five stars, two named
+        entertainment as the reason. This is not us arguing that animation matters here.
+        It is your guests saying so.
+      </p>
+    </div>
+
+    <div class="grid g3" style="margin-bottom:18px">
+      <div class="stat">
+        <span class="k">4.9<small>/5</small></span>
+        <span class="lab">TripAdvisor</span>
+        <span class="sub">1,602 reviews · read directly, 21 Aug 2026</span>
+      </div>
+      <div class="stat">
+        <span class="k">5.7<small>/6</small></span>
+        <span class="lab">HolidayCheck · 97% recommend</span>
+        <span class="sub">451 reviews · the German-speaking market, which is a large part of your book</span>
+      </div>
+      <div class="stat">
+        <span class="k">9.4<small>–9.6/10</small></span>
+        <span class="lab">Booking.com</span>
+        <span class="sub">Review count varies by language filter, 384–698</span>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-bottom:14px">
+      <div class="quote bad">
+        <q>All of the service is kind, animators are good and speak in many languages but sometimes they are late for their programmes.</q>
+        <div class="who"><span class="stars">★★★★☆</span><span>14 Aug 2026</span><span class="pill warn">Punctuality</span></div>
+      </div>
+      <div class="quote bad">
+        <q>Food wise and kids entertainment wise they need to grow further now. Top 10 hotel in this area!</q>
+        <div class="who"><span class="stars">★★★★☆</span><span>12 Aug 2026</span><span class="pill warn">Kids programme</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="background:var(--raised)">
+          <p style="font-size:15px;color:var(--ink-2);line-height:1.55;max-width:78ch">
+            Read those two again. Neither guest disliked the team — both called the
+            animators good. They marked the hotel down for
+            <b style="color:var(--ink)">operations</b>: programmes starting late, and a
+            children's offer that has not caught up with the rest of the resort.
+            Those are management problems, and they are the two we are best at solving.
+          </p>
+          <p class="chart-note" style="margin-top:12px">
+            The remaining criticisms in the sample — construction noise, one room-cleaning
+            miss, extra charges, remoteness — sit outside an entertainment brief. We are
+            not claiming them.
+          </p>
+    </div>
+  </section>
+
+  <!-- ══════════ GAPS ══════════ -->
+  <section class="board" id="gaps">
+    <div class="board-head">
+      <span class="eyebrow">The work</span>
+      <h2>The gaps your guests have already named</h2>
+      <p>
+        Two are named in your most recent TripAdvisor reviews. Five more come from
+        HolidayCheck and Booking. None of them is about talent — every one is a
+        scheduling, staffing or volume decision, which is exactly what a managed
+        department fixes.
+      </p>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <span class="pill crit">Gap 01</span>
+        <h3 style="font-size:20px;font-weight:700;margin:12px 0 8px">Programmes start late</h3>
+        <p style="font-size:14.5px;color:var(--ink-2);margin-bottom:16px">
+          A guest who walks to the amphitheatre for a 21:00 show and waits until 21:20
+          writes a four-star review. It is the cheapest star on the board to win back.
+        </p>
+        <div style="border-top:1px solid var(--line-soft);padding-top:14px">
+          <span class="eyebrow">Our fix — running now at True Beach</span>
+          <p style="font-size:14px;color:var(--ink-2);margin-top:9px">
+            Late starts are a rostering failure before they are a discipline failure —
+            the show waits because the person who should have set the stage was never
+            named. We publish a weekly plan in which every event carries four hard times
+            before its start time: stage set by, costume and props checked by, soundcheck
+            by, and a <b style="color:var(--ink)">named person who owns the running
+            order</b>. Nothing goes on the plan without an owner, and we hold it with a
+            daily attendance register — <b style="color:var(--ink)">155 staff-days
+            logged at True Beach in July</b>, person by person.
+          </p>
+          <ul style="margin:12px 0 0;padding-left:17px;font-size:13.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:5px">
+            <li>Soundcheck with the act by <span class="mono">20:15</span></li>
+            <li>Costume and props check with cast by <span class="mono">20:30</span></li>
+            <li>Stage fully set and lit by <span class="mono">20:45</span></li>
+            <li>Running order owner confirmed before curtain</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="pill crit">Gap 02</span>
+        <h3 style="font-size:20px;font-weight:700;margin:12px 0 8px">Kids entertainment lags the resort</h3>
+        <p style="font-size:14.5px;color:var(--ink-2);margin-bottom:16px">
+          Anjum markets itself as a family resort. A guest called the kids offer the part
+          that "needs to grow further" — while praising everything else. Families book on
+          the children's programme and rebook on it.
+        </p>
+        <div style="border-top:1px solid var(--line-soft);padding-top:14px">
+          <span class="eyebrow">Our proposal — this one we would be building</span>
+          <p style="font-size:14px;color:var(--ink-2);margin-top:9px">
+            You already have the facilities — a miniclub for ages 3–12, a children's
+            pool and a mini disco. A guest still said kids entertainment needs to grow.
+            That is a delivery gap, not a building one, and HolidayCheck shows why: an
+            animator was pulled off the programme to babysit for one family. Straight
+            answer on our side — a dedicated children's line is not something we run
+            today, our record is an adult-evening record. What we bring is the rostering
+            that makes a <i>daily</i> kids programme actually happen, which is the part
+            that fails at most resorts.
+          </p>
+          <ul style="margin:12px 0 0;padding-left:17px;font-size:13.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:5px">
+            <li><b style="color:var(--ink)">Two staffed daytime kids sessions</b>, rostered by name like every other slot</li>
+            <li><b style="color:var(--ink)">Mini Disco</b> nightly, immediately before the main show</li>
+            <li><b style="color:var(--ink)">A weekly kids event</b> — costumed characters and activity stations</li>
+            <li>Family-facing daytime already in our rotation: foam, beach and pool parties</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px">
+      <span class="eyebrow">Five more, from HolidayCheck and Booking</span>
+      <h3 style="font-size:19px;font-weight:700;margin:10px 0 6px">The ones that never reach TripAdvisor</h3>
+      <p class="chart-note" style="margin-bottom:14px;max-width:76ch">
+        Reported by guests on the two platforms your European market actually books
+        through. Every one is an operating decision — none needs a bigger budget.
+      </p>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr><th>What guests report</th><th>Where</th><th>What we do about it</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Evening entertainment carries into the rooms</b><br><span style="color:var(--ink-3)">Guests near the venue report disturbance; some asked to move rooms</span></td>
+              <td class="num">Booking<br>TripAdvisor</td>
+              <td>Sound-level ceiling by venue and hour, agreed with you and held by the team. A show nobody can sleep through costs you the sleep-quality score, which is already your second weakest.</td>
+            </tr>
+            <tr>
+              <td><b>Pool-bar music too loud, too often</b><br><span style="color:var(--ink-3)">Music every couple of hours described as irritating; guests changed rooms over it</span></td>
+              <td class="num">Booking</td>
+              <td>Zone the resort: one energetic pool, one quiet pool, one quiet beach, published so guests can choose. Volume becomes a feature instead of a complaint.</td>
+            </tr>
+            <tr>
+              <td><b>Sessions cancelled mid-stay</b><br><span style="color:var(--ink-3)">A yoga slot dropped after the first few days</span></td>
+              <td class="num">HolidayCheck</td>
+              <td>Anything published runs, or it is never published. A guest who plans their week around a class and loses it writes a review; a guest who never saw it advertised does not.</td>
+            </tr>
+            <tr>
+              <td><b>Animators pulled off the programme</b><br><span style="color:var(--ink-3)">One taken away to babysit for a single family</span></td>
+              <td class="num">HolidayCheck</td>
+              <td>Named owner per slot and a cover name beside it. One family gets looked after and the other 200 guests still get their session — this is the same failure as the late starts.</td>
+            </tr>
+            <tr>
+              <td><b>Daytime thins out when the hotel is quiet</b><br><span style="color:var(--ink-3)">Reduced to boccia, volleyball, stretching and yoga; animation called less noticeable than previous years</span></td>
+              <td class="num">HolidayCheck</td>
+              <td>A low-occupancy programme that is smaller but never empty. Shoulder season is when a thin programme does the most damage, because that is when the review-per-guest ratio is highest.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="chart-note" style="margin-top:12px;max-width:76ch">
+        One more we are flagging without a fix, because it is your call rather than ours:
+        a Booking reviewer felt the programme was pitched at a particular group of guests
+        and that others were left out. Worth knowing before it becomes a theme.
+      </p>
+    </div>
+
+    <div class="card" style="margin-top:14px;background:var(--raised)">
+      <span class="eyebrow">The third thing, and it is free</span>
+      <h3 style="font-size:18px;font-weight:700;margin:10px 0 8px">Guests remember names, and names carry reviews</h3>
+      <p style="font-size:14.5px;color:var(--ink-2);max-width:72ch">
+        Look at what your reviewers wrote down: <b style="color:var(--ink)">Mahomed</b>
+        at the pool bar, <b style="color:var(--ink)">Ahmed</b> on towels,
+        <b style="color:var(--ink)">Sony</b> on service. Three names from the last ten
+        reviews — and not one of them from the evening programme, the part of the resort
+        a guest spends whole evenings with. A guest only writes a name when the same face
+        was there all week. Named
+        mentions are the strongest repeat-booking signal a resort gets — and they are a
+        product of roster continuity, which is a scheduling decision, not a budget one.
+        We schedule for it deliberately and we track attendance daily to hold it.
+      </p>
+    </div>
+  </section>
+
+  <!-- ══════════ RECORD ══════════ -->
+  <section class="board" id="record">
+    <div class="board-head">
+      <span class="eyebrow">Track record</span>
+      <h2>What we have been through</h2>
+      <p>
+        Two resorts — one of them in Anjum's own market, on the same coast. We would
+        rather show you two we can account for line by line than a longer list we cannot.
+        Every figure below comes from our own operating records.
+      </p>
+    </div>
+
+    <div class="grid g2 jobs">
+      <div class="job">
+        <div class="job-top">
+          <h3>True Beach Resort</h3>
+          <span class="when">Jul – Aug 2026 · current</span>
+        </div>
+        <p class="role">Entertainment team, shows calendar and roster</p>
+        <ul>
+          <li><b>24 show nights in July</b> across 31 days — 8 live singer, 5 oriental, 4 fire, 4 beach party, 3 dance show</li>
+          <li><b>Held through the season change:</b> 13 crew in July, 11 in August, with the programme running unbroken across the handover</li>
+          <li><b>Daily attendance register</b> per crew member with presence, day-off, vacation, half-day, sick-leave and absence codes, totalled monthly</li>
+          <li><b>Two resident DJs</b> kept on roster through the peak</li>
+          <li><b>Payroll run in two currencies</b> — 11 crew, salary, debits and net payable per person against one stated FX rate</li>
+        </ul>
+        <div class="jobstats">
+          <div><span class="n">268</span><span class="l">staff-days delivered<br>July + August to date</span></div>
+          <div><span class="n">24</span><span class="l">show nights<br>in July alone</span></div>
+          <div><span class="n">7</span><span class="l">peak crew<br>on duty per day</span></div>
+        </div>
+      </div>
+
+      <div class="job">
+        <div class="job-top">
+          <h3>Casa Blue Beach Resort</h3>
+          <span class="when">2024 · Marsa Alam</span>
+        </div>
+        <p class="role">Shows programme — we have already worked in your market</p>
+        <ul>
+          <li><b>115 show slots across May and June</b> — 54 then 61, a programme running most nights of the week</li>
+          <li><b>A repertoire, not a repeat:</b> Latin, Indian, Shaharzad, oriental, belly and fire, rotated so a two-week guest never saw the same night twice</li>
+          <li><b>Live instrumentalists on rotation</b> — violin, flute, sax, guitar, solo and duo singers</li>
+          <li>Marsa Alam, like Anjum. Same guest mix, same transfer times, same season shape.</li>
+        </ul>
+        <div class="jobstats">
+          <div><span class="n">4.9</span><span class="l">Casa Blue's rating today<br>(market context, not our claim)</span></div>
+          <div><span class="n">1,862</span><span class="l">reviews<br>at that property now</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════ HOW ══════════ -->
+  <section class="board" id="how">
+    <div class="board-head">
+      <span class="eyebrow">Operating model</span>
+      <h2>We run a department, not a troupe</h2>
+      <p>
+        The difference between animation that holds a 4.9 and animation that costs you one
+        is administrative. Here is what we actually keep.
+      </p>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>What we keep</th><th>What is in it</th><th>What it prevents</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Weekly action plan</b></td>
+            <td>Every event with date, venue, cast, setup deadline, costume-check time, soundcheck time and a named owner of the running order</td>
+            <td>Late starts. Missing props. "Who was supposed to run this?"</td>
+          </tr>
+          <tr>
+            <td><b>Daily attendance register</b></td>
+            <td>Per-person presence, day off, vacation, half day, sick leave and absence, totalled monthly</td>
+            <td>Thin nights. Roster gaps that guests notice before management does.</td>
+          </tr>
+          <tr>
+            <td><b>Payroll and debit control</b></td>
+            <td>Per-person salary in its own currency, debits and advances tracked, net payable computed against a single stated FX rate</td>
+            <td>Month-end disputes. Untracked advances. Budget drift.</td>
+          </tr>
+          <tr>
+            <td><b>Guest-facing programme</b></td>
+            <td>Published schedule, on a board and by QR code</td>
+            <td>Guests missing the thing you paid to stage.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid g4" style="margin-top:14px">
+      <div class="stat">
+        <span class="k">11</span>
+        <span class="lab">Crew on the last payroll run</span>
+        <span class="sub">Tracked individually, dual currency</span>
+      </div>
+      <div class="stat">
+        <span class="k">2</span>
+        <span class="lab">Currencies reconciled every run</span>
+        <span class="sub">Each line carried in EGP and USD against one stated rate, so nothing drifts between them</span>
+      </div>
+      <div class="stat">
+        <span class="k">100%</span>
+        <span class="lab">Of crew with a net-payable line</span>
+        <span class="sub">Salary, debits and balance per person</span>
+      </div>
+      <div class="stat">
+        <span class="k">Daily</span>
+        <span class="lab">Attendance recorded</span>
+        <span class="sub">Not weekly, not on memory</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ OFFER ══════════ -->
+  <section class="board" id="offer">
+    <div class="board-head">
+      <span class="eyebrow">Proposal</span>
+      <h2>What we are asking for</h2>
+      <p>
+        A season contract for the full entertainment department at Anjum, held to numbers
+        you can check on TripAdvisor yourself.
+      </p>
+    </div>
+
+    <div class="plan" style="margin-bottom:14px">
+      <div class="step">
+        <span class="day">Days 1–30</span>
+        <div>
+          <h4>Take the department over without changing what guests already like</h4>
+          <p>
+            Roster audit and attendance register live from day one. Weekly action plan
+            published with hard setup, costume and soundcheck times against every event.
+            Nothing guests currently enjoy is changed in month one — the first job is to
+            measure what is actually happening, not to reshape the programme.
+          </p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="day">Days 31–60</span>
+        <div>
+          <h4>Close the kids gap</h4>
+          <p>
+            Daily children's line introduced: two staffed daytime slots rostered by
+            name, nightly Mini Disco before the main show, and a weekly kids event with
+            costumed characters. This is the part we are building rather than
+            transplanting, so it is the part we would report on first.
+          </p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="day">Days 61–90</span>
+        <div>
+          <h4>Theme nights and a published programme</h4>
+          <p>
+            One headline theme night per week. Guest-facing programme
+            board and QR schedule live. First review-mention report delivered
+            against the day-one baseline.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <span class="eyebrow">Hold us to these</span>
+      <h3 style="font-size:19px;font-weight:700;margin:10px 0 16px">The numbers we will report on, monthly</h3>
+      <div class="tablewrap" style="border:none">
+        <table style="min-width:520px">
+          <thead><tr><th>Measure</th><th>Baseline today</th><th>Target</th></tr></thead>
+          <tbody>
+            <tr><td>Programmes starting on published time</td><td class="num">Not measured</td><td class="num">≥ 95%</td></tr>
+            <tr><td>Dedicated kids sessions per day</td><td class="num">Not published</td><td class="num">2 + nightly Mini Disco</td></tr>
+            <tr><td>Reviews marking the hotel down on entertainment</td><td class="num">2 of last 10</td><td class="num">0 of 10</td></tr>
+            <tr><td>Reviews naming an animator by name</td><td class="num">1 of last 10</td><td class="num">3 of 10</td></tr>
+            <tr><td>TripAdvisor bubble rating</td><td class="num">4.9</td><td class="num">Held at 4.9</td></tr>
+            <tr><td>Travellers' Choice</td><td class="num">None this year</td><td class="num">Won next cycle</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="fill">
+      <h4>⚑ Before the meeting — commercial terms to drop in</h4>
+      <p>
+        This dashboard was built from TripAdvisor data and Joy Boy's own operating records.
+        The commercial figures below were not available to it, so fill them from the True
+        Beach proposal before you present:
+      </p>
+      <ul>
+        <li>Monthly department fee, and what it includes</li>
+        <li>Crew headcount proposed for Anjum, by role</li>
+        <li>Contract length and notice period</li>
+        <li>What the hotel provides — accommodation, meals, transport, stage and sound</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <h4>Sources and honest limits</h4>
+    <ul>
+      <li><b>TripAdvisor figures</b> — SUNRISE Anjum Resort and the 17-property Marsa Alam comparison set, pulled 21 August 2026. Ratings, review counts, sub-ratings and rate ranges are as reported that day and will drift.</li>
+      <li><b>Guest quotes</b> — the ten most recent reviews available at pull time, dated 12–19 August 2026. This is a recent sample, not the full 1,602 reviews, so treat the seven-in-ten entertainment figure as indicative of current sentiment rather than a lifetime statistic.</li>
+      <li><b>Rating threshold maths</b> — a displayed 4.9 corresponds to a true average anywhere in 4.85–4.95. The 21-review figure assumes the low end of that band; 42 applies at the high end. Both are stated above.</li>
+      <li><b>HolidayCheck and Booking findings are second-hand, and weaker than the TripAdvisor evidence.</b> Both sites are blocked from the tool used to build this page, so their reviews were reached through search-engine summaries rather than read directly. That is why those five gaps are described as reported themes and are <b>not</b> shown as quotations — no wording on this page is presented as a verbatim HolidayCheck or Booking review. The platform scores (5.7/6 from 451 reviews; 9.4–9.6/10) come from the same summaries. Treat them as leads to verify, not as findings to quote at the hotel. Every quotation on this page is from the TripAdvisor pull.</li>
+      <li><b>Room count is third-party and approximate.</b> Listings report 202 and 203 for the same property, so it is shown as ~203. SUNRISE's own factsheet could not be retrieved to settle it. Of the categories published, 86 are Superior rooms and 14 are Family rooms with bunk beds; the rest of the mix is not broken out. Confirm the real figure with the hotel — they will know it, and it is worth asking in the room.</li>
+      <li><b>No official rank is claimed.</b> The "4.9 cluster" is drawn from our own 17-property sample, not TripAdvisor's published ranking of Marsa Alam hotels.</li>
+      <li><b>Casa Blue's current 4.9 is market context, not attribution.</b> Joy Boy ran its shows programme in 2024; we are not claiming credit for the property's rating today.</li>
+      <li><b>Joy Boy operating figures</b> — attendance registers, shows calendars, and payroll control sheet for True Beach Resort (Jul – Aug 2026) and Casa Blue Beach Resort (2024). These two resorts are Joy Boy's complete client record; nothing on this page is drawn from anywhere else.</li>
+    </ul>
+    <p>Joy Boy Agency · prepared 21 August 2026 for the SUNRISE Anjum Resort meeting, 22 August 2026.</p>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var b=document.getElementById("tt");
+  function cur(){
+    var e=document.documentElement.getAttribute("data-theme");
+    if(e) return e;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";
+  }
+  try{
+    var s=localStorage.getItem("anjum-theme");
+    if(s) document.documentElement.setAttribute("data-theme",s);
+  }catch(e){}
+  b.addEventListener("click",function(){
+    var n=cur()==="dark"?"light":"dark";
+    document.documentElement.setAttribute("data-theme",n);
+    try{localStorage.setItem("anjum-theme",n);}catch(e){}
+  });
+})();
+</script>
+</body>
+</html>
