@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://seifabas33-pixel.github.io/joyBoy-agency/</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>1.0</priority></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url><loc>https://seifabas33-pixel.github.io/joyBoy-agency/</loc><lastmod>2026-09-03</lastmod><changefreq>monthly</changefreq><priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://seifabas33-pixel.github.io/joyBoy-agency/"/><xhtml:link rel="alternate" hreflang="de" href="https://seifabas33-pixel.github.io/joyBoy-agency/de.html"/><xhtml:link rel="alternate" hreflang="it" href="https://seifabas33-pixel.github.io/joyBoy-agency/it.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://seifabas33-pixel.github.io/joyBoy-agency/"/></url>
+  <url><loc>https://seifabas33-pixel.github.io/joyBoy-agency/de.html</loc><lastmod>2026-09-03</lastmod><changefreq>monthly</changefreq><priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://seifabas33-pixel.github.io/joyBoy-agency/"/><xhtml:link rel="alternate" hreflang="de" href="https://seifabas33-pixel.github.io/joyBoy-agency/de.html"/><xhtml:link rel="alternate" hreflang="it" href="https://seifabas33-pixel.github.io/joyBoy-agency/it.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://seifabas33-pixel.github.io/joyBoy-agency/"/></url>
+  <url><loc>https://seifabas33-pixel.github.io/joyBoy-agency/it.html</loc><lastmod>2026-09-03</lastmod><changefreq>monthly</changefreq><priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://seifabas33-pixel.github.io/joyBoy-agency/"/><xhtml:link rel="alternate" hreflang="de" href="https://seifabas33-pixel.github.io/joyBoy-agency/de.html"/><xhtml:link rel="alternate" hreflang="it" href="https://seifabas33-pixel.github.io/joyBoy-agency/it.html"/><xhtml:link rel="alternate" hreflang="x-default" href="https://seifabas33-pixel.github.io/joyBoy-agency/"/></url>
   <url><loc>https://seifabas33-pixel.github.io/joyBoy-agency/legal.html</loc><lastmod>2026-09-02</lastmod><changefreq>yearly</changefreq><priority>0.2</priority></url>
 </urlset>
