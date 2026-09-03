@@ -12,7 +12,7 @@ account; the workflow in `.github/workflows/pages.yml` is dormant).
 | Live URL | Source on `main` |
 | --- | --- |
 | `/` (homepage) | `portfolio.html` |
-| `/anjum.html` | `anjum-dashboard.html` (noindex, historical pitch) |
+| `/anjum.html` | `anjum-dashboard.html` (noindex, historical pitch; carries a brand strip linking back to `/`) |
 | `/portfolio.html` | tiny redirect to `/` (old shared link) |
 | `/de.html`, `/it.html` | generated from `portfolio.html` by `scratchpad/i18n.py` (dictionaries DE/IT inside; rerun after any English copy change; keep the script copy in `tools/i18n.py`) |
 | `/legal.html`, `/404.html`, `/robots.txt`, `/sitemap.xml` | same-named files |
@@ -72,7 +72,7 @@ the pre-launch checklist below. Preloader with the logo must always show
 17. Accessibility → skip link, landmarks, aria-labels, focus management in the lightbox, reduced-motion support, contrast
 18. Test forms → no forms; WhatsApp/tel/mailto links must be checked
 19. Broken links → run the link check (anchors, media, external) before deploy
-20. Performance → HTML ~100 KB, images as lazy files with width/height; hero video 4.9 MB is the heaviest asset
+20. Performance → HTML ~105 KB, images as lazy files with width/height; hero video trimmed to a 36 s loop at 432px/24fps (1.9 MB, from 4.9 MB); reels stay preload=none
 
 Open items the owner knows about: Actions billing block; sensitive figures in
 old git history (needs repo recreation); no analytics; custom domain not bought.
