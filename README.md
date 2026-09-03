@@ -10,14 +10,16 @@ animation management for Red Sea resorts.
 | `anjum-dashboard.html` | Pitch dashboard for the SUNRISE Anjum Resort meeting, 22 Aug 2026 |
 | `anjum-proposal.html` | The Anjum proposal as sent — kept as the record, no longer deployed |
 | `proposal-template.html` | Reusable proposal template for the next hotel |
-| `portfolio.html` | The agency portfolio — no prices, sendable to any client |
+| `portfolio.html` | The agency portfolio (English source) — no prices, sendable to any client |
+| `de.html`, `it.html` | German and Italian versions, **generated** from `portfolio.html` — edit the English page, then re-run the generator (see below) |
 | `media/` | Show reels, the hero showreel (MP4) and `media/img/` — photos, posters, logo, favicons, social image |
 | `legal.html`, `404.html`, `robots.txt`, `sitemap.xml` | Privacy & terms, custom not-found page, crawler files |
 | `CLAUDE.md` | Project memory for Claude: deploy steps, hard rules, design direction, the 20-point launch checklist |
 
 ## Live
 
-- Portfolio (homepage): **https://seifabas33-pixel.github.io/joyBoy-agency/**
+- Portfolio (homepage, English): **https://seifabas33-pixel.github.io/joyBoy-agency/**
+- German: **https://seifabas33-pixel.github.io/joyBoy-agency/de.html** · Italian: **https://seifabas33-pixel.github.io/joyBoy-agency/it.html** (switcher in the top bar; hreflang-linked)
 - Anjum dashboard: **https://seifabas33-pixel.github.io/joyBoy-agency/anjum.html**
 - `/portfolio.html` still works — it redirects to the homepage.
 - Privacy & terms: **https://seifabas33-pixel.github.io/joyBoy-agency/legal.html**
@@ -47,6 +49,14 @@ rebuilds the site automatically within a minute.
 kept but currently inactive because Actions runs are blocked at the account
 level (check https://github.com/settings/billing). Once Actions works again,
 the Pages source can be switched back to "GitHub Actions".
+
+## Updating the German and Italian pages
+
+`de.html` and `it.html` are generated from `portfolio.html` by a translation
+dictionary (one entry per English text fragment). After changing English copy,
+add the new fragments to the dictionary and regenerate both files; guest
+quotes stay in English on purpose (verbatim from TripAdvisor). The generator
+lives with Claude's session tooling — ask Claude to "regenerate de/it".
 
 ## Making a proposal for a new hotel
 

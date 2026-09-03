@@ -14,11 +14,12 @@ account; the workflow in `.github/workflows/pages.yml` is dormant).
 | `/` (homepage) | `portfolio.html` |
 | `/anjum.html` | `anjum-dashboard.html` (noindex, historical pitch) |
 | `/portfolio.html` | tiny redirect to `/` (old shared link) |
+| `/de.html`, `/it.html` | generated from `portfolio.html` by `scratchpad/i18n.py` (dictionaries DE/IT inside; rerun after any English copy change; keep the script copy in `tools/i18n.py`) |
 | `/legal.html`, `/404.html`, `/robots.txt`, `/sitemap.xml` | same-named files |
 | `/media/**` | `media/` (videos) and `media/img/` (photos, posters, icons) |
 
 Deploy = commit on `main`, then on `gh-pages`: `git show main:portfolio.html >
-index.html`, copy the other files, commit, push. Pushes sometimes stall through
+index.html`, copy `de.html`, `it.html` and the other files, commit, push. Pushes sometimes stall through
 the proxy: use `timeout 50 git push` with retries. Always verify
 `git diff --quiet main:portfolio.html origin/gh-pages:index.html`.
 
@@ -34,6 +35,8 @@ the proxy: use `timeout 50 git push` with retries. Always verify
   +20 100 157 0273 / seifabas33@gmail.com, joyboyentertainmentagency@gmail.com,
   Instagram @joyboyentertainment. No crew personal details, no contracts.
 - Clients must not be able to edit anything (no contenteditable).
+- Languages: EN (source) / DE / IT. Any English copy change must be mirrored
+  in the DE/IT dictionaries and both files regenerated before deploy.
 - Verify visually with headless Chromium before deploying; block Google Fonts
   in test shots (`--host-resolver-rules`) or the run hangs.
 
