@@ -110,7 +110,7 @@ DE = {
 "Mr. Seif Abas":"Herr Seif Abas","Co-founder":"Mitgründer","Company":"Unternehmen","@joyboyentertainment on Instagram":"@joyboyentertainment auf Instagram",
 "animation management for Red Sea resorts":"Animationsmanagement für Resorts am Roten Meer","one resident team, one accountable department, seven nights a week.":"ein festes Team, eine verantwortliche Abteilung, sieben Abende pro Woche.",
 "Explore":"Entdecken","Agency portfolio":"Agentur-Portfolio","rates quoted per resort on request":"Preise pro Resort auf Anfrage","Privacy":"Datenschutz","Terms":"Nutzungsbedingungen",
-"Back to top":"Nach oben","Image viewer":"Bildansicht","Close":"Schließen",
+"Back to top":"Nach oben","Image viewer":"Bildansicht","Close":"Schließen","Language":"Sprache","Open menu":"Menü öffnen","Close menu":"Menü schließen","Sections":"Bereiche",
 }
 IT = {
 "animation for Red Sea resorts":"animazione per i resort del Mar Rosso",
@@ -220,7 +220,7 @@ IT = {
 "Mr. Seif Abas":"Sig. Seif Abas","Co-founder":"Co-fondatore","Company":"Azienda","@joyboyentertainment on Instagram":"@joyboyentertainment su Instagram",
 "animation management for Red Sea resorts":"gestione dell'animazione per i resort del Mar Rosso","one resident team, one accountable department, seven nights a week.":"un unico team residente, un unico reparto responsabile, sette sere a settimana.",
 "Explore":"Esplora","Agency portfolio":"Portfolio dell'agenzia","rates quoted per resort on request":"tariffe per resort su richiesta","Privacy":"Privacy","Terms":"Termini",
-"Back to top":"Torna su","Image viewer":"Visualizzatore immagini","Close":"Chiudi",
+"Back to top":"Torna su","Image viewer":"Visualizzatore immagini","Close":"Chiudi","Language":"Lingua","Open menu":"Apri il menu","Close menu":"Chiudi il menu","Sections":"Sezioni",
 }
 ORG_DESC = {"de":"Entertainment- und Animationsmanagement für Resorts am Roten Meer: Abendshows, Tagesprogramm, Kinderprogramm und Live-Musik, geliefert von einem festen Team.",
             "it":"Gestione dell'intrattenimento e dell'animazione per i resort del Mar Rosso: show serali, programma diurno, programma bambini e musica dal vivo, con un unico team residente."}
@@ -241,7 +241,7 @@ def translate(src, D, lang):
                     if not re.search(r'(name="description"|property="og:(title|description)")', p): return m.group(0)
                 nv = D.get(html.unescape(v).strip())
                 return f'{k}="{html.escape(nv, quote=True)}"' if nv else m.group(0)
-            p = re.sub(r'\b(alt|aria-label|data-cap|content)="([^"]*)"', attr, p)
+            p = re.sub(r'\b(alt|aria-label|data-cap|data-close-label|content)="([^"]*)"', attr, p)
             out.append(p); continue
         if skip or not p.strip(): out.append(p); continue
         pieces = re.split(r'(&[#\w]+;)', p)
@@ -260,8 +260,10 @@ def translate(src, D, lang):
     s = re.sub(r'<meta property="og:locale" content="[^"]*">\n', '', s)
     s = s.replace('<meta property="og:type" content="website">', f'<meta property="og:type" content="website">\n<meta property="og:locale" content="{LOCALE[lang]}">', 1)
     # switcher state
-    s = re.sub(r'<a href="\./" lang="en" hreflang="en" class="on">EN</a>', '<a href="./" lang="en" hreflang="en">EN</a>', s)
-    s = s.replace(f'<a href="{lang}.html" lang="{lang}" hreflang="{lang}">{lang.upper()}</a>', f'<a href="{lang}.html" lang="{lang}" hreflang="{lang}" class="on" aria-current="page">{lang.upper()}</a>')
+    s = s.replace('<span class="cur">EN</span>', f'<span class="cur">{lang.upper()}</span>', 1)
+    s = s.replace('<a href="./" lang="en" hreflang="en" class="on">English</a>', '<a href="./" lang="en" hreflang="en">English</a>', 1)
+    name = {"de":"Deutsch","it":"Italiano"}[lang]
+    s = s.replace(f'<a href="{lang}.html" lang="{lang}" hreflang="{lang}">{name}</a>', f'<a href="{lang}.html" lang="{lang}" hreflang="{lang}" class="on" aria-current="page">{name}</a>', 1)
     # structured data: translate org description, rebuild FAQ from the translated markup
     m = re.search(r'<script type="application/ld\+json">(.*?)</script>', s, re.S); ld = json.loads(m.group(1))
     ld[0]["description"] = ORG_DESC[lang]; ld[0]["url"] = SITE + f"{lang}.html"
