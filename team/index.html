@@ -23,6 +23,7 @@
 <main class="wrap narrow">
   <div class="banner demo" id="demo-banner" hidden><span>⚠️</span><span><b>Demo mode.</b> The portal is not connected to Firebase yet, so nothing you enter leaves this browser. Once the connection keys are pasted in <code>firebase-config.js</code>, this banner disappears and sign-in becomes real Google sign-in.</span></div>
   <div class="banner error" id="err" role="alert" hidden></div>
+  <div class="banner office" id="admin-hint" hidden><span>🗝️</span><span><b>Office account.</b> You are signed in as an admin. <a class="btn small" href="admin.html" style="margin-left:6px">Open the roster</a></span></div>
 
   <!-- ── signed out ── -->
   <section id="s-auth" hidden>
@@ -52,7 +53,7 @@
         <div class="grid">
           <div class="full photo">
             <div class="pv" id="pv"><span>Your photo</span></div>
-            <div class="f" id="f-photo"><label class="btn ghost small filebtn">Choose photo <input type="file" id="photo" accept="image/*"></label><p class="hint">A clear face photo, like a passport picture. Any size — we compress it on your phone before saving.</p><p class="err" id="e-photo">Please add a profile photo.</p></div>
+            <div class="f" id="f-photo"><label class="btn ghost small filebtn">Choose a photo from your gallery <input type="file" id="photo" accept="image/*"></label><p class="hint">Pick any clear photo of your face from your phone — a normal picture is fine, no studio shot needed. Any size: we shrink it on your phone before saving.</p><p class="err" id="e-photo">Please add a profile photo.</p></div>
           </div>
           <label class="f full"><span>Full name <b class="req">*</b></span><input class="in" id="fullName" autocomplete="name" placeholder="As in your passport"><span class="err">Enter your full name.</span></label>
           <label class="f"><span>Preferred / stage name</span><input class="in" id="preferredName" placeholder="What guests call you"></label>
@@ -155,7 +156,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness } from "./portal.js";
+import { initBackend, DEMO, isAdminEmail, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness } from "./portal.js";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -217,8 +218,9 @@ $("next").addEventListener("click", () => { if (validate(step)){ step++; paint()
 $("back").addEventListener("click", () => { step = Math.max(1, step - 1); paint(); });
 document.querySelectorAll(".in, input[type=radio], input[type=checkbox]").forEach(el => el.addEventListener("input", () => { const f = el.closest(".f"); f && f.classList.remove("bad"); }));
 document.addEventListener("change", e => { if (e.target.name === "payMethod") document.querySelectorAll(".pay-extra").forEach(x => x.classList.toggle("on", x.dataset.pay === e.target.value)); });
-$("photo").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { photoBlob = await shrinkToFit(f, 700, .82, 260000); $("pv").innerHTML = `<img src="${URL.createObjectURL(photoBlob)}" alt="">`; $("pv").classList.add("has"); $("f-photo").classList.remove("bad"); } catch { toast("That file is not an image"); } });
-$("idScan").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { scanBlob = await shrinkToFit(f, 1400, .78, 560000); $("docpv").src = URL.createObjectURL(scanBlob); $("docpv").classList.add("has"); } catch { toast("That file is not an image"); } });
+$("photo").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { photoBlob = await shrinkToFit(f, 700, .82, 260000); $("pv").innerHTML = `<img src="${URL.createObjectURL(photoBlob)}" alt="">`; $("pv").classList.add("has"); $("f-photo").classList.remove("bad"); } catch (ex) { toast(photoErr(ex)); } });
+$("idScan").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { scanBlob = await shrinkToFit(f, 1400, .78, 560000); $("docpv").src = URL.createObjectURL(scanBlob); $("docpv").classList.add("has"); } catch (ex) { toast(photoErr(ex)); } });
+function photoErr(ex){ const m = String(ex && ex.message || ""); if (/too detailed/.test(m)) return m; return "We could not read this photo on this browser. Please choose a JPG or PNG (a screenshot of the photo also works)."; }
 
 // collect
 const val = id => $(id).value.trim();
@@ -282,7 +284,7 @@ try {
   $("signin").addEventListener("click", async () => { const b = $("signin"); b.disabled = true; err(""); try { await be.signIn(); } catch (ex) { err(ex.message || String(ex)); } finally { b.disabled = false; } });
   $("signout").addEventListener("click", () => be.signOut());
   be.onUser(async u => {
-    user = u; show("who", !!u); resetForm(); profile = null;
+    user = u; show("who", !!u); resetForm(); profile = null; show("admin-hint", !!u && isAdminEmail(u.email));
     if (!u){ show("s-auth", true); show("s-form", false); show("s-profile", false); return; }
     $("who-name").textContent = u.name || u.email; $("who-img").src = u.photo || "../media/img/logo.jpg";
     if (!u.verified){ err("Your Google account email is not verified. Verify it with Google and sign in again."); return; }
