@@ -12,7 +12,7 @@ service cloud.firestore {
       ];
     }
     function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
-    function adminOnlyFields() { return ['status', 'adminNotes', 'reviewedBy', 'reviewedAt']; }
+    function adminOnlyFields() { return ['status', 'adminNotes', 'reviewedBy', 'reviewedAt', 'hotelId']; }
     // Optional image references written by the employee must point at their own files.
     function pathsOk(uid) {
       return (!('photoPath' in request.resource.data) || request.resource.data.photoPath == uid + '/avatar.jpg')
@@ -37,7 +37,7 @@ service cloud.firestore {
         && request.resource.data.email == request.auth.token.email
         && request.resource.data.uid == uid
         && request.resource.data.status == 'pending'
-        && !request.resource.data.keys().hasAny(['adminNotes', 'reviewedBy', 'reviewedAt'])
+        && !request.resource.data.keys().hasAny(['adminNotes', 'reviewedBy', 'reviewedAt', 'hotelId'])
         && request.resource.data.fullName is string && request.resource.data.fullName.size() >= 3
         && request.resource.data.consentAt is string
         && pathsOk(uid)
@@ -64,6 +64,42 @@ service cloud.firestore {
       match /private/{doc} {
         allow read, write: if isAdmin();
       }
+    }
+
+    // ── Hotels: where the teams work. Staff read them (for check-in), admins manage them. ──
+    match /hotels/{hotelId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // ── Attendance: one document per person and day, id = uid_YYYY-MM-DD. ──
+    // The employee can only create today's record for themselves, from inside the hotel's radius,
+    // and only if they are approved and assigned to that hotel. The time is stamped by the server.
+    function approvedAt(uid, hotelId) {
+      let e = get(/databases/$(database)/documents/employees/$(uid)).data;
+      return e.status == 'approved' && e.hotelId == hotelId;
+    }
+    function insideFence(d) {
+      let h = get(/databases/$(database)/documents/hotels/$(d.hotelId)).data;
+      let dx = (d.lng - h.lng) * h.cosLat * 111320.0;
+      let dy = (d.lat - h.lat) * 110540.0;
+      return d.lat is number && d.lng is number && h.active == true
+        && dx * dx + dy * dy <= h.radiusM * h.radiusM;
+    }
+    match /attendance/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if isAdmin() || (isOwner(request.resource.data.uid)
+        && id == request.auth.uid + '_' + request.resource.data.date
+        && request.resource.data.date.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+        && request.resource.data.checkInAt == request.time
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'hotelId', 'hotelName', 'date', 'checkInAt', 'lat', 'lng', 'accuracy', 'distM'])
+        && approvedAt(request.auth.uid, request.resource.data.hotelId)
+        && insideFence(request.resource.data));
+      allow update: if isAdmin() || (isOwner(resource.data.uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checkOutAt'])
+        && !('checkOutAt' in resource.data)
+        && request.resource.data.checkOutAt == request.time);
+      allow delete: if isAdmin();
     }
 
     match /{document=**} { allow read, write: if false; }

@@ -47,7 +47,21 @@ async function firebaseBackend(){
     deleteEmployee: async uid => { for (const f of ["avatar.jpg", "id.jpg"]) { try { await F.deleteDoc(F.doc(db, "employees", uid, "files", f)); } catch {} } try { await F.deleteDoc(F.doc(db, "employees", uid, "private", "notes")); } catch {} await F.deleteDoc(F.doc(db, "employees", uid)); },
     getSettings: async () => { const s = await F.getDoc(F.doc(db, "settings", "registration")); return s.exists() ? s.data() : {}; },
     setSettings: patch => F.setDoc(F.doc(db, "settings", "registration"), patch, { merge: true }),
+    // hotels (any signed-in user reads; admins write)
+    listHotels: async () => { const s = await F.getDocs(F.collection(db, "hotels")); return s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.name).localeCompare(String(b.name))); },
+    getHotel: async id => { if (!id) return null; const s = await F.getDoc(F.doc(db, "hotels", id)); return s.exists() ? { id: s.id, ...s.data() } : null; },
+    saveHotel: async (id, data) => { const ref = id ? F.doc(db, "hotels", id) : F.doc(F.collection(db, "hotels")); await F.setDoc(ref, { ...data, updatedAt: ts() }, { merge: true }); return ref.id; },
+    deleteHotel: id => F.deleteDoc(F.doc(db, "hotels", id)),
+    // attendance: one document per person and day, id = uid_YYYY-MM-DD; the server stamps the time
+    checkIn: async rec => { const id = `${rec.uid}_${rec.date}`; await F.setDoc(F.doc(db, "attendance", id), { ...rec, checkInAt: ts() }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); },
+    checkOut: async (uid, date) => { const id = `${uid}_${date}`; await F.updateDoc(F.doc(db, "attendance", id), { checkOutAt: ts() }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); },
+    myAttendance: async (uid, from) => { const s = await F.getDocs(F.query(F.collection(db, "attendance"), F.where("uid", "==", uid))); return s.docs.map(att).filter(r => !from || r.date >= from).sort((a, b) => b.date.localeCompare(a.date)); },
+    attendanceOn: async date => { const s = await F.getDocs(F.query(F.collection(db, "attendance"), F.where("date", "==", date))); return s.docs.map(att); },
+    attendanceRange: async (from, to) => { const s = await F.getDocs(F.query(F.collection(db, "attendance"), F.where("date", ">=", from), F.where("date", "<=", to))); return s.docs.map(att).sort((a, b) => a.date.localeCompare(b.date)); },
+    setAttendance: (id, patch) => F.setDoc(F.doc(db, "attendance", id), { ...patch, reviewedAt: ts() }, { merge: true }),
+    deleteAttendance: id => F.deleteDoc(F.doc(db, "attendance", id)),
   };
+  function att(snap){ const d = snap.data() || {}; for (const k of ["checkInAt","checkOutAt","reviewedAt"]) if (d[k] && d[k].toDate) d[k] = d[k].toDate().toISOString(); return { id: snap.id, ...d }; }
 }
 
 /* ─────────────── Demo (localStorage) ─────────────── */
@@ -61,7 +75,9 @@ function demoBackend(){
     { uid: "demo-1", email: "demo.animator1@gmail.com", status: "approved", fullName: "Demo Animator One", preferredName: "Demo 1", gender: "Female", dob: "1998-05-14", nationality: "Egypt", languages: ["Arabic","English","German"], phone: "+20 100 000 0001", city: "Hurghada", skills: ["Dancer","Kids club","MC / host"], experienceYears: 4, payMethod: "InstaPay", availableFrom: "2026-10-01", contractPref: "Full season", tshirt: "S", createdAt: now(), updatedAt: now() },
     { uid: "demo-2", email: "demo.animator2@gmail.com", status: "pending", fullName: "Demo Animator Two", preferredName: "Demo 2", gender: "Male", dob: "1995-11-02", nationality: "Italy", languages: ["Italian","English"], phone: "+39 300 000 0002", city: "Marsa Alam", skills: ["DJ","Fitness & aqua gym","Light show"], experienceYears: 7, payMethod: "Bank transfer", availableFrom: "2026-11-15", contractPref: "Monthly", tshirt: "L", createdAt: now(), updatedAt: now() },
     { uid: "demo-3", email: "demo.animator3@gmail.com", status: "pending", fullName: "Demo Animator Three", preferredName: "Demo 3", gender: "Male", dob: "2001-02-20", nationality: "Egypt", languages: ["Arabic","English","Russian"], phone: "+20 100 000 0003", city: "Cairo", skills: ["Fire show","Dancer","Sports"], experienceYears: 2, payMethod: "Mobile wallet", availableFrom: "2026-10-10", contractPref: "Events only", tshirt: "M", createdAt: now(), updatedAt: now() }];
-    demo.forEach(d => set("emp-" + d.uid, d)); set("emps", demo.map(d => d.uid)); set("settings", { inviteCode: "JOYBOY" }); set("seeded", true); };
+    demo.forEach(d => set("emp-" + d.uid, d)); set("emps", demo.map(d => d.uid)); set("settings", { inviteCode: "JOYBOY" });
+    set("hotels", { "demo-hotel": { name: "Demo Beach Resort", city: "Marsa Alam", lat: 25.0676, lng: 34.8934, cosLat: Math.cos(25.0676 * Math.PI / 180), radiusM: 300, shiftStart: "09:00", graceMin: 10, active: true } });
+    set("emp-demo-1", { ...get("emp-demo-1"), hotelId: "demo-hotel" }); set("att", {}); set("seeded", true); };
   seed();
   return {
     mode: "demo",
@@ -81,6 +97,17 @@ function demoBackend(){
     deleteEmployee: async uid => { ["emp-" + uid, "notes-" + uid, "img-" + uid + "-avatar.jpg", "img-" + uid + "-id.jpg"].forEach(k => localStorage.removeItem(K + k)); set("emps", (get("emps") || []).filter(x => x !== uid)); },
     getSettings: async () => get("settings") || {},
     setSettings: async patch => set("settings", { ...(get("settings") || {}), ...patch }),
+    listHotels: async () => Object.entries(get("hotels") || {}).map(([id, h]) => ({ id, ...h })).sort((a, b) => String(a.name).localeCompare(String(b.name))),
+    getHotel: async id => { const h = (get("hotels") || {})[id]; return h ? { id, ...h } : null; },
+    saveHotel: async (id, data) => { const hs = get("hotels") || {}; id = id || "h" + Date.now(); hs[id] = { ...(hs[id] || {}), ...data, updatedAt: now() }; set("hotels", hs); return id; },
+    deleteHotel: async id => { const hs = get("hotels") || {}; delete hs[id]; set("hotels", hs); },
+    checkIn: async rec => { const a = get("att") || {}; const id = `${rec.uid}_${rec.date}`; if (a[id]) throw new Error("Already checked in today"); a[id] = { ...rec, checkInAt: now() }; set("att", a); return { id, ...a[id] }; },
+    checkOut: async (uid, date) => { const a = get("att") || {}; const id = `${uid}_${date}`; if (!a[id]) throw new Error("No check-in today"); a[id].checkOutAt = now(); set("att", a); return { id, ...a[id] }; },
+    myAttendance: async (uid, from) => Object.entries(get("att") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.uid === uid && (!from || r.date >= from)).sort((a, b) => b.date.localeCompare(a.date)),
+    attendanceOn: async date => Object.entries(get("att") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date === date),
+    attendanceRange: async (from, to) => Object.entries(get("att") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date >= from && r.date <= to).sort((a, b) => a.date.localeCompare(b.date)),
+    setAttendance: async (id, patch) => { const a = get("att") || {}; a[id] = { ...(a[id] || {}), ...patch, reviewedAt: now() }; set("att", a); },
+    deleteAttendance: async id => { const a = get("att") || {}; delete a[id]; set("att", a); },
   };
 }
 
@@ -107,3 +134,35 @@ export function toast(msg){ let t = document.querySelector(".toast"); if (!t){ t
 export function waNumber(phone){ let d = String(phone || "").replace(/\D/g, ""); if (!d) return ""; if (d.startsWith("00")) d = d.slice(2); else if (d.startsWith("0") && d.length === 11) d = "20" + d.slice(1); return d.length >= 8 ? d : ""; }
 export const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 export function completeness(p){ const keys = ["photoPath","fullName","gender","dob","nationality","phone","city","emergencyName","emergencyPhone","idType","idNumber","idExpiry","idScanPath","payMethod","skills","experienceYears","availableFrom","contractPref","tshirt","languages"]; const n = keys.filter(k => { const v = p[k]; return Array.isArray(v) ? v.length : (v !== undefined && v !== null && v !== ""); }).length; return Math.round(100 * n / keys.length); }
+
+/* ─────────────── attendance helpers (shared by employee page, admin page and the Sheets script) ─────────────── */
+export const TZ = "Africa/Cairo";
+/** YYYY-MM-DD in Egypt time. */
+export function dayKey(d = new Date()){ return new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(d)); }
+/** HH:MM in Egypt time. */
+export function hhmm(d){ if (!d) return ""; return new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(d)); }
+export function addDays(key, n){ const d = new Date(key + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+export const toMin = t => { const m = /^(\d{1,2}):(\d{2})$/.exec(String(t || "").trim()); return m ? (+m[1]) * 60 + (+m[2]) : null; };
+/** Metres between two points (haversine). */
+export function distanceM(lat1, lng1, lat2, lng2){ const R = 6371000, r = Math.PI / 180, dLat = (lat2 - lat1) * r, dLng = (lng2 - lng1) * r; const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(dLng / 2) ** 2; return Math.round(2 * R * Math.asin(Math.sqrt(a))); }
+/** Accepts "25.0676, 34.8934", a Google Maps link (…@25.06,34.89,17z or ?q=25.06,34.89 or !3d25.06!4d34.89) → {lat,lng} or null. */
+export function parseLatLng(text){
+  const t = String(text || "").trim(); if (!t) return null;
+  const pats = [/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/, /[?&](?:q|query|ll|center|destination)=(-?\d{1,2}\.\d+),\s*(-?\d{1,3}\.\d+)/, /!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/, /^(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)$/];
+  for (const re of pats){ const m = re.exec(t); if (m){ const lat = +m[1], lng = +m[2]; if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return { lat, lng }; } }
+  return null;
+}
+export const ATT_LABEL = { present: "Present", "half-day": "Half day", absent: "Absent", excused: "Excused", off: "Day off", pending: "Not yet" };
+/**
+ * Status of one day. Automatic rule: checked in by shift start + grace → present; later → half day; no check-in → absent
+ * (or "pending" while the shift has not started yet today). An admin override wins.
+ */
+export function attStatus(rec, hotel, today = dayKey()){
+  const start = toMin(hotel && hotel.shiftStart) ?? 9 * 60, grace = hotel && hotel.graceMin != null ? +hotel.graceMin : 10;
+  if (rec && rec.override) return { code: rec.override, lateMin: rec.checkInAt ? Math.max(0, toMin(hhmm(rec.checkInAt)) - start) : null, auto: false };
+  if (rec && rec.checkInAt){ const late = toMin(hhmm(rec.checkInAt)) - start; return { code: late <= grace ? "present" : "half-day", lateMin: Math.max(0, late), auto: true }; }
+  const date = rec ? rec.date : today;
+  if (date > today) return { code: "pending", lateMin: null, auto: true };
+  if (date === today && toMin(hhmm(new Date())) <= start + grace) return { code: "pending", lateMin: null, auto: true };
+  return { code: "absent", lateMin: null, auto: true };
+}

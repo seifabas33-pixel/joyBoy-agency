@@ -55,6 +55,8 @@ firestore.rules — keep the two lists identical (four accounts as of 2026-09-06
 into git, screenshots, or chat logs**; demo data is clearly fake. Portal is
 noindex (not robots-blocked, so the tag is honoured); privacy policy has a staff section. Entry for everyone: homepage menu → Join the team → `/team/`; admins get an Open-the-roster banner there; admin page has Share invite (link + code).
 
+**Hotels + attendance (2026-09-06)**: `hotels/{id}` (name, city, lat, lng, cosLat, radiusM, shiftStart "HH:MM", graceMin, active; read signed-in, write admin), employee `hotelId` is admin-only, `attendance/{uid}_{YYYY-MM-DD}` (uid, email, name, hotelId, hotelName, date, checkInAt = server time, lat, lng, accuracy, distM, optional checkOutAt, admin `override` present/half-day/absent/excused/off + overrideBy). Rules enforce approved+assigned, geofence (equirectangular with cosLat), first check-in per day, checkOutAt once. Status rule lives in `portal.js attStatus` and is mirrored in `tools/sheets-sync.gs` (Apps Script that pulls Firestore via REST with the owner's OAuth token into the owner's Google Sheet, tabs "Attendance (portal)" / "Hotels (portal)"). Times are Africa/Cairo. Admin page tabs: Roster / Attendance (day view, overrides, month CSV) / Hotels (editor, paste Maps link or coordinates).
+
 ## Design direction the owner chose
 
 Bold & playful: deep-aubergine dark base (light theme optional), saturated

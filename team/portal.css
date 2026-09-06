@@ -183,3 +183,29 @@ footer.small a{color:var(--ink-2)}
 .seg input:focus-visible+span,.filebtn:focus-within{outline:2px solid var(--yellow);outline-offset:2px}
 .kv span,.pcard p,td .who small,.lb figcaption{overflow-wrap:anywhere}
 .toolbar .in{font-size:15px}
+
+/* attendance */
+.card.att{margin-bottom:14px;border-color:rgba(34,227,192,.35)}
+.att-now{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:10px}
+.att-line{font-size:14.5px;color:var(--ink-2)}
+.status.att-present{color:#9DF2E0;border-color:rgba(34,227,192,.5);background:rgba(34,227,192,.1)}
+.status.att-half-day{color:#FFE97A;border-color:rgba(255,214,10,.5);background:rgba(255,214,10,.1)}
+.status.att-absent{color:#FFB3A3;border-color:rgba(255,77,46,.5);background:rgba(255,77,46,.1)}
+.status.att-excused,.status.att-off{color:#D9CCFF;border-color:rgba(139,92,246,.5);background:rgba(139,92,246,.12)}
+.status.att-pending{color:var(--ink-3);border-color:var(--line-2);background:transparent}
+details.hist{margin-top:12px}
+details.hist summary{cursor:pointer;font-size:13px;color:var(--ink-2)}
+table.mini{min-width:0;font-size:13px;margin-top:8px}
+table.mini td{padding:7px 8px}
+/* admin tabs + hotel cards */
+.tabs{display:flex;gap:6px;margin:6px 0 18px;flex-wrap:wrap}
+.tabs button{background:transparent;border:1px solid var(--line-2);color:var(--ink-2);border-radius:99px;padding:9px 16px;font-weight:600;font-size:13.5px;cursor:pointer}
+.tabs button.on{background:var(--yellow);color:var(--dark);border-color:var(--yellow)}
+.hotels{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:18px}
+.hotel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;cursor:pointer;transition:border-color .2s}
+.hotel:hover,.hotel.on{border-color:var(--yellow)}
+.hotel h3{font-size:18px;font-weight:800}
+.hotel p{font-size:13px;color:var(--ink-3);margin-top:4px}
+.hotel .n{display:inline-block;margin-top:10px;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#9DF2E0}
+.hotel.inactive{opacity:.55}
+select.in.tiny{padding:6px 28px 6px 10px;font-size:13px;min-width:0;width:auto}
