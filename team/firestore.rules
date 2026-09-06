@@ -37,6 +37,18 @@ service cloud.firestore {
           && !request.resource.data.diff(resource.data).affectedKeys().hasAny(adminOnlyFields().concat(['email', 'uid', 'inviteCodeUsed', 'createdAt'])))
         || isAdmin();
       allow delete: if isAdmin();
+
+      // Profile photo and document scan, stored as data URLs (avatar.jpg / id.jpg).
+      match /files/{file} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow create, update: if isOwner(uid)
+          && file in ['avatar.jpg', 'id.jpg']
+          && request.resource.data.data is string
+          && request.resource.data.data.size() < 1000000
+          && request.resource.data.type is string
+          && request.resource.data.type.matches('image/.*');
+        allow delete: if isOwner(uid) || isAdmin();
+      }
     }
 
     match /{document=**} { allow read, write: if false; }

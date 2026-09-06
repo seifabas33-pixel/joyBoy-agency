@@ -19,8 +19,11 @@ nothing saved beyond the visitor's own browser).
    location `eur3 (europe-west)` → Enable.
    Then **Rules** tab → replace everything with the contents of
    `team/firestore.rules` → Publish.
-5. **Build → Storage → Get started** → production mode → same location.
-   Then **Rules** tab → paste `team/storage.rules` → Publish.
+5. ~~Storage~~ — **not needed.** New projects require the paid Blaze plan for
+   Storage, so photos and document scans are saved inside Firestore
+   (`employees/{uid}/files/avatar.jpg|id.jpg`, compressed on the phone to
+   stay well under the 1 MB document limit). `storage.rules` is kept only for
+   reference.
 6. Firestore → **Start collection** `settings` → document id `registration` →
    field `inviteCode` (string) = the code you will give staff, e.g. `JOYBOY2026`.
    (Only admins can read it; the rules check it on every registration. You can
@@ -30,9 +33,8 @@ nothing saved beyond the visitor's own browser).
 
 ## 2. Connect the site
 - Paste the values into `team/firebase-config.js` (the six fields).
-- Add Mr. Moaz's Gmail to the admin list in **three** places:
-  `team/firebase-config.js`, `team/firestore.rules`, `team/storage.rules`
-  (then re-publish both rules in the console).
+- Add Mr. Moaz's Gmail to the admin list in **two** places:
+  `team/firebase-config.js` and `team/firestore.rules` (then re-publish the rules).
 - Deploy as usual (copy `team/` to `gh-pages`).
 
 ## 3. Test
@@ -44,17 +46,17 @@ nothing saved beyond the visitor's own browser).
 | Data | Employee | Admins |
 | --- | --- | --- |
 | Name, gender, DOB, nationality, phone, city, languages, skills, availability | own | all |
-| ID/passport number, expiry, document photo | own | all |
+| ID/passport number, expiry, document photo (Firestore `files/id.jpg`) | own | all |
 | Payment method and account details | own | all |
 | Status, admin notes | read | write |
 
 Everything is protected by the security rules above; the config keys in
-`firebase-config.js` are public identifiers by design. The free Firebase tier
-covers this comfortably (thousands of profiles, GBs of photos).
+`firebase-config.js` are public identifiers by design. The free Firestore tier
+(1 GiB stored, 50k reads/day) covers a few hundred staff with photos.
 
 ## Legal
 Egypt's Personal Data Protection Law applies to this data. The form collects
 explicit consent, the privacy policy at `/legal.html#privacy` describes the
 processing, and employees can ask for correction or deletion (admins delete
-the document and the two files in Storage). Keep exports (CSV) off shared
+the employee document and its `files` subcollection). Keep exports (CSV) off shared
 drives and delete them after use.

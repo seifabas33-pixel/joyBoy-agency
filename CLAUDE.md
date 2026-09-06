@@ -43,16 +43,15 @@ the proxy: use `timeout 50 git push` with retries. Always verify
 
 ## Team portal (staff app) — `team/`
 
-Static pages on Pages + **Firebase** (Google sign-in, Firestore, Storage). Files:
+Static pages on Pages + **Firebase** (Google sign-in, Firestore; NO Storage — Blaze-only on new projects, images are data URLs in `employees/{uid}/files/{avatar.jpg|id.jpg}`, `photoThumb` 128px in the main doc). Files:
 `team/index.html` (register/edit profile, 5 steps), `team/admin.html` (roster,
 approve/reject, notes, CSV, invite code), `team/portal.js` (backend layer,
 demo mode when `firebase-config.js` still has PASTE placeholders),
 `team/firestore.rules` + `team/storage.rules` (paste into the console),
 `team/README.md` (setup). Data model: `employees/{uid}` (status pending/
 approved/rejected, admin-only fields status/adminNotes/reviewedBy/reviewedAt),
-`settings/registration.inviteCode` (rules enforce it on create), Storage
-`profiles/{uid}/avatar.jpg|id.jpg`. Admin emails are hard-coded in config AND
-both rules files — keep the three lists identical. **Personal data never goes
+`settings/registration.inviteCode` (rules enforce it on create, value JOYBOY2026 set 2026-09-06). Admin emails are hard-coded in config AND
+firestore.rules — keep the two lists identical. Project: joy-boy-agency (Spark/free plan). **Personal data never goes
 into git, screenshots, or chat logs**; demo data is clearly fake. Portal is
 noindex and robots-disallowed; privacy policy has a staff section.
 
