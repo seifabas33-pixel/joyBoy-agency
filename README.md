@@ -13,7 +13,7 @@ animation management for Red Sea resorts.
 | `portfolio.html` | The agency portfolio (English source) — no prices, sendable to any client |
 | `de.html`, `it.html` | German and Italian versions, **generated** from `portfolio.html` — edit the English page, then re-run the generator (see below) |
 | `team/` | Staff portal: Google sign-in registration + admin roster on Firebase (setup in `team/README.md`) |
-| `media/` | Show reels, the hero showreel (MP4) and `media/img/` — photos, posters, logo, favicons, social image |
+| `media/` | Show reels (MP4) and `media/img/` — photos, posters, logo, favicons, social image |
 | `legal.html`, `404.html`, `robots.txt`, `sitemap.xml` | Privacy & terms, custom not-found page, crawler files |
 | `CLAUDE.md` | Project memory for Claude: deploy steps, hard rules, design direction, the 20-point launch checklist |
 
@@ -35,8 +35,8 @@ Mr. Moaz on WhatsApp. Sections: the agency, how we work (five-step timeline),
 awards, what guests wrote (verbatim TripAdvisor reviews of True Beach Resort,
 Aug 2026), the reels, the gallery and what we offer.
 It has a dark and a light theme (sun/moon toggle),
-a branded preloader, the showreel as the hero background with a fan of
-photo cards spreading above the headline, a newspaper-style masthead for
+a branded preloader, a spotlight hero (a drifting wall of programme photos lit
+where the pointer goes, with a rotating headline word), a newspaper-style masthead for
 the Our work section, a lightbox and custom play buttons on the reels; all images are files under
 `media/img/` (the HTML itself is ~76 KB).
 

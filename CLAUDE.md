@@ -63,7 +63,7 @@ Bold & playful: deep-aubergine dark base (light theme optional), saturated
 palette (coral #FF4D2E, yellow #FFD60A, pink #FF2D8A, violet #8B5CF6, aqua
 #22E3C0), Bricolage Grotesque headlines at hero scale, colour-block cards,
 energetic motion (overshoot reveals, wiggling sticker, pulsing play buttons),
-video hero with a fan of photo cards, newspaper masthead for "Our work".
+spotlight hero (a tilted, drifting wall of programme photos under a dark stage, lit by a spotlight that follows the pointer or roams on its own; headline "We run the night." with a rotating word; ticket-shaped badge), newspaper masthead for "Our work". The earlier background video (`media/hero.mp4`) was removed on 2026-09-07 at the owner's request.
 Reference reels the owner shared: hero-section styles (Gallery / Masthead) and
 the pre-launch checklist below. Preloader with the logo must always show
 (including under reduced motion). Everything must work on phones.
@@ -89,7 +89,7 @@ the pre-launch checklist below. Preloader with the logo must always show
 17. Accessibility → skip link, landmarks, aria-labels, focus management in the lightbox, reduced-motion support, contrast
 18. Test forms → no forms; WhatsApp/tel/mailto links must be checked
 19. Broken links → run the link check (anchors, media, external) before deploy
-20. Performance → HTML ~105 KB, images as lazy files with width/height; hero video trimmed to a 36 s loop at 432px/24fps (1.9 MB, from 4.9 MB); reels stay preload=none
+20. Performance → HTML ~105 KB, images as lazy files with width/height; no hero video any more (the spotlight wall reuses the gallery/poster JPGs already on the page); reels stay preload=none
 
 Open items the owner knows about: Actions billing block; sensitive figures in
 old git history (needs repo recreation); no analytics; custom domain not bought.
