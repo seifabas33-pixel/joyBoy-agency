@@ -50,10 +50,12 @@ function syncAttendance(){
   const from = Utilities.formatDate(new Date(Date.now() - DAYS_BACK * 864e5), TZ, "yyyy-MM-dd"), today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd");
   const recs = fetchAll("attendance").map(d => ({ id: d.id, ...d.f })).filter(r => r.date >= from);
   const byHotel = Object.fromEntries(hotels.map(h => [h.id, h]));
+  const firstDay = {}; recs.forEach(r => { if (!firstDay[r.uid] || r.date < firstDay[r.uid]) firstDay[r.uid] = r.date; });
+  employees.forEach(e => { const reg = String(e.createdAt || "").slice(0, 10); if (reg && (!firstDay[e.uid] || reg < firstDay[e.uid])) firstDay[e.uid] = reg; });
   const rows = [];
   for (let d = from; d <= today; d = addDays(d, 1)){
     const dayRecs = recs.filter(r => r.date === d);
-    const people = employees.filter(e => e.status === "approved" && e.hotelId).map(e => ({ e, r: dayRecs.find(r => r.uid === e.uid) || null, hotelId: e.hotelId }));
+    const people = employees.filter(e => e.status === "approved" && e.hotelId && (!firstDay[e.uid] || d >= firstDay[e.uid])).map(e => ({ e, r: dayRecs.find(r => r.uid === e.uid) || null, hotelId: e.hotelId }));
     dayRecs.forEach(r => { if (!people.some(x => x.e.uid === r.uid)) people.push({ e: { fullName: r.name, email: r.email }, r, hotelId: r.hotelId }); });
     people.forEach(x => { const h = byHotel[x.hotelId] || {}; const st = status(x.r, h, d, today);
       rows.push([d, x.e.fullName || "", x.e.email || "", h.name || x.hotelId || "", x.r && x.r.checkInAt ? hhmm(x.r.checkInAt) : "", x.r && x.r.checkOutAt ? hhmm(x.r.checkOutAt) : "", st.label, st.lateMin == null ? "" : st.lateMin, x.r && x.r.distM != null ? x.r.distM : "", x.r && x.r.override ? x.r.override : "", x.r && x.r.overrideBy ? x.r.overrideBy : ""]); });
