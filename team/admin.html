@@ -217,7 +217,7 @@ $("a-refresh").addEventListener("click", loadAtt);
 async function loadAtt(){ try { attRecs = await be.attendanceOn(attDay); } catch (ex) { attRecs = []; toast("Could not load attendance: " + (ex.message || ex)); } paintAtt(); }
 function attRows(day, recs){
   // every approved person with a hotel gets a row, plus anyone who has a record that day
-  const staff = all.filter(p => p.status === "approved" && p.hotelId);
+  const staff = all.filter(p => p.status === "approved" && p.hotelId && day >= String(p.createdAt || "").slice(0, 10));
   const rows = staff.map(p => ({ p, r: recs.find(r => r.uid === p.uid) || null, hotelId: p.hotelId }));
   recs.forEach(r => { if (!rows.some(x => x.p.uid === r.uid)) rows.push({ p: all.find(p => p.uid === r.uid) || { uid: r.uid, fullName: r.name, email: r.email }, r, hotelId: r.hotelId }); });
   return rows.map(x => ({ ...x, hotel: hotels.find(h => h.id === x.hotelId) || {}, st: attStatus(x.r || { date: day }, hotels.find(h => h.id === x.hotelId) || {}) }));
