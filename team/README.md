@@ -25,7 +25,9 @@ nothing saved beyond the visitor's own browser).
    stay well under the 1 MB document limit). `storage.rules` is kept only for
    reference.
 6. Firestore → **Start collection** `settings` → document id `registration` →
-   field `inviteCode` (string) = the code you will give staff, e.g. `JOYBOY2026`.
+   field `inviteCode` (string) = a **random** code of at least 8 letters/digits that you
+   will give staff (never reuse an example from any document; change it after each
+   recruiting wave from the admin page).
    (Only admins can read it; the rules check it on every registration. You can
    also change it later from the admin page.)
 7. **Project settings (gear) → General → Your apps → Web (</>)** → nickname
@@ -48,7 +50,8 @@ nothing saved beyond the visitor's own browser).
 | Name, gender, DOB, nationality, phone, city, languages, skills, availability | own | all |
 | ID/passport number, expiry, document photo (Firestore `files/id.jpg`) | own | all |
 | Payment method and account details | own | all |
-| Status, admin notes | read | write |
+| Status | read | write |
+| Office notes (`employees/{uid}/private/notes`) | no access | read/write |
 
 Everything is protected by the security rules above; the config keys in
 `firebase-config.js` are public identifiers by design. The free Firestore tier
@@ -56,7 +59,9 @@ Everything is protected by the security rules above; the config keys in
 
 ## Legal
 Egypt's Personal Data Protection Law applies to this data. The form collects
-explicit consent, the privacy policy at `/legal.html#privacy` describes the
-processing, and employees can ask for correction or deletion (admins delete
-the employee document and its `files` subcollection). Keep exports (CSV) off shared
-drives and delete them after use.
+explicit consent (including for optional medical notes), the privacy policy at
+`/legal.html#privacy` describes the processing, and employees can ask for
+correction or deletion: the admin page has **Delete profile…** which removes the
+profile, both images and the office notes. The Google sign-in record itself
+holds only the email address; remove it under Authentication → Users if asked.
+Keep CSV exports off shared drives and delete them after use.

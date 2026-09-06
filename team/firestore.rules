@@ -12,6 +12,13 @@ service cloud.firestore {
     }
     function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
     function adminOnlyFields() { return ['status', 'adminNotes', 'reviewedBy', 'reviewedAt']; }
+    // Optional image references written by the employee must point at their own files.
+    function pathsOk(uid) {
+      return (!('photoPath' in request.resource.data) || request.resource.data.photoPath == uid + '/avatar.jpg')
+        && (!('idScanPath' in request.resource.data) || request.resource.data.idScanPath == uid + '/id.jpg')
+        && (!('photoThumb' in request.resource.data) || (request.resource.data.photoThumb is string && request.resource.data.photoThumb.size() < 40000 && request.resource.data.photoThumb.matches('data:image/.*')))
+        && !('photoUrl' in request.resource.data);
+    }
     function inviteOk() {
       return exists(/databases/$(database)/documents/settings/registration)
         && request.resource.data.inviteCodeUsed == get(/databases/$(database)/documents/settings/registration).data.inviteCode;
@@ -32,9 +39,11 @@ service cloud.firestore {
         && !request.resource.data.keys().hasAny(['adminNotes', 'reviewedBy', 'reviewedAt'])
         && request.resource.data.fullName is string && request.resource.data.fullName.size() >= 3
         && request.resource.data.consentAt is string
+        && pathsOk(uid)
         && inviteOk();
       allow update: if (isOwner(uid)
-          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(adminOnlyFields().concat(['email', 'uid', 'inviteCodeUsed', 'createdAt'])))
+          && pathsOk(uid)
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(adminOnlyFields().concat(['email', 'uid', 'inviteCodeUsed', 'consentAt', 'createdAt'])))
         || isAdmin();
       allow delete: if isAdmin();
 
@@ -48,6 +57,11 @@ service cloud.firestore {
           && request.resource.data.type is string
           && request.resource.data.type.matches('image/.*');
         allow delete: if isOwner(uid) || isAdmin();
+      }
+
+      // Office notes: admins only. The employee cannot read or list this.
+      match /private/{doc} {
+        allow read, write: if isAdmin();
       }
     }
 

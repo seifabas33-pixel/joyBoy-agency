@@ -22,7 +22,7 @@
 
 <main class="wrap narrow">
   <div class="banner demo" id="demo-banner" hidden><span>⚠️</span><span><b>Demo mode.</b> The portal is not connected to Firebase yet, so nothing you enter leaves this browser. Once the connection keys are pasted in <code>firebase-config.js</code>, this banner disappears and sign-in becomes real Google sign-in.</span></div>
-  <div class="banner error" id="err" hidden></div>
+  <div class="banner error" id="err" role="alert" hidden></div>
 
   <!-- ── signed out ── -->
   <section id="s-auth" hidden>
@@ -44,7 +44,7 @@
       <h1 style="font-size:clamp(30px,5vw,44px)">Your <em>profile</em></h1>
     </div>
     <div class="card">
-      <div class="steps" id="steps"></div><p class="stepnow" id="stepnow"></p>
+      <div class="steps" id="steps"></div><p class="stepnow" id="stepnow" aria-live="polite"></p>
       <form id="form" novalidate>
 
       <div class="step on" data-step="1">
@@ -52,12 +52,12 @@
         <div class="grid">
           <div class="full photo">
             <div class="pv" id="pv"><span>Your photo</span></div>
-            <div class="f" id="f-photo"><label class="btn ghost small filebtn">Choose photo <input type="file" id="photo" accept="image/*" capture="user"></label><p class="hint">A clear face photo, like a passport picture. Any size — we compress it on your phone before saving.</p><p class="err" id="e-photo">Please add a profile photo.</p></div>
+            <div class="f" id="f-photo"><label class="btn ghost small filebtn">Choose photo <input type="file" id="photo" accept="image/*"></label><p class="hint">A clear face photo, like a passport picture. Any size — we compress it on your phone before saving.</p><p class="err" id="e-photo">Please add a profile photo.</p></div>
           </div>
           <label class="f full"><span>Full name <b class="req">*</b></span><input class="in" id="fullName" autocomplete="name" placeholder="As in your passport"><span class="err">Enter your full name.</span></label>
           <label class="f"><span>Preferred / stage name</span><input class="in" id="preferredName" placeholder="What guests call you"></label>
-          <label class="f"><span>Date of birth <b class="req">*</b></span><input class="in" type="date" id="dob" max="2010-12-31"><span class="err">You must be at least 18.</span></label>
-          <div class="f full" id="f-gender"><span>Gender <b class="req">*</b></span><div class="seg"><label><input type="radio" name="gender" value="Male"><span>Male</span></label><label><input type="radio" name="gender" value="Female"><span>Female</span></label></div><span class="err">Please choose.</span></div>
+          <label class="f"><span>Date of birth <b class="req">*</b></span><input class="in" type="date" id="dob"><span class="err">You must be at least 18.</span></label>
+          <div class="f full" id="f-gender"><span>Gender <b class="req">*</b></span><div class="seg" role="radiogroup" aria-label="Gender"><label><input type="radio" name="gender" value="Male"><span>Male</span></label><label><input type="radio" name="gender" value="Female"><span>Female</span></label></div><span class="err">Please choose.</span></div>
           <label class="f"><span>Nationality <b class="req">*</b></span><select class="in" id="nationality"></select><span class="err">Choose your nationality.</span></label>
           <label class="f"><span>Current city <b class="req">*</b></span><input class="in" id="city" placeholder="Hurghada, Cairo, Rome…"><span class="err">Where are you based now?</span></label>
           <label class="f full"><span>WhatsApp number <b class="req">*</b></span><input class="in" type="tel" id="phone" inputmode="tel" placeholder="+20 1XX XXX XXXX"><span class="err">Enter a valid number with country code.</span></label>
@@ -74,7 +74,7 @@
           <div class="f full" id="f-idType"><span>Document <b class="req">*</b></span><div class="seg"><label><input type="radio" name="idType" value="National ID"><span>Egyptian national ID</span></label><label><input type="radio" name="idType" value="Passport"><span>Passport</span></label></div><span class="err">Please choose.</span></div>
           <label class="f"><span>Document number <b class="req">*</b></span><input class="in mono" id="idNumber" inputmode="text" autocomplete="off"><span class="err" id="e-idnum">Enter a valid number (national ID: 14 digits).</span></label>
           <label class="f"><span>Expiry date <b class="req">*</b></span><input class="in" type="date" id="idExpiry"><span class="err">Must be a future date.</span></label>
-          <div class="full"><label class="btn ghost small filebtn">Upload a photo of the document <input type="file" id="idScan" accept="image/*" capture="environment"></label><p class="hint" style="margin-top:8px">Optional now, required before your first contract. Front side, all corners visible.</p><img class="docpv" id="docpv" alt="Document preview"></div>
+          <div class="full"><label class="btn ghost small filebtn">Upload a photo of the document <input type="file" id="idScan" accept="image/*"></label><p class="hint" style="margin-top:8px">Optional now, required before your first contract. Front side, all corners visible.</p><img class="docpv" id="docpv" alt="Document preview"></div>
         </div>
       </div>
 
@@ -119,7 +119,7 @@
           <div class="f full" id="f-relocate"><span>Can you live at the resort for the season? <b class="req">*</b></span><div class="seg"><label><input type="radio" name="relocate" value="Yes"><span>Yes</span></label><label><input type="radio" name="relocate" value="No"><span>No</span></label></div><span class="err">Please choose.</span></div>
           <label class="f full"><span>Medical notes or allergies (optional)</span><textarea class="in" id="medical" placeholder="Only what the team leader should know in an emergency"></textarea></label>
           <label class="f full" id="f-invite"><span>Invite code from the office <b class="req">*</b></span><input class="in mono" id="inviteCode" autocomplete="off" placeholder="Ask Mr. Moaz or Mr. Seif"><span class="err">The code is required to register.</span></label>
-          <div class="full f" id="f-consent"><label class="consent"><input type="checkbox" id="consent"><span>I confirm this information is true and I agree that Joy Boy Agency stores it and uses it only for staffing, contracts, hotel security passes and payroll. I can ask for it to be corrected or deleted at any time (<a href="../legal.html#privacy" target="_blank">privacy policy</a>).</span></label><span class="err">Please confirm.</span></div>
+          <div class="full f" id="f-consent"><label class="consent"><input type="checkbox" id="consent"><span>I confirm this information is true and I agree that Joy Boy Agency stores it and uses it only for staffing, contracts, hotel security passes and payroll. Medical notes are optional and, if I give them, may be shared with my team leader for my safety. I can ask for my data to be corrected or deleted at any time (<a href="../legal.html#privacy" target="_blank">privacy policy</a>).</span></label><span class="err">Please confirm.</span></div>
         </div>
       </div>
 
@@ -154,6 +154,7 @@
 <footer class="small">Joy Boy Agency · Team portal · Questions? <a href="https://wa.me/201021281660">WhatsApp Mr. Moaz</a> · <a href="../legal.html#privacy">Privacy</a></footer>
 
 <script type="module">
+if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
 import { initBackend, DEMO, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness } from "./portal.js";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
@@ -164,6 +165,8 @@ $("langs").innerHTML = LANGS.map(l => `<label class="chip"><input type="checkbox
 $("skills").innerHTML = SKILLS.map(s => `<label class="chip"><input type="checkbox" name="skills" value="${s}"><span>${s}</span></label>`).join("");
 $("payseg").innerHTML = PAY.map(p => `<label><input type="radio" name="payMethod" value="${p}"><span>${p}</span></label>`).join("");
 const STEPS = ["About you","Document","Payment","Skills","Availability"];
+{ const t = new Date(), iso = d => d.toISOString().slice(0, 10); $("dob").max = iso(new Date(t.getFullYear() - 18, t.getMonth(), t.getDate())); $("dob").min = iso(new Date(t.getFullYear() - 70, t.getMonth(), t.getDate())); $("idExpiry").min = iso(t); $("availableFrom").min = iso(new Date(t.getFullYear() - 1, t.getMonth(), t.getDate())); }
+if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.style.scrollBehavior = "auto";
 let step = 1, user = null, profile = null, be = null, photoBlob = null, scanBlob = null;
 const paint = () => { $("stepnow").textContent = `Step ${step} of ${STEPS.length} · ${STEPS[step - 1]}`; $("steps").innerHTML = STEPS.map((s, i) => `<span class="${i + 1 < step ? "done" : i + 1 === step ? "cur" : ""}"><b>${i + 1}. ${s}</b></span>`).join(""); document.querySelectorAll(".step").forEach(el => el.classList.toggle("on", +el.dataset.step === step)); $("back").style.visibility = step === 1 ? "hidden" : "visible"; show("next", step < 5); show("submit", step === 5); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
@@ -205,7 +208,7 @@ function validate(s){
     ok &= bad($("availableFrom"), !v("availableFrom")); ok &= bad($("tshirt"), !v("tshirt"));
     ok &= bad($("f-contract"), !radio("contractPref")); ok &= bad($("f-relocate"), !radio("relocate"));
     if (!profile) ok &= bad($("f-invite"), !v("inviteCode"));
-    ok &= bad($("f-consent"), !$("consent").checked);
+    if (!profile) ok &= bad($("f-consent"), !$("consent").checked);
   }
   if (!ok){ const first = document.querySelector(".step.on .bad"); first && first.scrollIntoView({ behavior: "smooth", block: "center" }); }
   return !!ok;
@@ -214,7 +217,7 @@ $("next").addEventListener("click", () => { if (validate(step)){ step++; paint()
 $("back").addEventListener("click", () => { step = Math.max(1, step - 1); paint(); });
 document.querySelectorAll(".in, input[type=radio], input[type=checkbox]").forEach(el => el.addEventListener("input", () => { const f = el.closest(".f"); f && f.classList.remove("bad"); }));
 document.addEventListener("change", e => { if (e.target.name === "payMethod") document.querySelectorAll(".pay-extra").forEach(x => x.classList.toggle("on", x.dataset.pay === e.target.value)); });
-$("photo").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; if (f.size > 5 * 1024 * 1024) return toast("Photo is larger than 5 MB"); try { photoBlob = await shrinkToFit(f, 700, .82, 260000); $("pv").innerHTML = `<img src="${URL.createObjectURL(photoBlob)}" alt="">`; $("pv").classList.add("has"); $("f-photo").classList.remove("bad"); } catch { toast("That file is not an image"); } });
+$("photo").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { photoBlob = await shrinkToFit(f, 700, .82, 260000); $("pv").innerHTML = `<img src="${URL.createObjectURL(photoBlob)}" alt="">`; $("pv").classList.add("has"); $("f-photo").classList.remove("bad"); } catch { toast("That file is not an image"); } });
 $("idScan").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { scanBlob = await shrinkToFit(f, 1400, .78, 560000); $("docpv").src = URL.createObjectURL(scanBlob); $("docpv").classList.add("has"); } catch { toast("That file is not an image"); } });
 
 // collect
@@ -225,7 +228,7 @@ function collect(){
     payMethod: radio("payMethod"), bankName: val("bankName"), accountName: val("accountName"), iban: val("iban"), instapay: val("instapay"), walletProvider: val("walletProvider"), walletNumber: val("walletNumber"), payNotes: val("payNotes"),
     skills: checks("skills"), instruments: val("instruments"), experienceYears: +val("experienceYears") || 0, previousWork: val("previousWork"), showreelUrl: val("showreelUrl"), specialTalents: val("specialTalents"),
     availableFrom: val("availableFrom"), tshirt: val("tshirt"), contractPref: radio("contractPref"), relocate: radio("relocate"), medical: val("medical"),
-    consentAt: new Date().toISOString(), googleName: user.name };
+    googleName: user.name };
 }
 function fill(p){
   const set = (id, v) => { if ($(id)) $(id).value = v ?? ""; };
@@ -235,17 +238,21 @@ function fill(p){
   (p.languages || []).forEach(v => { const el = document.querySelector(`input[name="languages"][value="${v}"]`); if (el) el.checked = true; });
   (p.skills || []).forEach(v => { const el = document.querySelector(`input[name="skills"][value="${v}"]`); if (el) el.checked = true; });
   const existing = p.photoThumb || p.photoUrl; if (existing){ $("pv").innerHTML = `<img src="${esc(existing)}" alt="">`; $("pv").classList.add("has"); }
-  show("f-invite", false); $("consent").checked = true;
+  show("f-invite", false); show("f-consent", false);
+  if (p.idScanPath){ be.imageUrl(p.idScanPath).then(u => { if (u){ $("docpv").src = u; $("docpv").classList.add("has"); } }).catch(() => {}); }
 }
+function resetForm(){ $("form").reset(); photoBlob = scanBlob = null; $("pv").innerHTML = "<span>Your photo</span>"; $("pv").classList.remove("has"); $("docpv").classList.remove("has"); $("docpv").removeAttribute("src"); document.querySelectorAll(".pay-extra").forEach(x => x.classList.remove("on")); document.querySelectorAll(".f.bad").forEach(x => x.classList.remove("bad")); show("f-invite", true); show("f-consent", true); $("form-eyebrow").textContent = "New registration"; }
 $("form").addEventListener("submit", async e => {
-  e.preventDefault(); if (!validate(5)) return;
+  e.preventDefault();
+  if (step < 5){ if (validate(step)){ step++; paint(); } return; }
+  if (!validate(5)) return;
   const btn = $("submit"); btn.disabled = true; btn.textContent = "Saving…"; err("");
   try {
     const data = collect();
     if (photoBlob){ const r = await be.uploadImage(user.uid, "avatar.jpg", photoBlob); data.photoPath = r.path; data.photoThumb = await blobToDataUrl(await shrink(photoBlob, 128, .8)); }
     if (scanBlob){ const r = await be.uploadImage(user.uid, "id.jpg", scanBlob); data.idScanPath = r.path; }
     if (profile){ await be.updateProfile(user.uid, data); }
-    else { data.status = "pending"; data.inviteCodeUsed = val("inviteCode").trim().toUpperCase(); await be.createProfile(user.uid, data); }
+    else { data.status = "pending"; data.consentAt = new Date().toISOString(); data.inviteCodeUsed = val("inviteCode").trim().toUpperCase(); await be.createProfile(user.uid, data); }
     profile = await be.getProfile(user.uid); photoBlob = scanBlob = null;
     toast("Profile saved"); renderProfile();
   } catch (ex) {
@@ -272,10 +279,10 @@ $("edit").addEventListener("click", () => { fill(profile); $("form-eyebrow").tex
 // boot
 try {
   be = await initBackend();
-  $("signin").addEventListener("click", async () => { err(""); try { await be.signIn(); } catch (ex) { err("Sign-in failed: " + (ex.message || ex)); } });
+  $("signin").addEventListener("click", async () => { const b = $("signin"); b.disabled = true; err(""); try { await be.signIn(); } catch (ex) { err(ex.message || String(ex)); } finally { b.disabled = false; } });
   $("signout").addEventListener("click", () => be.signOut());
   be.onUser(async u => {
-    user = u; show("who", !!u);
+    user = u; show("who", !!u); resetForm(); profile = null;
     if (!u){ show("s-auth", true); show("s-form", false); show("s-profile", false); return; }
     $("who-name").textContent = u.name || u.email; $("who-img").src = u.photo || "../media/img/logo.jpg";
     if (!u.verified){ err("Your Google account email is not verified. Verify it with Google and sign in again."); return; }
