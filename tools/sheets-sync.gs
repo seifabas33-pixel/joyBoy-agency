@@ -124,7 +124,7 @@ function importGrid(){
     if (map[n]) return employees.find(e => String(e.email).toLowerCase() === map[n]) || null;
     return employees.find(e => norm(e.preferredName) === n) || employees.find(e => norm(e.fullName) === n) || employees.find(e => norm(e.fullName).split(" ")[0] === n.split(" ")[0] && n.split(" ").length === 1) || null; };
   const existing = {}; fetchAll("attendance").forEach(d => existing[d.id] = d.f);
-  const me = Session.getActiveUser().getEmail() || "sheet-import";
+  const me = "Google Sheet import";
   const writes = [], log = [], unmatched = new Set(), unknown = new Set();
   for (let r = hdr + 1; r < values.length; r++){
     const name = values[r][1] || values[r][0]; if (!String(name).trim()) continue;
