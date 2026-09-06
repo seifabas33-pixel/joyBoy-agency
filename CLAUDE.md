@@ -60,7 +60,7 @@ noindex (not robots-blocked, so the tag is honoured); privacy policy has a staff
 ## Design direction the owner chose
 
 Bold & playful: deep-aubergine dark base (light theme optional), saturated
-palette (coral #FF4D2E, yellow #FFD60A, pink #FF2D8A, violet #8B5CF6, aqua
+palette (coral #FF4D2E, yellow #FFD60A, magenta #D63BC6 (solid; big surfaces use the logo gradient --magenta #F03FA8→#A03DE6, replaced the old pink #FF2D8A on 2026-09-07), violet #8B5CF6, aqua
 #22E3C0), Bricolage Grotesque headlines at hero scale, colour-block cards,
 energetic motion (overshoot reveals, wiggling sticker, pulsing play buttons),
 spotlight hero (a tilted, drifting wall of programme photos under a dark stage, lit by a spotlight that follows the pointer or roams on its own; headline "We run the night." with a rotating word; ticket-shaped badge), newspaper masthead for "Our work". The earlier background video (`media/hero.mp4`) was removed on 2026-09-07 at the owner's request.
