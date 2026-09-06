@@ -51,9 +51,9 @@ demo mode when `firebase-config.js` still has PASTE placeholders),
 `team/README.md` (setup). Data model: `employees/{uid}` (status pending/
 approved/rejected; admin-only fields status/reviewedBy/reviewedAt), office notes in `employees/{uid}/private/notes` (admin-only),
 `settings/registration.inviteCode` (rules enforce it on create; the code is set from the admin page and must never be written into the repo). Admin emails are hard-coded in config AND
-firestore.rules — keep the two lists identical. Project: joy-boy-agency (Spark/free plan). **Personal data never goes
+firestore.rules — keep the two lists identical (four accounts as of 2026-09-06: Seif's two Gmail spellings, the agency Gmail, Mr. Moaz's). **Live since 2026-09-06**: rules published, invite code set from the admin page, registration + approval + both admins verified by the owner. Project: joy-boy-agency (Spark/free plan). **Personal data never goes
 into git, screenshots, or chat logs**; demo data is clearly fake. Portal is
-noindex and robots-disallowed; privacy policy has a staff section.
+noindex (not robots-blocked, so the tag is honoured); privacy policy has a staff section. Entry for everyone: homepage menu → Join the team → `/team/`; admins get an Open-the-roster banner there; admin page has Share invite (link + code).
 
 ## Design direction the owner chose
 

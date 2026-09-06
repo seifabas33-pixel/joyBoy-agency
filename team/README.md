@@ -35,8 +35,10 @@ nothing saved beyond the visitor's own browser).
 
 ## 2. Connect the site
 - Paste the values into `team/firebase-config.js` (the six fields).
-- Add Mr. Moaz's Gmail to the admin list in **two** places:
-  `team/firebase-config.js` and `team/firestore.rules` (then re-publish the rules).
+- Admins are listed in **two** places that must stay identical:
+  `team/firebase-config.js` and `team/firestore.rules` (re-publish the rules after
+  any change). Google reports the account's exact spelling, so a dotted Gmail
+  variant (`first.last@`) must be listed as such.
 - Deploy as usual (copy `team/` to `gh-pages`).
 
 ## 3. Test
