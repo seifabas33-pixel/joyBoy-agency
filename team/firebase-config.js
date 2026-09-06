@@ -2,15 +2,15 @@
 // 1. In the Firebase console create a project, add a Web app, and copy the
 //    "firebaseConfig" values here. These keys are public identifiers, not
 //    secrets: access is enforced by the security rules (see README.md).
-// 2. Until real values are pasted the portal runs in DEMO mode: nothing is
-//    saved anywhere except the visitor's own browser.
+// 2. Connected to project joy-boy-agency on 2026-09-06. (With PASTE placeholders
+//    the portal falls back to DEMO mode.)
 window.JB_FIREBASE = {
-  apiKey: "PASTE_FROM_FIREBASE_CONSOLE",
-  authDomain: "PASTE.firebaseapp.com",
-  projectId: "PASTE",
-  storageBucket: "PASTE.appspot.com",
-  messagingSenderId: "PASTE",
-  appId: "PASTE"
+  apiKey: "AIzaSyDNI7g2KzWYpSKwdRnoTRH7YbCDxl5g6ig",
+  authDomain: "joy-boy-agency.firebaseapp.com",
+  projectId: "joy-boy-agency",
+  storageBucket: "joy-boy-agency.firebasestorage.app",
+  messagingSenderId: "366857907850",
+  appId: "1:366857907850:web:f81e450575760c77180773"
 };
 // Admin accounts (must match the list inside firestore.rules / storage.rules).
 window.JB_ADMINS = [
