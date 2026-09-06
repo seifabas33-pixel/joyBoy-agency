@@ -35,7 +35,44 @@
   </section>
 
   <section id="s-admin" hidden>
-    <div class="hero" style="padding-top:18px"><span class="eyebrow">Roster</span><h1 style="font-size:clamp(30px,5vw,48px)">Team <em>registrations</em></h1></div>
+    <div class="hero" style="padding-top:18px"><span class="eyebrow" id="view-eyebrow">Roster</span><h1 style="font-size:clamp(30px,5vw,48px)" id="view-title">Team <em>registrations</em></h1></div>
+    <div class="tabs" role="tablist"><button class="on" data-view="roster" role="tab">Roster</button><button data-view="att" role="tab">Attendance</button><button data-view="hotels" role="tab">Hotels</button></div>
+
+    <div id="v-att" hidden>
+      <div class="toolbar">
+        <input class="in" type="date" id="a-date"><button class="btn ghost small" id="a-prev" type="button" aria-label="Previous day">‹</button><button class="btn ghost small" id="a-next" type="button" aria-label="Next day">›</button><button class="btn ghost small" id="a-today" type="button">Today</button>
+        <select class="in" id="a-hotel"><option value="">All hotels</option></select>
+        <span style="flex:1"></span>
+        <button class="btn ghost small" id="a-refresh" type="button">Refresh</button>
+        <button class="btn small" id="a-csv" type="button">Export month CSV</button>
+      </div>
+      <div class="stats" id="a-stats"></div>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Person</th><th>Hotel</th><th>Check-in</th><th>Check-out</th><th>Status</th><th>Late</th><th>Distance</th><th>Override</th></tr></thead>
+        <tbody id="a-rows"></tbody>
+      </table><div class="empty" id="a-empty" hidden>Nobody is assigned to a hotel yet. Assign staff from their profile (Roster → open a person → Hotel).</div></div>
+      <p class="hint" style="margin-top:10px">Automatic rule: checked in by shift start + grace → Present; later → Half day; no check-in after that time → Absent. Use Override for sick days, days off or corrections; the override wins in the export.</p>
+    </div>
+
+    <div id="v-hotels" hidden>
+      <div class="hotels" id="hotel-cards"></div>
+      <div class="card">
+        <h2 style="font-size:22px;font-weight:800" id="h-title">Add a hotel</h2>
+        <div class="grid" style="margin-top:14px">
+          <label class="f"><span>Hotel name <b class="req">*</b></span><input class="in" id="h-name" placeholder="True Beach Resort"></label>
+          <label class="f"><span>Town</span><input class="in" id="h-city" placeholder="Marsa Alam"></label>
+          <label class="f full"><span>Location <b class="req">*</b> — paste a Google Maps link or "lat, lng"</span><input class="in" id="h-loc" placeholder="https://maps.google.com/…  or  25.0676, 34.8934"><span class="hint" id="h-loc-hint">Open Google Maps at the staff entrance or the animation office, tap Share → Copy link, paste it here. Or tap the button while standing at the hotel.</span></label>
+          <div class="full"><button class="btn ghost small" id="h-here" type="button">Use my current location</button></div>
+          <label class="f"><span>Allowed radius (metres)</span><input class="in" type="number" id="h-radius" value="300" min="50" max="3000"><span class="hint">Resort grounds are big: 300–800 m is typical. Phones are accurate to about 10–30 m outdoors.</span></label>
+          <label class="f"><span>Shift starts at</span><input class="in" type="time" id="h-start" value="09:00"></label>
+          <label class="f"><span>Grace minutes</span><input class="in" type="number" id="h-grace" value="10" min="0" max="120"><span class="hint">Checking in later than start + grace counts as a half day.</span></label>
+          <label class="f"><span>Active</span><select class="in" id="h-active"><option value="1">Yes — staff can check in</option><option value="0">No — season closed</option></select></label>
+        </div>
+        <div class="actions"><button class="btn small" id="h-save" type="button">Save hotel</button><button class="btn ghost small" id="h-new" type="button" hidden>New hotel</button><span style="flex:1"></span><button class="btn ghost small" id="h-del" type="button" hidden style="border-color:rgba(255,77,46,.6);color:#FFB3A3">Delete hotel…</button></div>
+      </div>
+    </div>
+
+    <div id="v-roster">
     <div class="stats" id="stats"></div>
     <div class="toolbar">
       <input class="in" id="q" placeholder="Search name, email, city…">
@@ -50,9 +87,10 @@
       <button class="btn small" id="btn-csv" type="button">Export CSV</button>
     </div>
     <div class="tablewrap"><table>
-      <thead><tr><th>Person</th><th>Gender · age</th><th>Nationality</th><th>Languages</th><th>Skills</th><th>Paid by</th><th>Available</th><th>Status</th></tr></thead>
+      <thead><tr><th>Person</th><th>Gender · age</th><th>Nationality</th><th>Languages</th><th>Skills</th><th>Hotel</th><th>Available</th><th>Status</th></tr></thead>
       <tbody id="rows"></tbody>
     </table><div class="empty" id="empty" hidden>No profiles match.</div></div>
+    </div>
   </section>
 </main>
 
@@ -61,13 +99,14 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, SKILLS, LANGS, age, toast, esc, completeness, waNumber } from "./portal.js";
+import { initBackend, DEMO, isAdminEmail, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL } from "./portal.js";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
 $("f-skill").innerHTML += SKILLS.map(s => `<option>${s}</option>`).join("");
 $("f-lang").innerHTML += LANGS.map(s => `<option>${s}</option>`).join("");
-let be, user, all = [], cur = null;
+let be, user, all = [], cur = null, hotels = [], hotelEdit = null, attDay = dayKey(), attRecs = [];
+const hotelName = id => (hotels.find(h => h.id === id) || {}).name || (id ? "Unknown hotel" : "—");
 
 function filtered(){
   const q = $("q").value.trim().toLowerCase(), st = $("f-status").value, sk = $("f-skill").value, lg = $("f-lang").value, g = $("f-gender").value;
@@ -86,7 +125,7 @@ function render(){
     <td><div class="who"><img src="${esc(p.photoThumb || p.photoUrl || "../media/img/logo.jpg")}" alt=""><div><b>${esc(p.fullName || "—")}</b><small>${esc(p.email || "")}${p.city ? " · " + esc(p.city) : ""}</small></div></div></td>
     <td>${esc(p.gender || "—")} · ${p.dob ? age(p.dob) : "—"}</td><td>${esc(p.nationality || "—")}</td>
     <td>${(p.languages || []).map(esc).join(", ") || "—"}</td><td>${(p.skills || []).slice(0, 4).map(esc).join(", ")}${(p.skills || []).length > 4 ? " +" + (p.skills.length - 4) : ""}</td>
-    <td>${esc(p.payMethod || "—")}</td><td>${esc(fmtDate(p.availableFrom))}</td><td>${badge(p.status)}</td></tr>`; } catch (ex) { console.warn("bad profile", p && p.uid, ex); return `<tr data-uid="${esc(p && p.uid)}"><td colspan="8">Unreadable profile ${esc(p && p.email)}</td></tr>`; } }).join("");
+    <td>${esc(hotelName(p.hotelId))}</td><td>${esc(fmtDate(p.availableFrom))}</td><td>${badge(p.status)}</td></tr>`; } catch (ex) { console.warn("bad profile", p && p.uid, ex); return `<tr data-uid="${esc(p && p.uid)}"><td colspan="8">Unreadable profile ${esc(p && p.email)}</td></tr>`; } }).join("");
   show("empty", list.length === 0);
 }
 ["q","f-status","f-skill","f-lang","f-gender"].forEach(id => $(id).addEventListener("input", render));
@@ -100,7 +139,8 @@ async function openDrawer(p){
       <div><h2>${esc(p.fullName || "—")}</h2><p style="color:var(--ink-3);font-size:13px">${esc(p.preferredName ? p.preferredName + " · " : "")}${esc(p.email)}</p>
       <p style="margin-top:10px">${badge(p.status)} <span class="hint" style="margin-left:8px">${completeness(p)}% complete</span></p>
       <div class="actions"><button class="btn ok small" data-st="approved">Approve</button><button class="btn danger small" data-st="rejected">Needs changes</button><button class="btn ghost small" data-st="pending">Back to pending</button>
-      ${waNumber(p.phone) ? `<a class="btn ghost small" href="https://wa.me/${waNumber(p.phone)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}</div></div></div>
+      ${waNumber(p.phone) ? `<a class="btn ghost small" href="https://wa.me/${waNumber(p.phone)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}</div>
+      <label class="f" style="max-width:320px"><span>Hotel assignment</span><select class="in" id="d-hotel"><option value="">— not assigned —</option>${hotels.map(h => `<option value="${esc(h.id)}" ${h.id === p.hotelId ? "selected" : ""}>${esc(h.name)}${h.active === false ? " (closed)" : ""}</option>`).join("")}</select><span class="hint">Only approved staff with a hotel can check in.</span></label></div></div>
     <div class="kv">${kv("Gender", p.gender)}${kv("Date of birth", p.dob ? p.dob + " (" + age(p.dob) + ")" : "")}${kv("Nationality", p.nationality)}${kv("City", p.city)}${kv("WhatsApp", p.phone)}${kv("Emergency contact", [p.emergencyName, p.emergencyPhone, p.emergencyRelation].filter(Boolean).join(" · "))}
       ${kv("Document", p.idType ? `${p.idType} · ${p.idNumber || ""} · exp. ${p.idExpiry || "?"}` : "")}${kv("Payment", pay)}${kv("Payroll notes", p.payNotes)}
       ${kv("Experience", p.experienceYears != null ? p.experienceYears + " years" : "")}${kv("Instruments", p.instruments)}${kv("Previous work", p.previousWork)}${/^https?:\/\//.test(p.showreelUrl || "") ? `<div><b>Showreel</b><span><a href="${esc(p.showreelUrl)}" target="_blank" rel="noopener noreferrer">${esc(p.showreelUrl)}</a></span></div>` : ""}${kv("Special talents", p.specialTalents)}
@@ -117,6 +157,7 @@ async function openDrawer(p){
   let savedNotes = "";
   const saveNotes = async () => { const v = $("notes").value; if (v === savedNotes) return; await be.setNotes(p.uid, v, user.email); savedNotes = v; };
   $("panel").querySelectorAll("[data-st]").forEach(b => b.onclick = async () => { try { await saveNotes(); await be.adminUpdate(p.uid, { status: b.dataset.st, reviewedBy: user.email }); p.status = b.dataset.st; toast("Marked as " + LABEL[b.dataset.st]); render(); openDrawer(p); } catch (ex) { toast("Could not update: " + (ex.message || ex)); } });
+  $("d-hotel").onchange = async () => { const id = $("d-hotel").value; try { await be.adminUpdate(p.uid, { hotelId: id || null, reviewedBy: user.email }); p.hotelId = id || null; toast(id ? "Assigned to " + hotelName(id) : "Assignment removed"); render(); } catch (ex) { toast("Could not assign: " + (ex.message || ex)); } };
   $("save-notes").onclick = async () => { try { await saveNotes(); toast("Notes saved"); } catch (ex) { toast("Could not save notes: " + (ex.message || ex)); } };
   $("del").onclick = async () => { if (prompt(`Type DELETE to permanently remove ${p.fullName || p.email} and their photos. This cannot be undone.`) !== "DELETE") return; try { await be.deleteEmployee(p.uid); all = all.filter(x => x.uid !== p.uid); closeDrawer(); render(); toast("Profile deleted"); } catch (ex) { toast("Could not delete: " + (ex.message || ex)); } };
   try { savedNotes = await be.getNotes(p.uid); } catch { savedNotes = ""; }
@@ -129,13 +170,92 @@ function closeDrawer(){ $("drawer").classList.remove("open"); cur = null; }
 $("drawer-bg").addEventListener("click", closeDrawer);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
 
+/* ── views ── */
+const VIEWS = { roster: ["Roster", "Team <em>registrations</em>"], att: ["Attendance", "Who is <em>on the floor</em>"], hotels: ["Hotels", "Where the <em>teams</em> work"] };
+function setView(v){ document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === v)); ["roster","att","hotels"].forEach(k => show("v-" + k, k === v)); $("view-eyebrow").textContent = VIEWS[v][0]; $("view-title").innerHTML = VIEWS[v][1]; if (v === "att") loadAtt(); if (v === "hotels") paintHotels(); location.hash = v; }
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
+
+/* ── hotels ── */
+function paintHotels(){
+  const count = id => all.filter(p => p.hotelId === id && p.status === "approved").length;
+  $("hotel-cards").innerHTML = hotels.map(h => `<div class="hotel ${h.active === false ? "inactive" : ""} ${hotelEdit === h.id ? "on" : ""}" data-id="${esc(h.id)}"><h3>${esc(h.name)}</h3><p>${esc(h.city || "")}${h.city ? " · " : ""}${h.radiusM} m · starts ${esc(h.shiftStart)} (+${h.graceMin} min)</p><span class="n">${count(h.id)} staff assigned${h.active === false ? " · closed" : ""}</span></div>`).join("") || `<p class="hint">No hotels yet. Add the first one below.</p>`;
+  $("hotel-cards").querySelectorAll(".hotel").forEach(el => el.onclick = () => editHotel(el.dataset.id));
+  $("a-hotel").innerHTML = `<option value="">All hotels</option>` + hotels.map(h => `<option value="${esc(h.id)}">${esc(h.name)}</option>`).join("");
+}
+function editHotel(id){
+  const h = hotels.find(x => x.id === id); hotelEdit = h ? id : null;
+  $("h-title").textContent = h ? "Edit " + h.name : "Add a hotel";
+  $("h-name").value = h ? h.name : ""; $("h-city").value = h ? (h.city || "") : ""; $("h-loc").value = h ? `${h.lat}, ${h.lng}` : "";
+  $("h-radius").value = h ? h.radiusM : 300; $("h-start").value = h ? h.shiftStart : "09:00"; $("h-grace").value = h ? h.graceMin : 10; $("h-active").value = h && h.active === false ? "0" : "1";
+  show("h-new", !!h); show("h-del", !!h); paintHotels(); if (h) $("h-name").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+$("h-new").addEventListener("click", () => editHotel(null));
+$("h-loc").addEventListener("input", () => { const ll = parseLatLng($("h-loc").value); $("h-loc-hint").textContent = ll ? `Understood: ${ll.lat.toFixed(5)}, ${ll.lng.toFixed(5)}` : ($("h-loc").value.trim() ? "Could not read coordinates from this text. In Google Maps, press and hold on the spot, then copy the numbers shown at the top." : "Open Google Maps at the staff entrance or the animation office, tap Share → Copy link, paste it here. Or tap the button while standing at the hotel."); });
+$("h-here").addEventListener("click", () => { if (!navigator.geolocation) return toast("No location access in this browser"); const b = $("h-here"); b.disabled = true; b.textContent = "Locating…"; navigator.geolocation.getCurrentPosition(p => { $("h-loc").value = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`; $("h-loc").dispatchEvent(new Event("input")); b.disabled = false; b.textContent = "Use my current location"; toast(`Location set (±${Math.round(p.coords.accuracy)} m)`); }, () => { b.disabled = false; b.textContent = "Use my current location"; toast("Could not get your location"); }, { enableHighAccuracy: true, timeout: 20000 }); });
+$("h-save").addEventListener("click", async () => {
+  const name = $("h-name").value.trim(), ll = parseLatLng($("h-loc").value), radiusM = Math.min(3000, Math.max(50, +$("h-radius").value || 300)), shiftStart = $("h-start").value || "09:00", graceMin = Math.max(0, +$("h-grace").value || 0);
+  if (name.length < 2) return toast("Enter the hotel name"); if (!ll) return toast("Paste a Google Maps link or coordinates");
+  const data = { name, city: $("h-city").value.trim(), lat: ll.lat, lng: ll.lng, cosLat: Math.cos(ll.lat * Math.PI / 180), radiusM, shiftStart, graceMin, active: $("h-active").value === "1" };
+  try { const id = await be.saveHotel(hotelEdit, data); hotels = await be.listHotels(); toast(hotelEdit ? "Hotel updated" : "Hotel added"); editHotel(null); render(); } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
+});
+$("h-del").addEventListener("click", async () => {
+  const h = hotels.find(x => x.id === hotelEdit); if (!h) return;
+  if (all.some(p => p.hotelId === h.id)) return toast("Unassign the staff from this hotel first");
+  if (!confirm(`Delete ${h.name}? Past attendance records stay.`)) return;
+  try { await be.deleteHotel(h.id); hotels = await be.listHotels(); editHotel(null); toast("Hotel deleted"); } catch (ex) { toast("Could not delete: " + (ex.message || ex)); }
+});
+
+/* ── attendance ── */
+$("a-date").value = attDay;
+const setDay = d => { attDay = d; $("a-date").value = d; loadAtt(); };
+$("a-date").addEventListener("change", () => { if ($("a-date").value) setDay($("a-date").value); });
+$("a-prev").addEventListener("click", () => setDay(addDays(attDay, -1)));
+$("a-next").addEventListener("click", () => setDay(addDays(attDay, 1)));
+$("a-today").addEventListener("click", () => setDay(dayKey()));
+$("a-hotel").addEventListener("change", paintAtt);
+$("a-refresh").addEventListener("click", loadAtt);
+async function loadAtt(){ try { attRecs = await be.attendanceOn(attDay); } catch (ex) { attRecs = []; toast("Could not load attendance: " + (ex.message || ex)); } paintAtt(); }
+function attRows(day, recs){
+  // every approved person with a hotel gets a row, plus anyone who has a record that day
+  const staff = all.filter(p => p.status === "approved" && p.hotelId);
+  const rows = staff.map(p => ({ p, r: recs.find(r => r.uid === p.uid) || null, hotelId: p.hotelId }));
+  recs.forEach(r => { if (!rows.some(x => x.p.uid === r.uid)) rows.push({ p: all.find(p => p.uid === r.uid) || { uid: r.uid, fullName: r.name, email: r.email }, r, hotelId: r.hotelId }); });
+  return rows.map(x => ({ ...x, hotel: hotels.find(h => h.id === x.hotelId) || {}, st: attStatus(x.r || { date: day }, hotels.find(h => h.id === x.hotelId) || {}) }));
+}
+function paintAtt(){
+  const hf = $("a-hotel").value; const rows = attRows(attDay, attRecs).filter(x => !hf || x.hotelId === hf).sort((a, b) => String(a.hotel.name || "").localeCompare(String(b.hotel.name || "")) || String(a.p.fullName || "").localeCompare(String(b.p.fullName || "")));
+  const n = c => rows.filter(x => x.st.code === c).length;
+  $("a-stats").innerHTML = [["Expected", rows.length], ["Present", n("present")], ["Half day", n("half-day")], ["Absent", n("absent")], ["Excused / off", n("excused") + n("off")]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+  $("a-rows").innerHTML = rows.map(x => `<tr data-uid="${esc(x.p.uid)}" style="cursor:default">
+    <td><div class="who"><img src="${esc(x.p.photoThumb || "../media/img/logo.jpg")}" alt=""><div><b>${esc(x.p.fullName || x.p.email || "—")}</b><small>${esc(x.p.email || "")}</small></div></div></td>
+    <td>${esc(x.hotel.name || hotelName(x.hotelId))}</td><td>${x.r && x.r.checkInAt ? hhmm(x.r.checkInAt) : "—"}</td><td>${x.r && x.r.checkOutAt ? hhmm(x.r.checkOutAt) : "—"}</td>
+    <td><span class="status att-${x.st.code}">${ATT_LABEL[x.st.code]}</span>${x.st.auto ? "" : " <small class='hint'>manual</small>"}</td><td>${x.st.lateMin ? x.st.lateMin + " min" : "—"}</td><td>${x.r && x.r.distM != null ? x.r.distM + " m" : "—"}</td>
+    <td><select class="in tiny" data-ov="${esc(x.p.uid)}"><option value="">auto</option>${["present","half-day","absent","excused","off"].map(c => `<option value="${c}" ${x.r && x.r.override === c ? "selected" : ""}>${ATT_LABEL[c]}</option>`).join("")}</select></td></tr>`).join("");
+  show("a-empty", rows.length === 0);
+  $("a-rows").querySelectorAll("[data-ov]").forEach(sel => sel.onchange = async () => {
+    const uid = sel.dataset.ov, x = rows.find(r => r.p.uid === uid), id = `${uid}_${attDay}`, ov = sel.value || null;
+    try {
+      await be.setAttendance(id, { uid, email: x.p.email || "", name: x.p.fullName || "", hotelId: x.hotelId, hotelName: x.hotel.name || "", date: attDay, override: ov, overrideBy: user.email });
+      toast(ov ? "Marked " + ATT_LABEL[ov] : "Back to automatic"); loadAtt();
+    } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
+  });
+}
+$("a-csv").addEventListener("click", async () => {
+  const from = attDay.slice(0, 8) + "01", to = addDays(addDays(from, 32).slice(0, 8) + "01", -1), today = dayKey();
+  let recs = []; try { recs = await be.attendanceRange(from, to); } catch (ex) { return toast("Could not load the month: " + (ex.message || ex)); }
+  const cols = ["date","name","email","hotel","checkIn","checkOut","status","lateMin","distanceM","override","overrideBy"], lines = [cols.join(",")];
+  const cell = v => { let t = String(v ?? ""); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
+  for (let d = from; d <= to && d <= today; d = addDays(d, 1)) for (const x of attRows(d, recs.filter(r => r.date === d))) lines.push([d, x.p.fullName || x.p.email, x.p.email, x.hotel.name || hotelName(x.hotelId), x.r && x.r.checkInAt ? hhmm(x.r.checkInAt) : "", x.r && x.r.checkOutAt ? hhmm(x.r.checkOutAt) : "", ATT_LABEL[x.st.code], x.st.lateMin ?? "", x.r && x.r.distM != null ? x.r.distM : "", x.r && x.r.override ? x.r.override : "", x.r && x.r.overrideBy ? x.r.overrideBy : ""].map(cell).join(","));
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" })); a.download = `joyboy-attendance-${from.slice(0, 7)}.csv`; a.click(); URL.revokeObjectURL(a.href);
+});
+
 $("btn-csv").addEventListener("click", () => {
   const cols = ["fullName","preferredName","email","phone","gender","dob","nationality","city","languages","skills","instruments","experienceYears","payMethod","bankName","accountName","iban","instapay","walletProvider","walletNumber","idType","idNumber","idExpiry","availableFrom","contractPref","relocate","tshirt","emergencyName","emergencyPhone","status","createdAt"];
   const cell = v => { let t = String(Array.isArray(v) ? v.join("; ") : (v ?? "")); if (/^[=+\-@\t\r]/.test(t) || /^0\d+$/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
   const csv = [cols.join(",")].concat(filtered().map(p => cols.map(c => cell(p[c])).join(","))).join("\r\n");
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv" })); a.download = `joyboy-team-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
 });
-$("btn-refresh").addEventListener("click", async () => { try { all = await be.listEmployees(); render(); toast("Roster refreshed"); } catch (ex) { toast("Could not refresh: " + (ex.message || ex)); } });
+$("btn-refresh").addEventListener("click", async () => { try { [all, hotels] = await Promise.all([be.listEmployees(), be.listHotels()]); render(); paintHotels(); toast("Roster refreshed"); } catch (ex) { toast("Could not refresh: " + (ex.message || ex)); } });
 $("btn-share").addEventListener("click", async () => {
   let cfg = {}; try { cfg = await be.getSettings(); } catch {}
   if (!cfg.inviteCode) return toast("Set an invite code first");
@@ -162,7 +282,8 @@ try {
     $("who-name").textContent = u.name || u.email; $("who-img").src = u.photo || "../media/img/logo.jpg";
     if (!isAdminEmail(u.email)){ $("deny-msg").textContent = `${u.email} is not in the admin list. Admins are set in firebase-config.js and the security rules.`; return show("s-deny", true); }
     show("s-admin", true);
-    try { all = await be.listEmployees(); render(); } catch (ex) { err("Could not load the roster: " + (ex.message || ex)); }
+    try { [all, hotels] = await Promise.all([be.listEmployees(), be.listHotels()]); render(); paintHotels(); } catch (ex) { err("Could not load the roster: " + (ex.message || ex)); }
+    const v = location.hash.replace("#", ""); if (VIEWS[v] && v !== "roster") setView(v);
   });
 } catch (ex) { err("The admin page could not start: " + (ex.message || ex)); }
 </script>

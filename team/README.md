@@ -35,8 +35,10 @@ nothing saved beyond the visitor's own browser).
 
 ## 2. Connect the site
 - Paste the values into `team/firebase-config.js` (the six fields).
-- Add Mr. Moaz's Gmail to the admin list in **two** places:
-  `team/firebase-config.js` and `team/firestore.rules` (then re-publish the rules).
+- Admins are listed in **two** places that must stay identical:
+  `team/firebase-config.js` and `team/firestore.rules` (re-publish the rules after
+  any change). Google reports the account's exact spelling, so a dotted Gmail
+  variant (`first.last@`) must be listed as such.
 - Deploy as usual (copy `team/` to `gh-pages`).
 
 ## 3. Test
@@ -65,3 +67,30 @@ correction or deletion: the admin page has **Delete profile…** which removes t
 profile, both images and the office notes. The Google sign-in record itself
 holds only the email address; remove it under Authentication → Users if asked.
 Keep CSV exports off shared drives and delete them after use.
+
+## Hotels, assignments and attendance (added 2026-09-06)
+
+- **Hotels** (admin page → Hotels tab): name, town, location (paste a Google Maps
+  link or "lat, lng", or "Use my current location" while standing there), allowed
+  radius in metres, shift start time, grace minutes, active flag. Stored in
+  `hotels/{id}` with a precomputed `cosLat` so the security rules can check the
+  distance themselves.
+- **Assignment**: Roster → open a person → *Hotel assignment*. Writes `hotelId`
+  on the employee document (admin-only field).
+- **Check-in** (employee page, approved staff with a hotel): one tap reads the
+  phone's GPS once, the browser checks the distance, and the document
+  `attendance/{uid}_{YYYY-MM-DD}` is created with a **server** timestamp. The
+  rules refuse the write unless the person is approved, assigned to that hotel,
+  inside the radius and it is the first check-in of the day. Check-out adds one
+  more server timestamp. Nothing else about location is ever stored.
+- **Status rule** (same code in `portal.js`, the admin page and the Sheets
+  script): checked in by shift start + grace → Present; later → Half day; no
+  check-in after that time → Absent. Admins can override any day (present, half
+  day, absent, excused, day off); the override wins everywhere.
+- **Google Sheet**: `tools/sheets-sync.gs` (setup steps at the top of the file)
+  pulls the last 62 days into a tab "Attendance (portal)" in your own sheet,
+  on demand from a "Joy Boy" menu or hourly. The admin page also has *Export
+  month CSV*.
+- Limits worth knowing: browser GPS can be spoofed by a determined person, so
+  the check-in is evidence, not proof; accuracy indoors can be 50–100 m, so set
+  the radius generously (300–800 m for a resort). Times are Egypt time.

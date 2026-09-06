@@ -136,6 +136,13 @@
   <!-- ── profile ── -->
   <section id="s-profile" hidden>
     <div class="hero" style="padding-top:18px"><span class="eyebrow">Your profile</span><h1 style="font-size:clamp(30px,5vw,44px)">Thanks, <em id="p-first">you</em>.</h1></div>
+    <div class="card att" id="att" hidden>
+      <p class="eyebrow">Today · <span id="att-hotel"></span> · <span id="att-date"></span></p>
+      <div class="att-now" id="att-body"></div>
+      <div class="actions" style="margin:14px 0 6px"><button class="btn" id="btn-in" type="button">Check in now</button><button class="btn ghost" id="btn-out" type="button" hidden>Check out</button></div>
+      <p class="hint" id="att-hint"></p>
+      <details class="hist"><summary>Last 14 days</summary><div id="att-hist"></div></details>
+    </div>
     <div class="card">
       <div class="pcard">
         <img class="avatar" id="p-avatar" alt="">
@@ -156,7 +163,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness } from "./portal.js";
+import { initBackend, DEMO, isAdminEmail, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, distanceM, attStatus, ATT_LABEL } from "./portal.js";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -275,7 +282,53 @@ function renderProfile(){
   $("p-kv").innerHTML = rows.filter(r => r[1]).map(r => `<div><b>${r[0]}</b><span>${esc(r[1])}</span></div>`).join("") +
     (p.skills && p.skills.length ? `<div style="grid-column:1/-1"><b>Skills</b><div class="tags">${p.skills.map(s => `<i>${esc(s)}</i>`).join("")}</div></div>` : "") +
     (p.languages && p.languages.length ? `<div style="grid-column:1/-1"><b>Languages</b><div class="tags">${p.languages.map(s => `<i class="v">${esc(s)}</i>`).join("")}</div></div>` : "");
+  loadAttendance();
 }
+/* ── attendance (approved staff assigned to a hotel) ── */
+let hotel = null, todayRec = null, hist = [];
+async function loadAttendance(){
+  const p = profile; show("att", false); hotel = null; todayRec = null; hist = [];
+  if (!p || p.status !== "approved" || !p.hotelId) return;
+  try { hotel = await be.getHotel(p.hotelId); } catch (ex) { console.warn(ex); }
+  if (!hotel) return;
+  const today = dayKey();
+  try { hist = await be.myAttendance(user.uid, addDays(today, -14)); } catch (ex) { console.warn(ex); }
+  todayRec = hist.find(r => r.date === today) || null;
+  $("att-hotel").textContent = hotel.name; $("att-date").textContent = today; show("att", true); paintAtt();
+}
+function paintAtt(){
+  const st = attStatus(todayRec, hotel), today = dayKey();
+  const late = st.lateMin ? ` · late by ${st.lateMin} min` : "";
+  $("att-body").innerHTML = todayRec && todayRec.checkInAt
+    ? `<span class="status att-${st.code}">${ATT_LABEL[st.code]}</span><p class="att-line">Checked in at <b>${hhmm(todayRec.checkInAt)}</b>${late}${todayRec.checkOutAt ? ` · out at <b>${hhmm(todayRec.checkOutAt)}</b>` : ""}</p>`
+    : `<span class="status att-${st.code}">${st.code === "pending" ? "Not checked in" : ATT_LABEL[st.code]}</span><p class="att-line">Shift starts at <b>${esc(hotel.shiftStart || "09:00")}</b>. Check in from the hotel when you arrive.</p>`;
+  show("btn-in", !todayRec); show("btn-out", !!todayRec && !todayRec.checkOutAt);
+  $("att-hint").textContent = `Check-in only works at ${hotel.name} (within ${hotel.radiusM || 300} m) and uses your phone's location once. Arriving after ${esc(hotel.shiftStart || "09:00")} plus ${hotel.graceMin ?? 10} minutes counts as a half day automatically; talk to your team leader if something went wrong.`;
+  const days = []; for (let i = 1; i <= 14; i++) days.push(addDays(today, -i));
+  $("att-hist").innerHTML = `<table class="mini"><tbody>${days.map(d => { const r = hist.find(x => x.date === d); const s = attStatus(r || { date: d }, hotel, today); return `<tr><td>${d}</td><td>${r && r.checkInAt ? hhmm(r.checkInAt) : "—"}</td><td>${r && r.checkOutAt ? hhmm(r.checkOutAt) : "—"}</td><td><span class="status att-${s.code}">${ATT_LABEL[s.code]}</span></td></tr>`; }).join("")}</tbody></table>`;
+}
+const geo = () => new Promise((res, rej) => { if (!navigator.geolocation) return rej(new Error("This browser has no location access")); navigator.geolocation.getCurrentPosition(p => res(p.coords), e => rej(new Error(e.code === 1 ? "Location permission was refused. Allow location for this site in your browser settings and try again." : "Could not get your location. Turn on GPS, step outside if you are indoors, and try again.")), { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }); });
+$("btn-in").addEventListener("click", async () => {
+  const b = $("btn-in"); b.disabled = true; b.textContent = "Locating…";
+  try {
+    let lat = hotel.lat, lng = hotel.lng, accuracy = 0;
+    try { const c = await geo(); lat = c.latitude; lng = c.longitude; accuracy = Math.round(c.accuracy || 0); } catch (ex) { if (!DEMO) throw ex; }
+    const distM = distanceM(lat, lng, hotel.lat, hotel.lng);
+    if (distM > (hotel.radiusM || 300) && !DEMO) throw new Error(`You are about ${distM >= 1000 ? (distM / 1000).toFixed(1) + " km" : distM + " m"} from ${hotel.name}. Check-in works only at the hotel.`);
+    b.textContent = "Saving…";
+    todayRec = await be.checkIn({ uid: user.uid, email: user.email, name: profile.fullName || user.name || "", hotelId: hotel.id, hotelName: hotel.name, date: dayKey(), lat, lng, accuracy, distM });
+    hist = [todayRec, ...hist.filter(r => r.date !== todayRec.date)];
+    const st = attStatus(todayRec, hotel); toast(st.code === "present" ? "Checked in — on time. Have a great day!" : `Checked in — ${st.lateMin} min late, counted as half day`);
+    paintAtt();
+  } catch (ex) { toast(/permission|denied/i.test(String(ex)) ? "Check-in refused: you are outside the hotel radius, or not assigned to this hotel." : (ex.message || String(ex))); }
+  finally { b.disabled = false; b.textContent = "Check in now"; }
+});
+$("btn-out").addEventListener("click", async () => {
+  const b = $("btn-out"); b.disabled = true;
+  try { todayRec = await be.checkOut(user.uid, todayRec.date); hist = hist.map(r => r.date === todayRec.date ? todayRec : r); toast("Checked out at " + hhmm(todayRec.checkOutAt)); paintAtt(); }
+  catch (ex) { toast("Could not check out: " + (ex.message || ex)); } finally { b.disabled = false; }
+});
+
 $("edit").addEventListener("click", () => { fill(profile); $("form-eyebrow").textContent = "Edit your profile"; step = 1; paint(); show("s-profile", false); show("s-form", true); });
 
 // boot
