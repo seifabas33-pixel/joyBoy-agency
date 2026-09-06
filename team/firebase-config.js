@@ -15,6 +15,7 @@ window.JB_FIREBASE = {
 // Admin accounts (must match the list inside firestore.rules / storage.rules).
 window.JB_ADMINS = [
   "seifabas33@gmail.com",
+  "seif.abas33@gmail.com",
   "joyboyentertainmentagency@gmail.com"
   // , "moaz@gmail.com"   ← add Mr. Moaz's Gmail here and in both rules files
 ];
