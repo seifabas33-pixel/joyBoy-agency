@@ -43,6 +43,8 @@ button{font:inherit}
 .hero p{color:var(--ink-2);max-width:56ch;margin-top:12px;font-size:16.5px}
 .banner{border-radius:14px;padding:12px 16px;font-size:13.5px;display:flex;gap:10px;align-items:flex-start;margin-bottom:16px}
 .banner.demo{background:rgba(255,214,10,.1);border:1px dashed rgba(255,214,10,.5);color:#FFE97A}
+.banner.office{background:rgba(34,227,192,.1);border:1px solid rgba(34,227,192,.45);color:#B8FFF1;align-items:center}
+.banner.office .btn{padding:6px 12px}
 .banner.info{background:rgba(139,92,246,.14);border:1px solid rgba(139,92,246,.4);color:#D9CCFF}
 .banner.error{background:rgba(255,77,46,.14);border:1px solid rgba(255,77,46,.45);color:#FFB3A3}
 .banner.ok{background:rgba(34,227,192,.12);border:1px solid rgba(34,227,192,.4);color:#9DF2E0}

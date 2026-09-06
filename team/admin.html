@@ -46,6 +46,7 @@
       <span style="flex:1"></span>
       <button class="btn ghost small" id="btn-refresh" type="button">Refresh</button>
       <button class="btn ghost small" id="btn-code" type="button">Invite code</button>
+      <button class="btn ghost small" id="btn-share" type="button">Share invite</button>
       <button class="btn small" id="btn-csv" type="button">Export CSV</button>
     </div>
     <div class="tablewrap"><table>
@@ -135,6 +136,14 @@ $("btn-csv").addEventListener("click", () => {
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv" })); a.download = `joyboy-team-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
 });
 $("btn-refresh").addEventListener("click", async () => { try { all = await be.listEmployees(); render(); toast("Roster refreshed"); } catch (ex) { toast("Could not refresh: " + (ex.message || ex)); } });
+$("btn-share").addEventListener("click", async () => {
+  let cfg = {}; try { cfg = await be.getSettings(); } catch {}
+  if (!cfg.inviteCode) return toast("Set an invite code first");
+  const link = new URL("./", location.href).href;
+  const text = `Join the Joy Boy Agency team 🎭\nRegister here (sign in with your Google account, about 5 minutes):\n${link}\nInvite code: ${cfg.inviteCode}\nPlease open the link in Safari or Chrome, not inside Instagram.`;
+  try { if (navigator.share) { await navigator.share({ text }); return; } } catch (ex) { if (ex && ex.name === "AbortError") return; }
+  window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank", "noopener");
+});
 $("btn-code").addEventListener("click", async () => {
   let cfg = {}; try { cfg = await be.getSettings(); } catch {}
   const code = prompt("Invite code staff must enter to register (at least 8 letters/digits; pick something random and change it after each recruiting wave):", cfg.inviteCode || "");
