@@ -191,6 +191,8 @@ footer.small a{color:var(--ink-2)}
 .status.att-present{color:#9DF2E0;border-color:rgba(34,227,192,.5);background:rgba(34,227,192,.1)}
 .status.att-half-day{color:#FFE97A;border-color:rgba(255,214,10,.5);background:rgba(255,214,10,.1)}
 .status.att-absent{color:#FFB3A3;border-color:rgba(255,77,46,.5);background:rgba(255,77,46,.1)}
+.status.att-sick{color:#FFC9A8;border-color:rgba(255,160,90,.5);background:rgba(255,160,90,.12)}
+.status.att-vacation{color:#A8D8FF;border-color:rgba(90,170,255,.5);background:rgba(90,170,255,.12)}
 .status.att-excused,.status.att-off{color:#D9CCFF;border-color:rgba(139,92,246,.5);background:rgba(139,92,246,.12)}
 .status.att-pending{color:var(--ink-3);border-color:var(--line-2);background:transparent}
 details.hist{margin-top:12px}

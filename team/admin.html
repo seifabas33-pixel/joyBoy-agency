@@ -51,7 +51,7 @@
         <thead><tr><th>Person</th><th>Hotel</th><th>Check-in</th><th>Check-out</th><th>Status</th><th>Late</th><th>Distance</th><th>Override</th></tr></thead>
         <tbody id="a-rows"></tbody>
       </table><div class="empty" id="a-empty" hidden>Nobody is assigned to a hotel yet. Assign staff from their profile (Roster → open a person → Hotel).</div></div>
-      <p class="hint" style="margin-top:10px">Automatic rule: checked in by shift start + grace → Present; later → Half day; no check-in after that time → Absent. Use Override for sick days, days off or corrections; the override wins in the export.</p>
+      <p class="hint" style="margin-top:10px">Automatic rule: checked in by shift start + grace → Present; later → Half day; no check-in after that time → Absent. Use Override for sick days, vacation, days off or corrections; the override wins in the export. Rows marked "manual" came from an override or from the Google Sheet import.</p>
     </div>
 
     <div id="v-hotels" hidden>
@@ -99,7 +99,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL } from "./portal.js";
+import { initBackend, DEMO, isAdminEmail, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES } from "./portal.js";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -225,12 +225,12 @@ function attRows(day, recs){
 function paintAtt(){
   const hf = $("a-hotel").value; const rows = attRows(attDay, attRecs).filter(x => !hf || x.hotelId === hf).sort((a, b) => String(a.hotel.name || "").localeCompare(String(b.hotel.name || "")) || String(a.p.fullName || "").localeCompare(String(b.p.fullName || "")));
   const n = c => rows.filter(x => x.st.code === c).length;
-  $("a-stats").innerHTML = [["Expected", rows.length], ["Present", n("present")], ["Half day", n("half-day")], ["Absent", n("absent")], ["Excused / off", n("excused") + n("off")]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+  $("a-stats").innerHTML = [["Expected", rows.length], ["Present", n("present")], ["Half day", n("half-day")], ["Absent", n("absent")], ["Sick / vacation / off", n("sick") + n("vacation") + n("excused") + n("off")]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
   $("a-rows").innerHTML = rows.map(x => `<tr data-uid="${esc(x.p.uid)}" style="cursor:default">
     <td><div class="who"><img src="${esc(x.p.photoThumb || "../media/img/logo.jpg")}" alt=""><div><b>${esc(x.p.fullName || x.p.email || "—")}</b><small>${esc(x.p.email || "")}</small></div></div></td>
     <td>${esc(x.hotel.name || hotelName(x.hotelId))}</td><td>${x.r && x.r.checkInAt ? hhmm(x.r.checkInAt) : "—"}</td><td>${x.r && x.r.checkOutAt ? hhmm(x.r.checkOutAt) : "—"}</td>
     <td><span class="status att-${x.st.code}">${ATT_LABEL[x.st.code]}</span>${x.st.auto ? "" : " <small class='hint'>manual</small>"}</td><td>${x.st.lateMin ? x.st.lateMin + " min" : "—"}</td><td>${x.r && x.r.distM != null ? x.r.distM + " m" : "—"}</td>
-    <td><select class="in tiny" data-ov="${esc(x.p.uid)}"><option value="">auto</option>${["present","half-day","absent","excused","off"].map(c => `<option value="${c}" ${x.r && x.r.override === c ? "selected" : ""}>${ATT_LABEL[c]}</option>`).join("")}</select></td></tr>`).join("");
+    <td><select class="in tiny" data-ov="${esc(x.p.uid)}"><option value="">auto</option>${ATT_OVERRIDES.map(c => `<option value="${c}" ${x.r && x.r.override === c ? "selected" : ""}>${ATT_LABEL[c]}</option>`).join("")}</select></td></tr>`).join("");
   show("a-empty", rows.length === 0);
   $("a-rows").querySelectorAll("[data-ov]").forEach(sel => sel.onchange = async () => {
     const uid = sel.dataset.ov, x = rows.find(r => r.p.uid === uid), id = `${uid}_${attDay}`, ov = sel.value || null;
