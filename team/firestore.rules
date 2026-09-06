@@ -7,8 +7,8 @@ service cloud.firestore {
       return signedIn() && request.auth.token.email.lower() in [
         'seifabas33@gmail.com',
         'seif.abas33@gmail.com',
-        'joyboyentertainmentagency@gmail.com'
-        // , 'moaz@gmail.com'   ← add Mr. Moaz's Gmail (also in firebase-config.js and storage.rules)
+        'joyboyentertainmentagency@gmail.com',
+        'the.z.1417@gmail.com'
       ];
     }
     function isOwner(uid) { return signedIn() && request.auth.uid == uid; }

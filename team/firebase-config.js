@@ -16,6 +16,6 @@ window.JB_FIREBASE = {
 window.JB_ADMINS = [
   "seifabas33@gmail.com",
   "seif.abas33@gmail.com",
-  "joyboyentertainmentagency@gmail.com"
-  // , "moaz@gmail.com"   ← add Mr. Moaz's Gmail here and in both rules files
+  "joyboyentertainmentagency@gmail.com",
+  "the.z.1417@gmail.com"
 ];
