@@ -44,6 +44,7 @@
       <select class="in" id="f-lang"><option value="">Any language</option></select>
       <select class="in" id="f-gender"><option value="">Any gender</option><option>Male</option><option>Female</option></select>
       <span style="flex:1"></span>
+      <button class="btn ghost small" id="btn-refresh" type="button">Refresh</button>
       <button class="btn ghost small" id="btn-code" type="button">Invite code</button>
       <button class="btn small" id="btn-csv" type="button">Export CSV</button>
     </div>
@@ -58,7 +59,8 @@
 <footer class="small">Joy Boy Agency · Team admin · Personal data — do not share exports outside the office.</footer>
 
 <script type="module">
-import { initBackend, DEMO, isAdminEmail, SKILLS, LANGS, age, toast, esc, completeness } from "./portal.js";
+if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
+import { initBackend, DEMO, isAdminEmail, SKILLS, LANGS, age, toast, esc, completeness, waNumber } from "./portal.js";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -71,18 +73,19 @@ function filtered(){
   return all.filter(p => (!st || (p.status || "pending") === st) && (!sk || (p.skills || []).includes(sk)) && (!lg || (p.languages || []).includes(lg)) && (!g || p.gender === g)
     && (!q || [p.fullName, p.preferredName, p.email, p.city, p.nationality, p.phone].join(" ").toLowerCase().includes(q)));
 }
-const badge = s => `<span class="status ${s || "pending"}">${{ pending: "Pending", approved: "Approved", rejected: "Needs changes" }[s || "pending"]}</span>`;
+const LABEL = { pending: "Pending", approved: "Approved", rejected: "Needs changes" };
+const badge = s => { const k = LABEL[s] ? s : "pending"; return `<span class="status ${k}">${LABEL[k]}</span>`; };
 const fmtDate = d => d ? String(d).slice(0, 10) : "—";
 function render(){
   const list = filtered();
   const pend = all.filter(p => (p.status || "pending") === "pending").length, appr = all.filter(p => p.status === "approved").length;
   const women = all.filter(p => p.gender === "Female").length;
   $("stats").innerHTML = [["Registered", all.length], ["Pending review", pend], ["Approved", appr], ["Women / men", `${women} / ${all.length - women}`]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
-  $("rows").innerHTML = list.map(p => `<tr data-uid="${esc(p.uid)}">
+  $("rows").innerHTML = list.map(p => { try { return `<tr data-uid="${esc(p.uid)}">
     <td><div class="who"><img src="${esc(p.photoThumb || p.photoUrl || "../media/img/logo.jpg")}" alt=""><div><b>${esc(p.fullName || "—")}</b><small>${esc(p.email || "")}${p.city ? " · " + esc(p.city) : ""}</small></div></div></td>
     <td>${esc(p.gender || "—")} · ${p.dob ? age(p.dob) : "—"}</td><td>${esc(p.nationality || "—")}</td>
     <td>${(p.languages || []).map(esc).join(", ") || "—"}</td><td>${(p.skills || []).slice(0, 4).map(esc).join(", ")}${(p.skills || []).length > 4 ? " +" + (p.skills.length - 4) : ""}</td>
-    <td>${esc(p.payMethod || "—")}</td><td>${fmtDate(p.availableFrom)}</td><td>${badge(p.status)}</td></tr>`).join("");
+    <td>${esc(p.payMethod || "—")}</td><td>${esc(fmtDate(p.availableFrom))}</td><td>${badge(p.status)}</td></tr>`; } catch (ex) { console.warn("bad profile", p && p.uid, ex); return `<tr data-uid="${esc(p && p.uid)}"><td colspan="8">Unreadable profile ${esc(p && p.email)}</td></tr>`; } }).join("");
   show("empty", list.length === 0);
 }
 ["q","f-status","f-skill","f-lang","f-gender"].forEach(id => $(id).addEventListener("input", render));
@@ -96,44 +99,53 @@ async function openDrawer(p){
       <div><h2>${esc(p.fullName || "—")}</h2><p style="color:var(--ink-3);font-size:13px">${esc(p.preferredName ? p.preferredName + " · " : "")}${esc(p.email)}</p>
       <p style="margin-top:10px">${badge(p.status)} <span class="hint" style="margin-left:8px">${completeness(p)}% complete</span></p>
       <div class="actions"><button class="btn ok small" data-st="approved">Approve</button><button class="btn danger small" data-st="rejected">Needs changes</button><button class="btn ghost small" data-st="pending">Back to pending</button>
-      <a class="btn ghost small" href="https://wa.me/${esc((p.phone || "").replace(/\D/g, ""))}" target="_blank" rel="noopener">WhatsApp</a></div></div></div>
+      ${waNumber(p.phone) ? `<a class="btn ghost small" href="https://wa.me/${waNumber(p.phone)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}</div></div></div>
     <div class="kv">${kv("Gender", p.gender)}${kv("Date of birth", p.dob ? p.dob + " (" + age(p.dob) + ")" : "")}${kv("Nationality", p.nationality)}${kv("City", p.city)}${kv("WhatsApp", p.phone)}${kv("Emergency contact", [p.emergencyName, p.emergencyPhone, p.emergencyRelation].filter(Boolean).join(" · "))}
       ${kv("Document", p.idType ? `${p.idType} · ${p.idNumber || ""} · exp. ${p.idExpiry || "?"}` : "")}${kv("Payment", pay)}${kv("Payroll notes", p.payNotes)}
-      ${kv("Experience", p.experienceYears != null ? p.experienceYears + " years" : "")}${kv("Instruments", p.instruments)}${kv("Previous work", p.previousWork)}${kv("Showreel", p.showreelUrl)}${kv("Special talents", p.specialTalents)}
+      ${kv("Experience", p.experienceYears != null ? p.experienceYears + " years" : "")}${kv("Instruments", p.instruments)}${kv("Previous work", p.previousWork)}${/^https?:\/\//.test(p.showreelUrl || "") ? `<div><b>Showreel</b><span><a href="${esc(p.showreelUrl)}" target="_blank" rel="noopener noreferrer">${esc(p.showreelUrl)}</a></span></div>` : ""}${kv("Special talents", p.specialTalents)}
       ${kv("Available from", p.availableFrom)}${kv("Contract", p.contractPref)}${kv("Lives at resort", p.relocate)}${kv("T-shirt", p.tshirt)}${kv("Medical", p.medical)}
       ${kv("Registered", fmtDate(p.createdAt))}${kv("Updated", fmtDate(p.updatedAt))}${kv("Invite code used", p.inviteCodeUsed)}</div>
     ${(p.skills || []).length ? `<p class="eyebrow" style="margin-top:18px">Skills</p><div class="tags">${p.skills.map(s => `<i>${esc(s)}</i>`).join("")}</div>` : ""}
     ${(p.languages || []).length ? `<p class="eyebrow" style="margin-top:14px">Languages</p><div class="tags">${p.languages.map(s => `<i class="v">${esc(s)}</i>`).join("")}</div>` : ""}
     <p class="eyebrow" style="margin-top:18px">Identity document</p><div id="docwrap"><p class="hint">${p.idScanPath ? "Loading…" : "No document photo uploaded yet."}</p></div>
     <p class="eyebrow" style="margin-top:18px">Office notes (only admins see this)</p>
-    <textarea class="in" id="notes" style="margin-top:8px" placeholder="Interview impressions, hotel assignment, contract dates…">${esc(p.adminNotes || "")}</textarea>
-    <div class="actions"><button class="btn small" id="save-notes">Save notes</button></div>`;
+    <textarea class="in" id="notes" style="margin-top:8px" placeholder="Loading…" disabled></textarea>
+    <div class="actions"><button class="btn small" id="save-notes">Save notes</button><span style="flex:1"></span><button class="btn ghost small" id="del" style="border-color:rgba(255,77,46,.6);color:#FFB3A3">Delete profile…</button></div>`;
   $("drawer").classList.add("open");
   $("dclose").onclick = closeDrawer;
-  $("panel").querySelectorAll("[data-st]").forEach(b => b.onclick = async () => { try { await be.adminUpdate(p.uid, { status: b.dataset.st, reviewedBy: user.email }); p.status = b.dataset.st; toast("Status: " + b.dataset.st); render(); openDrawer(p); } catch (ex) { err("Could not update: " + (ex.message || ex)); } });
-  $("save-notes").onclick = async () => { try { await be.adminUpdate(p.uid, { adminNotes: $("notes").value, reviewedBy: user.email }); p.adminNotes = $("notes").value; toast("Notes saved"); } catch (ex) { err("Could not save notes: " + (ex.message || ex)); } };
-  if (p.photoPath){ be.imageUrl(p.photoPath).then(u => { const el = $("davatar"); if (u && el) el.src = u; }).catch(() => {}); }
-  if (p.idScanPath){ try { const u = await be.imageUrl(p.idScanPath); $("docwrap").innerHTML = u ? `<img class="docimg" src="${esc(u)}" alt="Identity document">` : "<p class='hint'>Not available.</p>"; } catch { $("docwrap").innerHTML = "<p class='hint'>Could not load the document image.</p>"; } }
+  let savedNotes = "";
+  const saveNotes = async () => { const v = $("notes").value; if (v === savedNotes) return; await be.setNotes(p.uid, v, user.email); savedNotes = v; };
+  $("panel").querySelectorAll("[data-st]").forEach(b => b.onclick = async () => { try { await saveNotes(); await be.adminUpdate(p.uid, { status: b.dataset.st, reviewedBy: user.email }); p.status = b.dataset.st; toast("Marked as " + LABEL[b.dataset.st]); render(); openDrawer(p); } catch (ex) { toast("Could not update: " + (ex.message || ex)); } });
+  $("save-notes").onclick = async () => { try { await saveNotes(); toast("Notes saved"); } catch (ex) { toast("Could not save notes: " + (ex.message || ex)); } };
+  $("del").onclick = async () => { if (prompt(`Type DELETE to permanently remove ${p.fullName || p.email} and their photos. This cannot be undone.`) !== "DELETE") return; try { await be.deleteEmployee(p.uid); all = all.filter(x => x.uid !== p.uid); closeDrawer(); render(); toast("Profile deleted"); } catch (ex) { toast("Could not delete: " + (ex.message || ex)); } };
+  try { savedNotes = await be.getNotes(p.uid); } catch { savedNotes = ""; }
+  if (cur !== p) return;
+  $("notes").value = savedNotes; $("notes").disabled = false; $("notes").placeholder = "Interview impressions, hotel assignment, contract dates…";
+  if (p.photoPath){ be.imageUrl(p.photoPath).then(u => { const el = $("davatar"); if (u && el && cur === p) el.src = u; }).catch(() => {}); }
+  if (p.idScanPath){ try { const u = await be.imageUrl(p.idScanPath); if (cur !== p) return; $("docwrap").innerHTML = u ? `<img class="docimg" src="${esc(u)}" alt="Identity document">` : "<p class='hint'>Not available.</p>"; } catch { if (cur === p) $("docwrap").innerHTML = "<p class='hint'>Could not load the document image.</p>"; } }
 }
 function closeDrawer(){ $("drawer").classList.remove("open"); cur = null; }
 $("drawer-bg").addEventListener("click", closeDrawer);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
 
 $("btn-csv").addEventListener("click", () => {
-  const cols = ["fullName","preferredName","email","phone","gender","dob","nationality","city","languages","skills","instruments","experienceYears","payMethod","bankName","accountName","iban","instapay","walletProvider","walletNumber","idType","idNumber","idExpiry","availableFrom","contractPref","relocate","tshirt","emergencyName","emergencyPhone","status","adminNotes","createdAt"];
-  const cell = v => `"${String(Array.isArray(v) ? v.join("; ") : (v ?? "")).replace(/"/g, '""')}"`;
+  const cols = ["fullName","preferredName","email","phone","gender","dob","nationality","city","languages","skills","instruments","experienceYears","payMethod","bankName","accountName","iban","instapay","walletProvider","walletNumber","idType","idNumber","idExpiry","availableFrom","contractPref","relocate","tshirt","emergencyName","emergencyPhone","status","createdAt"];
+  const cell = v => { let t = String(Array.isArray(v) ? v.join("; ") : (v ?? "")); if (/^[=+\-@\t\r]/.test(t) || /^0\d+$/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
   const csv = [cols.join(",")].concat(filtered().map(p => cols.map(c => cell(p[c])).join(","))).join("\r\n");
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv" })); a.download = `joyboy-team-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
 });
+$("btn-refresh").addEventListener("click", async () => { try { all = await be.listEmployees(); render(); toast("Roster refreshed"); } catch (ex) { toast("Could not refresh: " + (ex.message || ex)); } });
 $("btn-code").addEventListener("click", async () => {
-  let cur = {}; try { cur = await be.getSettings(); } catch {}
-  const code = prompt("Invite code staff must enter to register:", cur.inviteCode || "");
-  if (code === null) return; try { await be.setSettings({ inviteCode: code.trim().toUpperCase() }); toast("Invite code saved"); } catch (ex) { err("Could not save the code: " + (ex.message || ex)); }
+  let cfg = {}; try { cfg = await be.getSettings(); } catch {}
+  const code = prompt("Invite code staff must enter to register (at least 8 letters/digits; pick something random and change it after each recruiting wave):", cfg.inviteCode || "");
+  if (code === null) return; const clean = code.trim().toUpperCase().replace(/\s+/g, "");
+  if (!/^[A-Z0-9-]{8,}$/.test(clean)) return toast("Code must be at least 8 letters or digits");
+  try { await be.setSettings({ inviteCode: clean }); toast("Invite code saved: " + clean); } catch (ex) { toast("Could not save the code: " + (ex.message || ex)); }
 });
 
 try {
   be = await initBackend();
-  $("signin").addEventListener("click", async () => { err(""); try { await be.signIn(); } catch (ex) { err("Sign-in failed: " + (ex.message || ex)); } });
+  $("signin").addEventListener("click", async () => { const b = $("signin"); b.disabled = true; err(""); try { await be.signIn(); } catch (ex) { err(ex.message || String(ex)); } finally { b.disabled = false; } });
   $("signout").addEventListener("click", () => be.signOut());
   be.onUser(async u => {
     user = u; show("who", !!u); ["s-auth","s-deny","s-admin"].forEach(id => show(id, false));

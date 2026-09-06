@@ -26,7 +26,11 @@ async function firebaseBackend(){
   return {
     mode: "firebase",
     onUser: cb => A.onAuthStateChanged(auth, u => cb(user(u))),
-    signIn: async () => { try { await A.signInWithPopup(auth, provider); } catch (e) { if (["auth/popup-blocked","auth/popup-closed-by-user","auth/cancelled-popup-request","auth/operation-not-supported-in-this-environment"].includes(e.code)) await A.signInWithRedirect(auth, provider); else throw e; } },
+    signIn: async () => { try { await A.signInWithPopup(auth, provider); } catch (e) {
+        if (e.code === "auth/popup-closed-by-user" || e.code === "auth/cancelled-popup-request") return;           // user changed their mind - not an error
+        if (e.code === "auth/popup-blocked") throw new Error("Your browser blocked the Google sign-in window. Allow pop-ups for this site (or open the page in Safari/Chrome instead of an in-app browser) and tap the button again.");
+        if (e.code === "auth/unauthorized-domain") throw new Error("This web address is not authorised for sign-in yet. Tell the office.");
+        throw e; } },
     signOut: () => A.signOut(auth),
     getProfile: async uid => { const s = await F.getDoc(F.doc(db, "employees", uid)); return s.exists() ? plain(s) : null; },
     createProfile: (uid, data) => F.setDoc(F.doc(db, "employees", uid), { ...clean(data), createdAt: ts(), updatedAt: ts() }),
@@ -36,8 +40,11 @@ async function firebaseBackend(){
     imageUrl: async path => { if (!path) return ""; const [uid, name] = path.split("/"); const s = await F.getDoc(F.doc(db, "employees", uid, "files", name)); return s.exists() ? s.data().data : ""; },
     deleteImage: async (uid, name) => F.deleteDoc(F.doc(db, "employees", uid, "files", name)),
     // admin
-    listEmployees: async () => { const q = F.query(F.collection(db, "employees"), F.orderBy("updatedAt", "desc")); const s = await F.getDocs(q); return s.docs.map(plain); },
+    listEmployees: async () => { const s = await F.getDocs(F.collection(db, "employees")); return s.docs.map(d => ({ uid: d.id, ...plain(d) })).sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || ""))); },
     adminUpdate: (uid, patch) => F.updateDoc(F.doc(db, "employees", uid), { ...patch, reviewedAt: ts() }),
+    getNotes: async uid => { const s = await F.getDoc(F.doc(db, "employees", uid, "private", "notes")); return s.exists() ? (s.data().text || "") : ""; },
+    setNotes: (uid, text, by) => F.setDoc(F.doc(db, "employees", uid, "private", "notes"), { text, by, updatedAt: ts() }),
+    deleteEmployee: async uid => { for (const f of ["avatar.jpg", "id.jpg"]) { try { await F.deleteDoc(F.doc(db, "employees", uid, "files", f)); } catch {} } try { await F.deleteDoc(F.doc(db, "employees", uid, "private", "notes")); } catch {} await F.deleteDoc(F.doc(db, "employees", uid)); },
     getSettings: async () => { const s = await F.getDoc(F.doc(db, "settings", "registration")); return s.exists() ? s.data() : {}; },
     setSettings: patch => F.setDoc(F.doc(db, "settings", "registration"), patch, { merge: true }),
   };
@@ -69,6 +76,9 @@ function demoBackend(){
     deleteImage: async (uid, name) => localStorage.removeItem(K + "img-" + uid + "-" + name),
     listEmployees: async () => (get("emps") || []).map(id => get("emp-" + id)).filter(Boolean).sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || "")),
     adminUpdate: async (uid, patch) => { set("emp-" + uid, { ...(get("emp-" + uid) || {}), ...patch, reviewedAt: now() }); },
+    getNotes: async uid => (get("notes-" + uid) || {}).text || "",
+    setNotes: async (uid, text, by) => set("notes-" + uid, { text, by, updatedAt: now() }),
+    deleteEmployee: async uid => { ["emp-" + uid, "notes-" + uid, "img-" + uid + "-avatar.jpg", "img-" + uid + "-id.jpg"].forEach(k => localStorage.removeItem(K + k)); set("emps", (get("emps") || []).filter(x => x !== uid)); },
     getSettings: async () => get("settings") || {},
     setSettings: async patch => set("settings", { ...(get("settings") || {}), ...patch }),
   };
@@ -94,5 +104,6 @@ export function shrink(file, max = 900, q = .85){
     img.onerror = () => rej(new Error("not an image")); img.src = url; });
 }
 export function toast(msg){ let t = document.querySelector(".toast"); if (!t){ t = document.createElement("div"); t.className = "toast"; document.body.appendChild(t); } t.textContent = msg; t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 2600); }
+export function waNumber(phone){ let d = String(phone || "").replace(/\D/g, ""); if (!d) return ""; if (d.startsWith("00")) d = d.slice(2); else if (d.startsWith("0") && d.length === 11) d = "20" + d.slice(1); return d.length >= 8 ? d : ""; }
 export const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 export function completeness(p){ const keys = ["photoPath","fullName","gender","dob","nationality","phone","city","emergencyName","emergencyPhone","idType","idNumber","idExpiry","idScanPath","payMethod","skills","experienceYears","availableFrom","contractPref","tshirt","languages"]; const n = keys.filter(k => { const v = p[k]; return Array.isArray(v) ? v.length : (v !== undefined && v !== null && v !== ""); }).length; return Math.round(100 * n / keys.length); }
