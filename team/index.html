@@ -215,7 +215,7 @@ $("back").addEventListener("click", () => { step = Math.max(1, step - 1); paint(
 document.querySelectorAll(".in, input[type=radio], input[type=checkbox]").forEach(el => el.addEventListener("input", () => { const f = el.closest(".f"); f && f.classList.remove("bad"); }));
 document.addEventListener("change", e => { if (e.target.name === "payMethod") document.querySelectorAll(".pay-extra").forEach(x => x.classList.toggle("on", x.dataset.pay === e.target.value)); });
 $("photo").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; if (f.size > 5 * 1024 * 1024) return toast("Photo is larger than 5 MB"); try { photoBlob = await shrinkToFit(f, 700, .82, 260000); $("pv").innerHTML = `<img src="${URL.createObjectURL(photoBlob)}" alt="">`; $("pv").classList.add("has"); $("f-photo").classList.remove("bad"); } catch { toast("That file is not an image"); } });
-$("idScan").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { scanBlob = await shrinkToFit(f, 1400, .78, 620000); $("docpv").src = URL.createObjectURL(scanBlob); $("docpv").classList.add("has"); } catch { toast("That file is not an image"); } });
+$("idScan").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { scanBlob = await shrinkToFit(f, 1400, .78, 560000); $("docpv").src = URL.createObjectURL(scanBlob); $("docpv").classList.add("has"); } catch { toast("That file is not an image"); } });
 
 // collect
 const val = id => $(id).value.trim();
