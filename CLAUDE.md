@@ -16,6 +16,7 @@ account; the workflow in `.github/workflows/pages.yml` is dormant).
 | `/portfolio.html` | tiny redirect to `/` (old shared link) |
 | `/de.html`, `/it.html` | generated from `portfolio.html` by `scratchpad/i18n.py` (dictionaries DE/IT inside; rerun after any English copy change; keep the script copy in `tools/i18n.py`) |
 | `/legal.html`, `/404.html`, `/robots.txt`, `/sitemap.xml` | same-named files |
+| `/team/` | `team/` (staff portal, see section below; copy the whole folder) |
 | `/media/**` | `media/` (videos) and `media/img/` (photos, posters, icons) |
 
 Deploy = commit on `main`, then on `gh-pages`: `git show main:portfolio.html >
@@ -39,6 +40,21 @@ the proxy: use `timeout 50 git push` with retries. Always verify
   in the DE/IT dictionaries and both files regenerated before deploy.
 - Verify visually with headless Chromium before deploying; block Google Fonts
   in test shots (`--host-resolver-rules`) or the run hangs.
+
+## Team portal (staff app) — `team/`
+
+Static pages on Pages + **Firebase** (Google sign-in, Firestore, Storage). Files:
+`team/index.html` (register/edit profile, 5 steps), `team/admin.html` (roster,
+approve/reject, notes, CSV, invite code), `team/portal.js` (backend layer,
+demo mode when `firebase-config.js` still has PASTE placeholders),
+`team/firestore.rules` + `team/storage.rules` (paste into the console),
+`team/README.md` (setup). Data model: `employees/{uid}` (status pending/
+approved/rejected, admin-only fields status/adminNotes/reviewedBy/reviewedAt),
+`settings/registration.inviteCode` (rules enforce it on create), Storage
+`profiles/{uid}/avatar.jpg|id.jpg`. Admin emails are hard-coded in config AND
+both rules files — keep the three lists identical. **Personal data never goes
+into git, screenshots, or chat logs**; demo data is clearly fake. Portal is
+noindex and robots-disallowed; privacy policy has a staff section.
 
 ## Design direction the owner chose
 

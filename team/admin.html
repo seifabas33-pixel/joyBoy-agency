@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<title>Joy Boy Agency — Team admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0D0A14">
+<link rel="icon" type="image/png" sizes="64x64" href="../media/img/favicon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="portal.css">
+<script src="firebase-config.js"></script>
+<script>window.JB_ADMIN_PAGE = true;</script>
+</head>
+<body>
+<div class="topbar"><div class="topbar-inner">
+  <a class="brand" href="../"><img src="../media/img/logo.jpg" alt=""><span class="t">Joy Boy Agency</span> <small>Team admin</small></a>
+  <div class="who" id="who" hidden><img id="who-img" alt=""><span id="who-name"></span><button class="linkbtn" id="signout" type="button">Sign out</button></div>
+</div></div>
+
+<main class="wrap">
+  <div class="banner demo" id="demo-banner" hidden><span>⚠️</span><span><b>Demo mode</b> — showing three made-up example profiles. Connect Firebase (see README) to see real registrations.</span></div>
+  <div class="banner error" id="err" hidden></div>
+
+  <section id="s-auth" hidden>
+    <div class="hero"><span class="eyebrow">Office only</span><h1>Team <em>admin</em></h1><p>Sign in with an admin Google account to review registrations, approve staff and export the roster.</p></div>
+    <div class="card"><button class="btn google" id="signin" type="button">Continue with Google</button></div>
+  </section>
+
+  <section id="s-deny" hidden>
+    <div class="hero"><span class="eyebrow">Not authorised</span><h1>This account is not an <em>admin</em>.</h1><p id="deny-msg"></p></div>
+    <div class="card"><a class="btn ghost" href="./">Go to the employee portal</a></div>
+  </section>
+
+  <section id="s-admin" hidden>
+    <div class="hero" style="padding-top:18px"><span class="eyebrow">Roster</span><h1 style="font-size:clamp(30px,5vw,48px)">Team <em>registrations</em></h1></div>
+    <div class="stats" id="stats"></div>
+    <div class="toolbar">
+      <input class="in" id="q" placeholder="Search name, email, city…">
+      <select class="in" id="f-status"><option value="">All statuses</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Needs changes</option></select>
+      <select class="in" id="f-skill"><option value="">Any skill</option></select>
+      <select class="in" id="f-lang"><option value="">Any language</option></select>
+      <select class="in" id="f-gender"><option value="">Any gender</option><option>Male</option><option>Female</option></select>
+      <span style="flex:1"></span>
+      <button class="btn ghost small" id="btn-code" type="button">Invite code</button>
+      <button class="btn small" id="btn-csv" type="button">Export CSV</button>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Person</th><th>Gender · age</th><th>Nationality</th><th>Languages</th><th>Skills</th><th>Paid by</th><th>Available</th><th>Status</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table><div class="empty" id="empty" hidden>No profiles match.</div></div>
+  </section>
+</main>
+
+<div class="drawer" id="drawer"><div class="bg" id="drawer-bg"></div><div class="panel" id="panel"></div></div>
+<footer class="small">Joy Boy Agency · Team admin · Personal data — do not share exports outside the office.</footer>
+
+<script type="module">
+import { initBackend, DEMO, isAdminEmail, SKILLS, LANGS, age, toast, esc, completeness } from "./portal.js";
+const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
+const err = m => { $("err").textContent = m || ""; show("err", !!m); };
+show("demo-banner", DEMO);
+$("f-skill").innerHTML += SKILLS.map(s => `<option>${s}</option>`).join("");
+$("f-lang").innerHTML += LANGS.map(s => `<option>${s}</option>`).join("");
+let be, user, all = [], cur = null;
+
+function filtered(){
+  const q = $("q").value.trim().toLowerCase(), st = $("f-status").value, sk = $("f-skill").value, lg = $("f-lang").value, g = $("f-gender").value;
+  return all.filter(p => (!st || (p.status || "pending") === st) && (!sk || (p.skills || []).includes(sk)) && (!lg || (p.languages || []).includes(lg)) && (!g || p.gender === g)
+    && (!q || [p.fullName, p.preferredName, p.email, p.city, p.nationality, p.phone].join(" ").toLowerCase().includes(q)));
+}
+const badge = s => `<span class="status ${s || "pending"}">${{ pending: "Pending", approved: "Approved", rejected: "Needs changes" }[s || "pending"]}</span>`;
+const fmtDate = d => d ? String(d).slice(0, 10) : "—";
+function render(){
+  const list = filtered();
+  const pend = all.filter(p => (p.status || "pending") === "pending").length, appr = all.filter(p => p.status === "approved").length;
+  const women = all.filter(p => p.gender === "Female").length;
+  $("stats").innerHTML = [["Registered", all.length], ["Pending review", pend], ["Approved", appr], ["Women / men", `${women} / ${all.length - women}`]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+  $("rows").innerHTML = list.map(p => `<tr data-uid="${esc(p.uid)}">
+    <td><div class="who"><img src="${esc(p.photoUrl || "../media/img/logo.jpg")}" alt=""><div><b>${esc(p.fullName || "—")}</b><small>${esc(p.email || "")}${p.city ? " · " + esc(p.city) : ""}</small></div></div></td>
+    <td>${esc(p.gender || "—")} · ${p.dob ? age(p.dob) : "—"}</td><td>${esc(p.nationality || "—")}</td>
+    <td>${(p.languages || []).map(esc).join(", ") || "—"}</td><td>${(p.skills || []).slice(0, 4).map(esc).join(", ")}${(p.skills || []).length > 4 ? " +" + (p.skills.length - 4) : ""}</td>
+    <td>${esc(p.payMethod || "—")}</td><td>${fmtDate(p.availableFrom)}</td><td>${badge(p.status)}</td></tr>`).join("");
+  show("empty", list.length === 0);
+}
+["q","f-status","f-skill","f-lang","f-gender"].forEach(id => $(id).addEventListener("input", render));
+$("rows").addEventListener("click", e => { const tr = e.target.closest("tr"); if (tr) openDrawer(all.find(p => p.uid === tr.dataset.uid)); });
+
+async function openDrawer(p){
+  cur = p; const kv = (l, v) => v ? `<div><b>${l}</b><span>${esc(v)}</span></div>` : "";
+  const pay = [p.payMethod, ...(p.payMethod === "Bank transfer" ? [p.bankName, p.accountName, p.iban] : p.payMethod === "InstaPay" ? [p.instapay] : p.payMethod === "Mobile wallet" ? [p.walletProvider, p.walletNumber] : [])].filter(Boolean).join(" · ");
+  $("panel").innerHTML = `<button class="close" id="dclose" aria-label="Close">×</button>
+    <div class="pcard" style="margin-top:6px"><img class="avatar" src="${esc(p.photoUrl || "../media/img/logo.jpg")}" alt="">
+      <div><h2>${esc(p.fullName || "—")}</h2><p style="color:var(--ink-3);font-size:13px">${esc(p.preferredName ? p.preferredName + " · " : "")}${esc(p.email)}</p>
+      <p style="margin-top:10px">${badge(p.status)} <span class="hint" style="margin-left:8px">${completeness(p)}% complete</span></p>
+      <div class="actions"><button class="btn ok small" data-st="approved">Approve</button><button class="btn danger small" data-st="rejected">Needs changes</button><button class="btn ghost small" data-st="pending">Back to pending</button>
+      <a class="btn ghost small" href="https://wa.me/${esc((p.phone || "").replace(/\D/g, ""))}" target="_blank" rel="noopener">WhatsApp</a></div></div></div>
+    <div class="kv">${kv("Gender", p.gender)}${kv("Date of birth", p.dob ? p.dob + " (" + age(p.dob) + ")" : "")}${kv("Nationality", p.nationality)}${kv("City", p.city)}${kv("WhatsApp", p.phone)}${kv("Emergency contact", [p.emergencyName, p.emergencyPhone, p.emergencyRelation].filter(Boolean).join(" · "))}
+      ${kv("Document", p.idType ? `${p.idType} · ${p.idNumber || ""} · exp. ${p.idExpiry || "?"}` : "")}${kv("Payment", pay)}${kv("Payroll notes", p.payNotes)}
+      ${kv("Experience", p.experienceYears != null ? p.experienceYears + " years" : "")}${kv("Instruments", p.instruments)}${kv("Previous work", p.previousWork)}${kv("Showreel", p.showreelUrl)}${kv("Special talents", p.specialTalents)}
+      ${kv("Available from", p.availableFrom)}${kv("Contract", p.contractPref)}${kv("Lives at resort", p.relocate)}${kv("T-shirt", p.tshirt)}${kv("Medical", p.medical)}
+      ${kv("Registered", fmtDate(p.createdAt))}${kv("Updated", fmtDate(p.updatedAt))}${kv("Invite code used", p.inviteCodeUsed)}</div>
+    ${(p.skills || []).length ? `<p class="eyebrow" style="margin-top:18px">Skills</p><div class="tags">${p.skills.map(s => `<i>${esc(s)}</i>`).join("")}</div>` : ""}
+    ${(p.languages || []).length ? `<p class="eyebrow" style="margin-top:14px">Languages</p><div class="tags">${p.languages.map(s => `<i class="v">${esc(s)}</i>`).join("")}</div>` : ""}
+    <p class="eyebrow" style="margin-top:18px">Identity document</p><div id="docwrap"><p class="hint">${p.idScanPath ? "Loading…" : "No document photo uploaded yet."}</p></div>
+    <p class="eyebrow" style="margin-top:18px">Office notes (only admins see this)</p>
+    <textarea class="in" id="notes" style="margin-top:8px" placeholder="Interview impressions, hotel assignment, contract dates…">${esc(p.adminNotes || "")}</textarea>
+    <div class="actions"><button class="btn small" id="save-notes">Save notes</button></div>`;
+  $("drawer").classList.add("open");
+  $("dclose").onclick = closeDrawer;
+  $("panel").querySelectorAll("[data-st]").forEach(b => b.onclick = async () => { try { await be.adminUpdate(p.uid, { status: b.dataset.st, reviewedBy: user.email }); p.status = b.dataset.st; toast("Status: " + b.dataset.st); render(); openDrawer(p); } catch (ex) { err("Could not update: " + (ex.message || ex)); } });
+  $("save-notes").onclick = async () => { try { await be.adminUpdate(p.uid, { adminNotes: $("notes").value, reviewedBy: user.email }); p.adminNotes = $("notes").value; toast("Notes saved"); } catch (ex) { err("Could not save notes: " + (ex.message || ex)); } };
+  if (p.idScanPath){ try { const u = await be.imageUrl(p.idScanPath); $("docwrap").innerHTML = u ? `<img class="docimg" src="${esc(u)}" alt="Identity document">` : "<p class='hint'>Not available.</p>"; } catch { $("docwrap").innerHTML = "<p class='hint'>Could not load the document image.</p>"; } }
+}
+function closeDrawer(){ $("drawer").classList.remove("open"); cur = null; }
+$("drawer-bg").addEventListener("click", closeDrawer);
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+
+$("btn-csv").addEventListener("click", () => {
+  const cols = ["fullName","preferredName","email","phone","gender","dob","nationality","city","languages","skills","instruments","experienceYears","payMethod","bankName","accountName","iban","instapay","walletProvider","walletNumber","idType","idNumber","idExpiry","availableFrom","contractPref","relocate","tshirt","emergencyName","emergencyPhone","status","adminNotes","createdAt"];
+  const cell = v => `"${String(Array.isArray(v) ? v.join("; ") : (v ?? "")).replace(/"/g, '""')}"`;
+  const csv = [cols.join(",")].concat(filtered().map(p => cols.map(c => cell(p[c])).join(","))).join("\r\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv" })); a.download = `joyboy-team-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+});
+$("btn-code").addEventListener("click", async () => {
+  let cur = {}; try { cur = await be.getSettings(); } catch {}
+  const code = prompt("Invite code staff must enter to register:", cur.inviteCode || "");
+  if (code === null) return; try { await be.setSettings({ inviteCode: code.trim().toUpperCase() }); toast("Invite code saved"); } catch (ex) { err("Could not save the code: " + (ex.message || ex)); }
+});
+
+try {
+  be = await initBackend();
+  $("signin").addEventListener("click", async () => { err(""); try { await be.signIn(); } catch (ex) { err("Sign-in failed: " + (ex.message || ex)); } });
+  $("signout").addEventListener("click", () => be.signOut());
+  be.onUser(async u => {
+    user = u; show("who", !!u); ["s-auth","s-deny","s-admin"].forEach(id => show(id, false));
+    if (!u) return show("s-auth", true);
+    $("who-name").textContent = u.name || u.email; $("who-img").src = u.photo || "../media/img/logo.jpg";
+    if (!isAdminEmail(u.email)){ $("deny-msg").textContent = `${u.email} is not in the admin list. Admins are set in firebase-config.js and the security rules.`; return show("s-deny", true); }
+    show("s-admin", true);
+    try { all = await be.listEmployees(); render(); } catch (ex) { err("Could not load the roster: " + (ex.message || ex)); }
+  });
+} catch (ex) { err("The admin page could not start: " + (ex.message || ex)); }
+</script>
+</body>
+</html>

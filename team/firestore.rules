@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ── who is who ──
+    function signedIn() { return request.auth != null && request.auth.token.email_verified == true; }
+    function isAdmin() {
+      return signedIn() && request.auth.token.email.lower() in [
+        'seifabas33@gmail.com',
+        'joyboyentertainmentagency@gmail.com'
+        // , 'moaz@gmail.com'   ← add Mr. Moaz's Gmail (also in firebase-config.js and storage.rules)
+      ];
+    }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+    function adminOnlyFields() { return ['status', 'adminNotes', 'reviewedBy', 'reviewedAt']; }
+    function inviteOk() {
+      return exists(/databases/$(database)/documents/settings/registration)
+        && request.resource.data.inviteCodeUsed == get(/databases/$(database)/documents/settings/registration).data.inviteCode;
+    }
+
+    // Registration settings (invite code). Employees never read it; the rules compare it.
+    match /settings/{doc} {
+      allow read, write: if isAdmin();
+    }
+
+    // One document per employee, keyed by their Google uid.
+    match /employees/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid)
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.uid == uid
+        && request.resource.data.status == 'pending'
+        && !request.resource.data.keys().hasAny(['adminNotes', 'reviewedBy', 'reviewedAt'])
+        && request.resource.data.fullName is string && request.resource.data.fullName.size() >= 3
+        && request.resource.data.consentAt is string
+        && inviteOk();
+      allow update: if (isOwner(uid)
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(adminOnlyFields().concat(['email', 'uid', 'inviteCodeUsed', 'createdAt'])))
+        || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /{document=**} { allow read, write: if false; }
+  }
+}

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<title>Joy Boy Agency — Team portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0D0A14">
+<link rel="icon" type="image/png" sizes="64x64" href="../media/img/favicon-64.png">
+<link rel="apple-touch-icon" href="../media/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="portal.css">
+<script src="firebase-config.js"></script>
+</head>
+<body>
+<div class="topbar"><div class="topbar-inner">
+  <a class="brand" href="../"><img src="../media/img/logo.jpg" alt=""><span class="t">Joy Boy Agency</span> <small>Team portal</small></a>
+  <div class="who" id="who" hidden><img id="who-img" alt=""><span id="who-name"></span><button class="linkbtn" id="signout" type="button">Sign out</button></div>
+</div></div>
+
+<main class="wrap narrow">
+  <div class="banner demo" id="demo-banner" hidden><span>⚠️</span><span><b>Demo mode.</b> The portal is not connected to Firebase yet, so nothing you enter leaves this browser. Once the connection keys are pasted in <code>firebase-config.js</code>, this banner disappears and sign-in becomes real Google sign-in.</span></div>
+  <div class="banner error" id="err" hidden></div>
+
+  <!-- ── signed out ── -->
+  <section id="s-auth" hidden>
+    <div class="hero">
+      <span class="eyebrow">Joy Boy Agency · staff</span>
+      <h1>Join the team. <em>Tell us about you.</em></h1>
+      <p>Register with your Google account, fill in your profile once — who you are, your documents, how you want to be paid and what you can do on stage — and the office will review it. It takes about five minutes.</p>
+    </div>
+    <div class="card">
+      <button class="btn google" id="signin" type="button"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.3l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.7 6c4.5-4.2 6.9-10.3 6.9-17.2z"/><path fill="#FBBC05" d="M10.5 28.6A14.5 14.5 0 0 1 9.7 24c0-1.6.3-3.2.8-4.6l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.3 0 11.7-2.1 15.6-5.7l-7.7-6c-2.1 1.4-4.8 2.3-7.9 2.3-6.3 0-11.6-4.1-13.5-9.9l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Continue with Google</button>
+      <p class="hint" style="margin-top:14px">You need the <b>invite code</b> from the office to complete registration. Your data is used only for staffing, contracts and payroll — see the <a href="../legal.html#privacy">privacy policy</a>.</p>
+    </div>
+  </section>
+
+  <!-- ── registration / edit form ── -->
+  <section id="s-form" hidden>
+    <div class="hero" style="padding-top:18px">
+      <span class="eyebrow" id="form-eyebrow">New registration</span>
+      <h1 style="font-size:clamp(30px,5vw,44px)">Your <em>profile</em></h1>
+    </div>
+    <div class="card">
+      <div class="steps" id="steps"></div><p class="stepnow" id="stepnow"></p>
+      <form id="form" novalidate>
+
+      <div class="step on" data-step="1">
+        <h2>About you</h2><p class="lead">Exactly as written in your ID or passport, please.</p>
+        <div class="grid">
+          <div class="full photo">
+            <div class="pv" id="pv"><span>Your photo</span></div>
+            <div class="f" id="f-photo"><label class="btn ghost small filebtn">Choose photo <input type="file" id="photo" accept="image/*" capture="user"></label><p class="hint">A clear face photo, like a passport picture. Max 5 MB, we resize it.</p><p class="err" id="e-photo">Please add a profile photo.</p></div>
+          </div>
+          <label class="f full"><span>Full name <b class="req">*</b></span><input class="in" id="fullName" autocomplete="name" placeholder="As in your passport"><span class="err">Enter your full name.</span></label>
+          <label class="f"><span>Preferred / stage name</span><input class="in" id="preferredName" placeholder="What guests call you"></label>
+          <label class="f"><span>Date of birth <b class="req">*</b></span><input class="in" type="date" id="dob" max="2010-12-31"><span class="err">You must be at least 18.</span></label>
+          <div class="f full" id="f-gender"><span>Gender <b class="req">*</b></span><div class="seg"><label><input type="radio" name="gender" value="Male"><span>Male</span></label><label><input type="radio" name="gender" value="Female"><span>Female</span></label></div><span class="err">Please choose.</span></div>
+          <label class="f"><span>Nationality <b class="req">*</b></span><select class="in" id="nationality"></select><span class="err">Choose your nationality.</span></label>
+          <label class="f"><span>Current city <b class="req">*</b></span><input class="in" id="city" placeholder="Hurghada, Cairo, Rome…"><span class="err">Where are you based now?</span></label>
+          <label class="f full"><span>WhatsApp number <b class="req">*</b></span><input class="in" type="tel" id="phone" inputmode="tel" placeholder="+20 1XX XXX XXXX"><span class="err">Enter a valid number with country code.</span></label>
+          <div class="f full"><span>Languages you can host in</span><div class="chips" id="langs"></div></div>
+          <label class="f"><span>Emergency contact — name <b class="req">*</b></span><input class="in" id="emergencyName" placeholder="Family member"><span class="err">Required.</span></label>
+          <label class="f"><span>Emergency contact — phone <b class="req">*</b></span><input class="in" type="tel" id="emergencyPhone" inputmode="tel"><span class="err">Required.</span></label>
+          <label class="f full"><span>Relationship</span><input class="in" id="emergencyRelation" placeholder="Mother, brother, spouse…"></label>
+        </div>
+      </div>
+
+      <div class="step" data-step="2">
+        <h2>Identity document</h2><p class="lead">Needed for your contract and the hotel's security pass. Only the office can see this.</p>
+        <div class="grid">
+          <div class="f full" id="f-idType"><span>Document <b class="req">*</b></span><div class="seg"><label><input type="radio" name="idType" value="National ID"><span>Egyptian national ID</span></label><label><input type="radio" name="idType" value="Passport"><span>Passport</span></label></div><span class="err">Please choose.</span></div>
+          <label class="f"><span>Document number <b class="req">*</b></span><input class="in mono" id="idNumber" inputmode="text" autocomplete="off"><span class="err" id="e-idnum">Enter a valid number (national ID: 14 digits).</span></label>
+          <label class="f"><span>Expiry date <b class="req">*</b></span><input class="in" type="date" id="idExpiry"><span class="err">Must be a future date.</span></label>
+          <div class="full"><label class="btn ghost small filebtn">Upload a photo of the document <input type="file" id="idScan" accept="image/*" capture="environment"></label><p class="hint" style="margin-top:8px">Optional now, required before your first contract. Front side, all corners visible.</p><img class="docpv" id="docpv" alt="Document preview"></div>
+        </div>
+      </div>
+
+      <div class="step" data-step="3">
+        <h2>How you want to be paid</h2><p class="lead">Salary is paid monthly. Choose one method; you can change it later.</p>
+        <div class="grid">
+          <div class="f full" id="f-pay"><span>Method <b class="req">*</b></span><div class="seg" id="payseg"></div><span class="err">Please choose.</span></div>
+          <div class="pay-extra" data-pay="Bank transfer">
+            <label class="f"><span>Bank <b class="req">*</b></span><input class="in" id="bankName" placeholder="CIB, NBE, Banque Misr…"><span class="err">Required.</span></label>
+            <label class="f"><span>Account holder name <b class="req">*</b></span><input class="in" id="accountName"><span class="err">Required.</span></label>
+            <label class="f full"><span>IBAN or account number <b class="req">*</b></span><input class="in mono" id="iban" autocomplete="off"><span class="err">Required.</span></label>
+          </div>
+          <div class="pay-extra" data-pay="InstaPay">
+            <label class="f full"><span>InstaPay address (IPA) or linked mobile <b class="req">*</b></span><input class="in mono" id="instapay" placeholder="name@instapay or +20…"><span class="err">Required.</span></label>
+          </div>
+          <div class="pay-extra" data-pay="Mobile wallet">
+            <label class="f"><span>Wallet provider <b class="req">*</b></span><select class="in" id="walletProvider"><option value="">Choose…</option><option>Vodafone Cash</option><option>Orange Cash</option><option>Etisalat Cash</option><option>WE Pay</option></select><span class="err">Required.</span></label>
+            <label class="f"><span>Wallet number <b class="req">*</b></span><input class="in mono" id="walletNumber" inputmode="tel"><span class="err">Required.</span></label>
+          </div>
+          <label class="f full"><span>Notes for payroll</span><input class="in" id="payNotes" placeholder="Anything the office should know"></label>
+        </div>
+      </div>
+
+      <div class="step" data-step="4">
+        <h2>What you do on stage</h2><p class="lead">Tick everything you can genuinely deliver in front of guests.</p>
+        <div class="grid">
+          <div class="f full" id="f-skills"><span>Roles & skills <b class="req">*</b></span><div class="chips" id="skills"></div><span class="err">Pick at least one.</span></div>
+          <label class="f"><span>Instruments (if musician)</span><input class="in" id="instruments" placeholder="Violin, saxophone, piano…"></label>
+          <label class="f"><span>Years of experience <b class="req">*</b></span><input class="in" type="number" id="experienceYears" min="0" max="40" inputmode="numeric"><span class="err">Enter a number (0 is fine).</span></label>
+          <label class="f full"><span>Previous resorts / companies</span><textarea class="in" id="previousWork" placeholder="Hotel, city, role, year — one per line"></textarea></label>
+          <label class="f full"><span>Showreel link</span><input class="in" type="url" id="showreelUrl" placeholder="Instagram, TikTok or YouTube link"><span class="err">Enter a full link starting with https://</span></label>
+          <label class="f full"><span>Special talents</span><textarea class="in" id="specialTalents" placeholder="Acrobatics, magic, face painting, choreography, hosting bingo…"></textarea></label>
+        </div>
+      </div>
+
+      <div class="step" data-step="5">
+        <h2>Availability</h2><p class="lead">Last step.</p>
+        <div class="grid">
+          <label class="f"><span>Available from <b class="req">*</b></span><input class="in" type="date" id="availableFrom"><span class="err">Required.</span></label>
+          <label class="f"><span>T-shirt size <b class="req">*</b></span><select class="in" id="tshirt"><option value="">Choose…</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select><span class="err">Required.</span></label>
+          <div class="f full" id="f-contract"><span>Contract preference <b class="req">*</b></span><div class="seg"><label><input type="radio" name="contractPref" value="Full season"><span>Full season</span></label><label><input type="radio" name="contractPref" value="Monthly"><span>Monthly</span></label><label><input type="radio" name="contractPref" value="Events only"><span>Events only</span></label></div><span class="err">Please choose.</span></div>
+          <div class="f full" id="f-relocate"><span>Can you live at the resort for the season? <b class="req">*</b></span><div class="seg"><label><input type="radio" name="relocate" value="Yes"><span>Yes</span></label><label><input type="radio" name="relocate" value="No"><span>No</span></label></div><span class="err">Please choose.</span></div>
+          <label class="f full"><span>Medical notes or allergies (optional)</span><textarea class="in" id="medical" placeholder="Only what the team leader should know in an emergency"></textarea></label>
+          <label class="f full" id="f-invite"><span>Invite code from the office <b class="req">*</b></span><input class="in mono" id="inviteCode" autocomplete="off" placeholder="Ask Mr. Moaz or Mr. Seif"><span class="err">The code is required to register.</span></label>
+          <div class="full f" id="f-consent"><label class="consent"><input type="checkbox" id="consent"><span>I confirm this information is true and I agree that Joy Boy Agency stores it and uses it only for staffing, contracts, hotel security passes and payroll. I can ask for it to be corrected or deleted at any time (<a href="../legal.html#privacy" target="_blank">privacy policy</a>).</span></label><span class="err">Please confirm.</span></div>
+        </div>
+      </div>
+
+      <div class="nav">
+        <button class="btn ghost" type="button" id="back">← Back</button>
+        <button class="btn" type="button" id="next">Continue →</button>
+        <button class="btn" type="submit" id="submit" hidden>Save my profile</button>
+      </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ── profile ── -->
+  <section id="s-profile" hidden>
+    <div class="hero" style="padding-top:18px"><span class="eyebrow">Your profile</span><h1 style="font-size:clamp(30px,5vw,44px)">Thanks, <em id="p-first">you</em>.</h1></div>
+    <div class="card">
+      <div class="pcard">
+        <img class="avatar" id="p-avatar" alt="">
+        <div>
+          <h2 id="p-name"></h2>
+          <p style="color:var(--ink-3);font-size:13.5px" id="p-email"></p>
+          <p style="margin-top:12px"><span class="status pending" id="p-status">Pending review</span></p>
+          <p style="font-size:13.5px;color:var(--ink-2);margin-top:12px" id="p-msg"></p>
+          <div class="meter"><i id="p-meter" style="width:0"></i></div><p class="hint" id="p-meter-txt"></p>
+          <div class="actions"><button class="btn small" id="edit" type="button">Edit profile</button></div>
+        </div>
+      </div>
+      <div class="kv" id="p-kv"></div>
+    </div>
+  </section>
+</main>
+<footer class="small">Joy Boy Agency · Team portal · Questions? <a href="https://wa.me/201021281660">WhatsApp Mr. Moaz</a> · <a href="../legal.html#privacy">Privacy</a></footer>
+
+<script type="module">
+import { initBackend, DEMO, LANGS, SKILLS, NATIONS, PAY, age, shrink, toast, esc, completeness } from "./portal.js";
+const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
+const err = m => { $("err").textContent = m || ""; show("err", !!m); };
+show("demo-banner", DEMO);
+// build option lists
+$("nationality").innerHTML = '<option value="">Choose…</option>' + NATIONS.map(n => `<option>${n}</option>`).join("");
+$("langs").innerHTML = LANGS.map(l => `<label class="chip"><input type="checkbox" name="languages" value="${l}"><span>${l}</span></label>`).join("");
+$("skills").innerHTML = SKILLS.map(s => `<label class="chip"><input type="checkbox" name="skills" value="${s}"><span>${s}</span></label>`).join("");
+$("payseg").innerHTML = PAY.map(p => `<label><input type="radio" name="payMethod" value="${p}"><span>${p}</span></label>`).join("");
+const STEPS = ["About you","Document","Payment","Skills","Availability"];
+let step = 1, user = null, profile = null, be = null, photoBlob = null, scanBlob = null;
+const paint = () => { $("stepnow").textContent = `Step ${step} of ${STEPS.length} · ${STEPS[step - 1]}`; $("steps").innerHTML = STEPS.map((s, i) => `<span class="${i + 1 < step ? "done" : i + 1 === step ? "cur" : ""}"><b>${i + 1}. ${s}</b></span>`).join(""); document.querySelectorAll(".step").forEach(el => el.classList.toggle("on", +el.dataset.step === step)); $("back").style.visibility = step === 1 ? "hidden" : "visible"; show("next", step < 5); show("submit", step === 5); window.scrollTo({ top: 0, behavior: "smooth" }); };
+
+// validation
+const radio = n => (document.querySelector(`input[name="${n}"]:checked`) || {}).value || "";
+const checks = n => [...document.querySelectorAll(`input[name="${n}"]:checked`)].map(i => i.value);
+const bad = (el, on) => { const f = el.closest ? el.closest(".f") || el : el; f.classList.toggle("bad", on); return !on; };
+function validate(s){
+  let ok = true; const v = id => $(id).value.trim();
+  if (s === 1){
+    ok &= bad($("f-photo"), !(photoBlob || (profile && profile.photoPath)));
+    ok &= bad($("fullName"), v("fullName").length < 3);
+    ok &= bad($("dob"), !v("dob") || age(v("dob")) < 18 || age(v("dob")) > 70);
+    ok &= bad($("f-gender"), !radio("gender"));
+    ok &= bad($("nationality"), !v("nationality"));
+    ok &= bad($("city"), !v("city"));
+    ok &= bad($("phone"), v("phone").replace(/\D/g, "").length < 8);
+    ok &= bad($("emergencyName"), !v("emergencyName"));
+    ok &= bad($("emergencyPhone"), v("emergencyPhone").replace(/\D/g, "").length < 6);
+  }
+  if (s === 2){
+    const t = radio("idType"), n = v("idNumber").replace(/\s/g, "");
+    ok &= bad($("f-idType"), !t);
+    ok &= bad($("idNumber"), t === "National ID" ? !/^\d{14}$/.test(n) : !/^[A-Za-z0-9]{5,12}$/.test(n));
+    ok &= bad($("idExpiry"), !v("idExpiry") || new Date(v("idExpiry")) <= new Date());
+  }
+  if (s === 3){
+    const m = radio("payMethod"); ok &= bad($("f-pay"), !m);
+    if (m === "Bank transfer") ["bankName","accountName","iban"].forEach(id => ok &= bad($(id), !v(id)));
+    if (m === "InstaPay") ok &= bad($("instapay"), !v("instapay"));
+    if (m === "Mobile wallet") ["walletProvider","walletNumber"].forEach(id => ok &= bad($(id), !v(id)));
+  }
+  if (s === 4){
+    ok &= bad($("f-skills"), checks("skills").length === 0);
+    ok &= bad($("experienceYears"), v("experienceYears") === "" || +v("experienceYears") < 0);
+    ok &= bad($("showreelUrl"), !!v("showreelUrl") && !/^https?:\/\/.+\..+/.test(v("showreelUrl")));
+  }
+  if (s === 5){
+    ok &= bad($("availableFrom"), !v("availableFrom")); ok &= bad($("tshirt"), !v("tshirt"));
+    ok &= bad($("f-contract"), !radio("contractPref")); ok &= bad($("f-relocate"), !radio("relocate"));
+    if (!profile) ok &= bad($("f-invite"), !v("inviteCode"));
+    ok &= bad($("f-consent"), !$("consent").checked);
+  }
+  if (!ok){ const first = document.querySelector(".step.on .bad"); first && first.scrollIntoView({ behavior: "smooth", block: "center" }); }
+  return !!ok;
+}
+$("next").addEventListener("click", () => { if (validate(step)){ step++; paint(); } });
+$("back").addEventListener("click", () => { step = Math.max(1, step - 1); paint(); });
+document.querySelectorAll(".in, input[type=radio], input[type=checkbox]").forEach(el => el.addEventListener("input", () => { const f = el.closest(".f"); f && f.classList.remove("bad"); }));
+document.addEventListener("change", e => { if (e.target.name === "payMethod") document.querySelectorAll(".pay-extra").forEach(x => x.classList.toggle("on", x.dataset.pay === e.target.value)); });
+$("photo").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; if (f.size > 5 * 1024 * 1024) return toast("Photo is larger than 5 MB"); try { photoBlob = await shrink(f, 800, .85); $("pv").innerHTML = `<img src="${URL.createObjectURL(photoBlob)}" alt="">`; $("pv").classList.add("has"); $("f-photo").classList.remove("bad"); } catch { toast("That file is not an image"); } });
+$("idScan").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { scanBlob = await shrink(f, 1600, .82); $("docpv").src = URL.createObjectURL(scanBlob); $("docpv").classList.add("has"); } catch { toast("That file is not an image"); } });
+
+// collect
+const val = id => $(id).value.trim();
+function collect(){
+  return { email: user.email, uid: user.uid, fullName: val("fullName"), preferredName: val("preferredName"), gender: radio("gender"), dob: val("dob"), nationality: val("nationality"), city: val("city"), phone: val("phone"), languages: checks("languages"), emergencyName: val("emergencyName"), emergencyPhone: val("emergencyPhone"), emergencyRelation: val("emergencyRelation"),
+    idType: radio("idType"), idNumber: val("idNumber").replace(/\s/g, ""), idExpiry: val("idExpiry"),
+    payMethod: radio("payMethod"), bankName: val("bankName"), accountName: val("accountName"), iban: val("iban"), instapay: val("instapay"), walletProvider: val("walletProvider"), walletNumber: val("walletNumber"), payNotes: val("payNotes"),
+    skills: checks("skills"), instruments: val("instruments"), experienceYears: +val("experienceYears") || 0, previousWork: val("previousWork"), showreelUrl: val("showreelUrl"), specialTalents: val("specialTalents"),
+    availableFrom: val("availableFrom"), tshirt: val("tshirt"), contractPref: radio("contractPref"), relocate: radio("relocate"), medical: val("medical"),
+    consentAt: new Date().toISOString(), googleName: user.name };
+}
+function fill(p){
+  const set = (id, v) => { if ($(id)) $(id).value = v ?? ""; };
+  ["fullName","preferredName","dob","nationality","city","phone","emergencyName","emergencyPhone","emergencyRelation","idNumber","idExpiry","bankName","accountName","iban","instapay","walletProvider","walletNumber","payNotes","instruments","experienceYears","previousWork","showreelUrl","specialTalents","availableFrom","tshirt","medical"].forEach(k => set(k, p[k]));
+  const r = (n, v) => { const el = document.querySelector(`input[name="${n}"][value="${v}"]`); if (el){ el.checked = true; el.dispatchEvent(new Event("change", { bubbles: true })); } };
+  r("gender", p.gender); r("idType", p.idType); r("payMethod", p.payMethod); r("contractPref", p.contractPref); r("relocate", p.relocate);
+  (p.languages || []).forEach(v => { const el = document.querySelector(`input[name="languages"][value="${v}"]`); if (el) el.checked = true; });
+  (p.skills || []).forEach(v => { const el = document.querySelector(`input[name="skills"][value="${v}"]`); if (el) el.checked = true; });
+  if (p.photoUrl){ $("pv").innerHTML = `<img src="${esc(p.photoUrl)}" alt="">`; $("pv").classList.add("has"); }
+  show("f-invite", false); $("consent").checked = true;
+}
+$("form").addEventListener("submit", async e => {
+  e.preventDefault(); if (!validate(5)) return;
+  const btn = $("submit"); btn.disabled = true; btn.textContent = "Saving…"; err("");
+  try {
+    const data = collect();
+    if (photoBlob){ const r = await be.uploadImage(user.uid, "avatar.jpg", photoBlob); data.photoPath = r.path; data.photoUrl = r.url; }
+    if (scanBlob){ const r = await be.uploadImage(user.uid, "id.jpg", scanBlob); data.idScanPath = r.path; }
+    if (profile){ await be.updateProfile(user.uid, data); }
+    else { data.status = "pending"; data.inviteCodeUsed = val("inviteCode").trim().toUpperCase(); await be.createProfile(user.uid, data); }
+    profile = await be.getProfile(user.uid); photoBlob = scanBlob = null;
+    toast("Profile saved"); renderProfile();
+  } catch (ex) {
+    console.error(ex);
+    err(/permission|denied/i.test(String(ex)) ? "Saving was refused. The invite code is wrong, or your account is not allowed — check with the office." : "Could not save: " + (ex.message || ex));
+  } finally { btn.disabled = false; btn.textContent = "Save my profile"; }
+});
+
+function renderProfile(){
+  const p = profile; show("s-auth", false); show("s-form", false); show("s-profile", true);
+  $("p-first").textContent = (p.preferredName || p.fullName || "you").split(" ")[0];
+  $("p-name").textContent = p.fullName; $("p-email").textContent = p.email; $("p-avatar").src = p.photoUrl || "";
+  const st = p.status || "pending"; $("p-status").className = "status " + st; $("p-status").textContent = { pending: "Pending review", approved: "Approved", rejected: "Needs changes" }[st] || st;
+  $("p-msg").textContent = { pending: "The office reviews new profiles within a few days. You will be contacted on WhatsApp.", approved: "You are on the roster. Keep your document and payment details up to date.", rejected: "Something needs correcting. Please check your details or contact the office." }[st] || "";
+  const c = completeness(p); $("p-meter").style.width = c + "%"; $("p-meter-txt").textContent = c + "% complete" + (c < 100 ? " — add the missing pieces when you can (the document photo is required before your first contract)." : ".");
+  const rows = [["Gender", p.gender], ["Age", p.dob ? age(p.dob) + " (" + p.dob + ")" : ""], ["Nationality", p.nationality], ["City", p.city], ["WhatsApp", p.phone], ["Document", p.idType ? `${p.idType} · ${p.idNumber ? "•••• " + p.idNumber.slice(-4) : ""} · exp. ${p.idExpiry || "?"}` : ""], ["Paid by", p.payMethod], ["Experience", p.experienceYears != null ? p.experienceYears + " years" : ""], ["Available from", p.availableFrom], ["Contract", p.contractPref], ["T-shirt", p.tshirt]];
+  $("p-kv").innerHTML = rows.filter(r => r[1]).map(r => `<div><b>${r[0]}</b><span>${esc(r[1])}</span></div>`).join("") +
+    (p.skills && p.skills.length ? `<div style="grid-column:1/-1"><b>Skills</b><div class="tags">${p.skills.map(s => `<i>${esc(s)}</i>`).join("")}</div></div>` : "") +
+    (p.languages && p.languages.length ? `<div style="grid-column:1/-1"><b>Languages</b><div class="tags">${p.languages.map(s => `<i class="v">${esc(s)}</i>`).join("")}</div></div>` : "");
+}
+$("edit").addEventListener("click", () => { fill(profile); $("form-eyebrow").textContent = "Edit your profile"; step = 1; paint(); show("s-profile", false); show("s-form", true); });
+
+// boot
+try {
+  be = await initBackend();
+  $("signin").addEventListener("click", async () => { err(""); try { await be.signIn(); } catch (ex) { err("Sign-in failed: " + (ex.message || ex)); } });
+  $("signout").addEventListener("click", () => be.signOut());
+  be.onUser(async u => {
+    user = u; show("who", !!u);
+    if (!u){ show("s-auth", true); show("s-form", false); show("s-profile", false); return; }
+    $("who-name").textContent = u.name || u.email; $("who-img").src = u.photo || "../media/img/logo.jpg";
+    if (!u.verified){ err("Your Google account email is not verified. Verify it with Google and sign in again."); return; }
+    try { profile = await be.getProfile(u.uid); } catch (ex) { profile = null; console.warn(ex); }
+    if (profile) renderProfile();
+    else { show("s-auth", false); show("s-profile", false); show("s-form", true); $("fullName").value ||= u.name || ""; step = 1; paint(); }
+  });
+} catch (ex) { err("The portal could not start: " + (ex.message || ex)); console.error(ex); }
+</script>
+</body>
+</html>

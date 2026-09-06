@@ -12,6 +12,7 @@ animation management for Red Sea resorts.
 | `proposal-template.html` | Reusable proposal template for the next hotel |
 | `portfolio.html` | The agency portfolio (English source) — no prices, sendable to any client |
 | `de.html`, `it.html` | German and Italian versions, **generated** from `portfolio.html` — edit the English page, then re-run the generator (see below) |
+| `team/` | Staff portal: Google sign-in registration + admin roster on Firebase (setup in `team/README.md`) |
 | `media/` | Show reels, the hero showreel (MP4) and `media/img/` — photos, posters, logo, favicons, social image |
 | `legal.html`, `404.html`, `robots.txt`, `sitemap.xml` | Privacy & terms, custom not-found page, crawler files |
 | `CLAUDE.md` | Project memory for Claude: deploy steps, hard rules, design direction, the 20-point launch checklist |

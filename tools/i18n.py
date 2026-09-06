@@ -110,7 +110,7 @@ DE = {
 "Mr. Seif Abas":"Herr Seif Abas","Co-founder":"Mitgründer","Company":"Unternehmen","@joyboyentertainment on Instagram":"@joyboyentertainment auf Instagram",
 "animation management for Red Sea resorts":"Animationsmanagement für Resorts am Roten Meer","one resident team, one accountable department, seven nights a week.":"ein festes Team, eine verantwortliche Abteilung, sieben Abende pro Woche.",
 "Explore":"Entdecken","Agency portfolio":"Agentur-Portfolio","rates quoted per resort on request":"Preise pro Resort auf Anfrage","Privacy":"Datenschutz","Terms":"Nutzungsbedingungen",
-"Back to top":"Nach oben","Image viewer":"Bildansicht","Close":"Schließen","Language":"Sprache","Open menu":"Menü öffnen","Close menu":"Menü schließen","Sections":"Bereiche",
+"Back to top":"Nach oben","Image viewer":"Bildansicht","Close":"Schließen","Language":"Sprache","Open menu":"Menü öffnen","Close menu":"Menü schließen","Sections":"Bereiche","Team portal (staff)":"Team-Portal (Mitarbeiter)",
 }
 IT = {
 "animation for Red Sea resorts":"animazione per i resort del Mar Rosso",
@@ -220,7 +220,7 @@ IT = {
 "Mr. Seif Abas":"Sig. Seif Abas","Co-founder":"Co-fondatore","Company":"Azienda","@joyboyentertainment on Instagram":"@joyboyentertainment su Instagram",
 "animation management for Red Sea resorts":"gestione dell'animazione per i resort del Mar Rosso","one resident team, one accountable department, seven nights a week.":"un unico team residente, un unico reparto responsabile, sette sere a settimana.",
 "Explore":"Esplora","Agency portfolio":"Portfolio dell'agenzia","rates quoted per resort on request":"tariffe per resort su richiesta","Privacy":"Privacy","Terms":"Termini",
-"Back to top":"Torna su","Image viewer":"Visualizzatore immagini","Close":"Chiudi","Language":"Lingua","Open menu":"Apri il menu","Close menu":"Chiudi il menu","Sections":"Sezioni",
+"Back to top":"Torna su","Image viewer":"Visualizzatore immagini","Close":"Chiudi","Language":"Lingua","Open menu":"Apri il menu","Close menu":"Chiudi il menu","Sections":"Sezioni","Team portal (staff)":"Portale team (staff)",
 }
 ORG_DESC = {"de":"Entertainment- und Animationsmanagement für Resorts am Roten Meer: Abendshows, Tagesprogramm, Kinderprogramm und Live-Musik, geliefert von einem festen Team.",
             "it":"Gestione dell'intrattenimento e dell'animazione per i resort del Mar Rosso: show serali, programma diurno, programma bambini e musica dal vivo, con un unico team residente."}
