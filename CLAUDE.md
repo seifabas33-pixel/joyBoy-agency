@@ -28,10 +28,14 @@ the proxy: use `timeout 50 git push` with retries. Always verify
 
 - No Joy Boy internal figures anywhere public: payroll, lottery/disco/merch
   revenue, margins. No prices on the portfolio (prices only in per-hotel proposals).
-- Client record is **only** Casa Blue Beach Resort (Marsa Alam, 2024 season) and
-  True Beach Resort (Marsa Alam, 2026 season). Never imply others.
+- Client record (owner-stated 2026-09-07): Casa Blue Beach Resort (Marsa Alam,
+  2024–2025 seasons) and True Beach Resort (Marsa Alam, 2026 season) as Joy Boy
+  engagements; before that the team ran the seasons at Solymar Reef Marsa and Jaz
+  Grand Marsa (2021–2022) and Hilton Marsa Alam Nubian (2022–2023). The awards
+  cards carry these seasons plus the owner's note that none of them was top-10 on
+  arrival. Do not add further hotels without the owner.
 - Guest quotes must be **verbatim**, dated, attributed and linked; only from
-  periods when Joy Boy ran the programme (Casa Blue reviews after 2024 are NOT ours).
+  periods when Joy Boy ran the programme (Casa Blue reviews after the 2025 season are NOT ours).
 - Contacts: Moaz +20 102 128 1660 (WhatsApp, proposal requests), Seif
   +20 100 157 0273 / seifabas33@gmail.com, joyboyentertainmentagency@gmail.com,
   Instagram @joyboyentertainment. No crew personal details, no contracts.
