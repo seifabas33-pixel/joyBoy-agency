@@ -13,11 +13,10 @@ export async function initBackend(){
 
 /* ─────────────── Firebase ─────────────── */
 async function firebaseBackend(){
-  const [{ initializeApp }, A, F, S] = await Promise.all([
-    import(FB + "firebase-app.js"), import(FB + "firebase-auth.js"),
-    import(FB + "firebase-firestore.js"), import(FB + "firebase-storage.js")]);
+  const [{ initializeApp }, A, F] = await Promise.all([
+    import(FB + "firebase-app.js"), import(FB + "firebase-auth.js"), import(FB + "firebase-firestore.js")]);
   const app = initializeApp(cfg);
-  const auth = A.getAuth(app), db = F.getFirestore(app), st = S.getStorage(app);
+  const auth = A.getAuth(app), db = F.getFirestore(app);
   const provider = new A.GoogleAuthProvider(); provider.setCustomParameters({ prompt: "select_account" });
   const user = u => u ? { uid: u.uid, email: u.email, name: u.displayName || "", photo: u.photoURL || "", verified: !!u.emailVerified } : null;
   try { await A.getRedirectResult(auth); } catch (e) { console.warn(e); }
@@ -32,8 +31,10 @@ async function firebaseBackend(){
     getProfile: async uid => { const s = await F.getDoc(F.doc(db, "employees", uid)); return s.exists() ? plain(s) : null; },
     createProfile: (uid, data) => F.setDoc(F.doc(db, "employees", uid), { ...clean(data), createdAt: ts(), updatedAt: ts() }),
     updateProfile: (uid, data) => F.updateDoc(F.doc(db, "employees", uid), { ...clean(data), updatedAt: ts() }),
-    uploadImage: async (uid, name, blob) => { const r = S.ref(st, `profiles/${uid}/${name}`); await S.uploadBytes(r, blob, { contentType: blob.type || "image/jpeg" }); return { path: r.fullPath, url: await S.getDownloadURL(r) }; },
-    imageUrl: async path => path ? S.getDownloadURL(S.ref(st, path)) : "",
+    // Images are stored as data URLs in employees/{uid}/files/{name} (no Storage bucket needed on the free plan).
+    uploadImage: async (uid, name, blob) => { const url = await blobToDataUrl(blob); if (url.length > 1000000) throw new Error("Image still too large after compression"); await F.setDoc(F.doc(db, "employees", uid, "files", name), { data: url, type: blob.type || "image/jpeg", size: blob.size, updatedAt: ts() }); return { path: `${uid}/${name}`, url }; },
+    imageUrl: async path => { if (!path) return ""; const [uid, name] = path.split("/"); const s = await F.getDoc(F.doc(db, "employees", uid, "files", name)); return s.exists() ? s.data().data : ""; },
+    deleteImage: async (uid, name) => F.deleteDoc(F.doc(db, "employees", uid, "files", name)),
     // admin
     listEmployees: async () => { const q = F.query(F.collection(db, "employees"), F.orderBy("updatedAt", "desc")); const s = await F.getDocs(q); return s.docs.map(plain); },
     adminUpdate: (uid, patch) => F.updateDoc(F.doc(db, "employees", uid), { ...patch, reviewedAt: ts() }),
@@ -63,8 +64,9 @@ function demoBackend(){
     getProfile: async uid => get("emp-" + uid),
     createProfile: async (uid, data) => { set("emp-" + uid, { ...data, createdAt: now(), updatedAt: now() }); const ids = get("emps") || []; if (!ids.includes(uid)) { ids.push(uid); set("emps", ids); } },
     updateProfile: async (uid, data) => { set("emp-" + uid, { ...(get("emp-" + uid) || {}), ...data, updatedAt: now() }); },
-    uploadImage: async (uid, name, blob) => { const url = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob); }); set("img-" + uid + "-" + name, url); return { path: `demo:${uid}/${name}`, url }; },
-    imageUrl: async path => { if (!path) return ""; const [, rest] = path.split("demo:"); const [uid, name] = rest.split("/"); return get("img-" + uid + "-" + name) || ""; },
+    uploadImage: async (uid, name, blob) => { const url = await blobToDataUrl(blob); set("img-" + uid + "-" + name, url); return { path: `${uid}/${name}`, url }; },
+    imageUrl: async path => { if (!path) return ""; const [uid, name] = path.split("/"); return get("img-" + uid + "-" + name) || ""; },
+    deleteImage: async (uid, name) => localStorage.removeItem(K + "img-" + uid + "-" + name),
     listEmployees: async () => (get("emps") || []).map(id => get("emp-" + id)).filter(Boolean).sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || "")),
     adminUpdate: async (uid, patch) => { set("emp-" + uid, { ...(get("emp-" + uid) || {}), ...patch, reviewedAt: now() }); },
     getSettings: async () => get("settings") || {},
@@ -78,6 +80,14 @@ export const SKILLS = ["Team Leader","Kids club","DJ","Dancer","Singer","Musicia
 export const NATIONS = ["Egypt","Italy","Germany","Russia","Ukraine","Poland","Czech Republic","Romania","Tunisia","Morocco","Turkey","Spain","France","Netherlands","United Kingdom","Other"];
 export const PAY = ["Bank transfer","InstaPay","Mobile wallet","Cash"];
 export function age(dob){ if (!dob) return ""; const d = new Date(dob), t = new Date(); let a = t.getFullYear() - d.getFullYear(); const m = t.getMonth() - d.getMonth(); if (m < 0 || (m === 0 && t.getDate() < d.getDate())) a--; return a; }
+export const blobToDataUrl = blob => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => rej(new Error("read failed")); fr.readAsDataURL(blob); });
+/** Shrink until the JPEG fits under maxBytes (Firestore documents are capped at 1 MiB, base64 adds ~33%). */
+export async function shrinkToFit(file, max, q, maxBytes){
+  let m = max, quality = q, blob = await shrink(file, m, quality);
+  for (let i = 0; i < 6 && blob.size > maxBytes; i++){ m = Math.round(m * .8); quality = Math.max(.5, quality - .08); blob = await shrink(file, m, quality); }
+  if (blob.size > maxBytes) throw new Error("Image is too detailed to compress; please use a smaller photo");
+  return blob;
+}
 export function shrink(file, max = 900, q = .85){
   return new Promise((res, rej) => { const img = new Image(); const url = URL.createObjectURL(file);
     img.onload = () => { const s = Math.min(1, max / Math.max(img.width, img.height)); const c = document.createElement("canvas"); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s); c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); c.toBlob(b => b ? res(b) : rej(new Error("resize failed")), "image/jpeg", q); };

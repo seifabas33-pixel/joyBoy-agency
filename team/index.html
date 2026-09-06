@@ -52,7 +52,7 @@
         <div class="grid">
           <div class="full photo">
             <div class="pv" id="pv"><span>Your photo</span></div>
-            <div class="f" id="f-photo"><label class="btn ghost small filebtn">Choose photo <input type="file" id="photo" accept="image/*" capture="user"></label><p class="hint">A clear face photo, like a passport picture. Max 5 MB, we resize it.</p><p class="err" id="e-photo">Please add a profile photo.</p></div>
+            <div class="f" id="f-photo"><label class="btn ghost small filebtn">Choose photo <input type="file" id="photo" accept="image/*" capture="user"></label><p class="hint">A clear face photo, like a passport picture. Any size — we compress it on your phone before saving.</p><p class="err" id="e-photo">Please add a profile photo.</p></div>
           </div>
           <label class="f full"><span>Full name <b class="req">*</b></span><input class="in" id="fullName" autocomplete="name" placeholder="As in your passport"><span class="err">Enter your full name.</span></label>
           <label class="f"><span>Preferred / stage name</span><input class="in" id="preferredName" placeholder="What guests call you"></label>
@@ -154,7 +154,7 @@
 <footer class="small">Joy Boy Agency · Team portal · Questions? <a href="https://wa.me/201021281660">WhatsApp Mr. Moaz</a> · <a href="../legal.html#privacy">Privacy</a></footer>
 
 <script type="module">
-import { initBackend, DEMO, LANGS, SKILLS, NATIONS, PAY, age, shrink, toast, esc, completeness } from "./portal.js";
+import { initBackend, DEMO, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness } from "./portal.js";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -214,8 +214,8 @@ $("next").addEventListener("click", () => { if (validate(step)){ step++; paint()
 $("back").addEventListener("click", () => { step = Math.max(1, step - 1); paint(); });
 document.querySelectorAll(".in, input[type=radio], input[type=checkbox]").forEach(el => el.addEventListener("input", () => { const f = el.closest(".f"); f && f.classList.remove("bad"); }));
 document.addEventListener("change", e => { if (e.target.name === "payMethod") document.querySelectorAll(".pay-extra").forEach(x => x.classList.toggle("on", x.dataset.pay === e.target.value)); });
-$("photo").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; if (f.size > 5 * 1024 * 1024) return toast("Photo is larger than 5 MB"); try { photoBlob = await shrink(f, 800, .85); $("pv").innerHTML = `<img src="${URL.createObjectURL(photoBlob)}" alt="">`; $("pv").classList.add("has"); $("f-photo").classList.remove("bad"); } catch { toast("That file is not an image"); } });
-$("idScan").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { scanBlob = await shrink(f, 1600, .82); $("docpv").src = URL.createObjectURL(scanBlob); $("docpv").classList.add("has"); } catch { toast("That file is not an image"); } });
+$("photo").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; if (f.size > 5 * 1024 * 1024) return toast("Photo is larger than 5 MB"); try { photoBlob = await shrinkToFit(f, 700, .82, 260000); $("pv").innerHTML = `<img src="${URL.createObjectURL(photoBlob)}" alt="">`; $("pv").classList.add("has"); $("f-photo").classList.remove("bad"); } catch { toast("That file is not an image"); } });
+$("idScan").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { scanBlob = await shrinkToFit(f, 1400, .78, 560000); $("docpv").src = URL.createObjectURL(scanBlob); $("docpv").classList.add("has"); } catch { toast("That file is not an image"); } });
 
 // collect
 const val = id => $(id).value.trim();
@@ -234,7 +234,7 @@ function fill(p){
   r("gender", p.gender); r("idType", p.idType); r("payMethod", p.payMethod); r("contractPref", p.contractPref); r("relocate", p.relocate);
   (p.languages || []).forEach(v => { const el = document.querySelector(`input[name="languages"][value="${v}"]`); if (el) el.checked = true; });
   (p.skills || []).forEach(v => { const el = document.querySelector(`input[name="skills"][value="${v}"]`); if (el) el.checked = true; });
-  if (p.photoUrl){ $("pv").innerHTML = `<img src="${esc(p.photoUrl)}" alt="">`; $("pv").classList.add("has"); }
+  const existing = p.photoThumb || p.photoUrl; if (existing){ $("pv").innerHTML = `<img src="${esc(existing)}" alt="">`; $("pv").classList.add("has"); }
   show("f-invite", false); $("consent").checked = true;
 }
 $("form").addEventListener("submit", async e => {
@@ -242,7 +242,7 @@ $("form").addEventListener("submit", async e => {
   const btn = $("submit"); btn.disabled = true; btn.textContent = "Saving…"; err("");
   try {
     const data = collect();
-    if (photoBlob){ const r = await be.uploadImage(user.uid, "avatar.jpg", photoBlob); data.photoPath = r.path; data.photoUrl = r.url; }
+    if (photoBlob){ const r = await be.uploadImage(user.uid, "avatar.jpg", photoBlob); data.photoPath = r.path; data.photoThumb = await blobToDataUrl(await shrink(photoBlob, 128, .8)); }
     if (scanBlob){ const r = await be.uploadImage(user.uid, "id.jpg", scanBlob); data.idScanPath = r.path; }
     if (profile){ await be.updateProfile(user.uid, data); }
     else { data.status = "pending"; data.inviteCodeUsed = val("inviteCode").trim().toUpperCase(); await be.createProfile(user.uid, data); }
@@ -257,7 +257,8 @@ $("form").addEventListener("submit", async e => {
 function renderProfile(){
   const p = profile; show("s-auth", false); show("s-form", false); show("s-profile", true);
   $("p-first").textContent = (p.preferredName || p.fullName || "you").split(" ")[0];
-  $("p-name").textContent = p.fullName; $("p-email").textContent = p.email; $("p-avatar").src = p.photoUrl || "";
+  $("p-name").textContent = p.fullName; $("p-email").textContent = p.email; $("p-avatar").src = p.photoThumb || p.photoUrl || "";
+  if (p.photoPath) be.imageUrl(p.photoPath).then(u => { if (u) $("p-avatar").src = u; }).catch(() => {});
   const st = p.status || "pending"; $("p-status").className = "status " + st; $("p-status").textContent = { pending: "Pending review", approved: "Approved", rejected: "Needs changes" }[st] || st;
   $("p-msg").textContent = { pending: "The office reviews new profiles within a few days. You will be contacted on WhatsApp.", approved: "You are on the roster. Keep your document and payment details up to date.", rejected: "Something needs correcting. Please check your details or contact the office." }[st] || "";
   const c = completeness(p); $("p-meter").style.width = c + "%"; $("p-meter-txt").textContent = c + "% complete" + (c < 100 ? " — add the missing pieces when you can (the document photo is required before your first contract)." : ".");

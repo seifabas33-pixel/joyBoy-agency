@@ -79,7 +79,7 @@ function render(){
   const women = all.filter(p => p.gender === "Female").length;
   $("stats").innerHTML = [["Registered", all.length], ["Pending review", pend], ["Approved", appr], ["Women / men", `${women} / ${all.length - women}`]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
   $("rows").innerHTML = list.map(p => `<tr data-uid="${esc(p.uid)}">
-    <td><div class="who"><img src="${esc(p.photoUrl || "../media/img/logo.jpg")}" alt=""><div><b>${esc(p.fullName || "—")}</b><small>${esc(p.email || "")}${p.city ? " · " + esc(p.city) : ""}</small></div></div></td>
+    <td><div class="who"><img src="${esc(p.photoThumb || p.photoUrl || "../media/img/logo.jpg")}" alt=""><div><b>${esc(p.fullName || "—")}</b><small>${esc(p.email || "")}${p.city ? " · " + esc(p.city) : ""}</small></div></div></td>
     <td>${esc(p.gender || "—")} · ${p.dob ? age(p.dob) : "—"}</td><td>${esc(p.nationality || "—")}</td>
     <td>${(p.languages || []).map(esc).join(", ") || "—"}</td><td>${(p.skills || []).slice(0, 4).map(esc).join(", ")}${(p.skills || []).length > 4 ? " +" + (p.skills.length - 4) : ""}</td>
     <td>${esc(p.payMethod || "—")}</td><td>${fmtDate(p.availableFrom)}</td><td>${badge(p.status)}</td></tr>`).join("");
@@ -92,7 +92,7 @@ async function openDrawer(p){
   cur = p; const kv = (l, v) => v ? `<div><b>${l}</b><span>${esc(v)}</span></div>` : "";
   const pay = [p.payMethod, ...(p.payMethod === "Bank transfer" ? [p.bankName, p.accountName, p.iban] : p.payMethod === "InstaPay" ? [p.instapay] : p.payMethod === "Mobile wallet" ? [p.walletProvider, p.walletNumber] : [])].filter(Boolean).join(" · ");
   $("panel").innerHTML = `<button class="close" id="dclose" aria-label="Close">×</button>
-    <div class="pcard" style="margin-top:6px"><img class="avatar" src="${esc(p.photoUrl || "../media/img/logo.jpg")}" alt="">
+    <div class="pcard" style="margin-top:6px"><img class="avatar" id="davatar" src="${esc(p.photoThumb || p.photoUrl || "../media/img/logo.jpg")}" alt="">
       <div><h2>${esc(p.fullName || "—")}</h2><p style="color:var(--ink-3);font-size:13px">${esc(p.preferredName ? p.preferredName + " · " : "")}${esc(p.email)}</p>
       <p style="margin-top:10px">${badge(p.status)} <span class="hint" style="margin-left:8px">${completeness(p)}% complete</span></p>
       <div class="actions"><button class="btn ok small" data-st="approved">Approve</button><button class="btn danger small" data-st="rejected">Needs changes</button><button class="btn ghost small" data-st="pending">Back to pending</button>
@@ -112,6 +112,7 @@ async function openDrawer(p){
   $("dclose").onclick = closeDrawer;
   $("panel").querySelectorAll("[data-st]").forEach(b => b.onclick = async () => { try { await be.adminUpdate(p.uid, { status: b.dataset.st, reviewedBy: user.email }); p.status = b.dataset.st; toast("Status: " + b.dataset.st); render(); openDrawer(p); } catch (ex) { err("Could not update: " + (ex.message || ex)); } });
   $("save-notes").onclick = async () => { try { await be.adminUpdate(p.uid, { adminNotes: $("notes").value, reviewedBy: user.email }); p.adminNotes = $("notes").value; toast("Notes saved"); } catch (ex) { err("Could not save notes: " + (ex.message || ex)); } };
+  if (p.photoPath){ be.imageUrl(p.photoPath).then(u => { const el = $("davatar"); if (u && el) el.src = u; }).catch(() => {}); }
   if (p.idScanPath){ try { const u = await be.imageUrl(p.idScanPath); $("docwrap").innerHTML = u ? `<img class="docimg" src="${esc(u)}" alt="Identity document">` : "<p class='hint'>Not available.</p>"; } catch { $("docwrap").innerHTML = "<p class='hint'>Could not load the document image.</p>"; } }
 }
 function closeDrawer(){ $("drawer").classList.remove("open"); cur = null; }
