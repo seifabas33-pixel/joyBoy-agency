@@ -150,6 +150,9 @@ export function parseLatLng(text){
   const t = String(text || "").trim(); if (!t) return null;
   const pats = [/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/, /[?&](?:q|query|ll|center|destination)=(-?\d{1,2}\.\d+),\s*(-?\d{1,3}\.\d+)/, /!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/, /^(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)$/];
   for (const re of pats){ const m = re.exec(t); if (m){ const lat = +m[1], lng = +m[2]; if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return { lat, lng }; } }
+  // degrees / minutes / seconds, as Google Maps copies them: 24°55'14.3"N 34°57'51.6"E
+  const dms = /(\d{1,3})°\s*(\d{1,2})['′]\s*([\d.]+)?["″]?\s*([NS])[\s,]+(\d{1,3})°\s*(\d{1,2})['′]\s*([\d.]+)?["″]?\s*([EW])/i.exec(t);
+  if (dms){ const f = (d, m, sec, h) => (+d + (+m) / 60 + (+(sec || 0)) / 3600) * (/[SW]/i.test(h) ? -1 : 1); const lat = f(dms[1], dms[2], dms[3], dms[4]), lng = f(dms[5], dms[6], dms[7], dms[8]); if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return { lat: +lat.toFixed(6), lng: +lng.toFixed(6) }; }
   return null;
 }
 export const ATT_LABEL = { present: "Present", "half-day": "Half day", absent: "Absent", excused: "Excused", off: "Day off", pending: "Not yet" };
