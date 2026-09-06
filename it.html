@@ -261,18 +261,6 @@ body.menu-open .burger span:nth-child(3){top:17px;transform:rotate(-45deg)}
   .reelv video,.reelv.s3 video,.reelv.s4 video{aspect-ratio:auto;height:auto}
   .ph.wide .frame{height:280px}
 }
-.tile.founder{flex-direction:row;gap:22px;padding:16px;align-items:stretch;overflow:hidden}
-.founder .fph{flex:0 0 42%;border-radius:calc(var(--radius) - 6px);overflow:hidden;aspect-ratio:4/5;background:var(--raised);position:relative}
-.founder .fph::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(13,10,20,.35));pointer-events:none}
-.founder .fph img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s cubic-bezier(.2,.65,.25,1)}
-.founder:hover .fph img{transform:scale(1.05)}
-.founder .fx{display:flex;flex-direction:column;gap:7px;justify-content:center;min-width:0;padding:8px 8px 8px 0}
-.founder .role{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
-.founder h3{font-family:"Bricolage Grotesque",sans-serif;font-size:clamp(24px,2.6vw,32px);font-weight:800;letter-spacing:-.03em;line-height:1.05}
-.founder .ftitle{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dark);background:var(--yellow);padding:4px 10px;border-radius:99px;width:max-content}
-.founder p{font-size:14.5px;color:var(--ink-2);line-height:1.55;margin-top:4px}
-.founder .fl{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
-@media(max-width:560px){.tile.founder{flex-direction:column;gap:14px}.founder .fph{flex:none;aspect-ratio:4/5;max-height:520px}.founder .fx{padding:4px 4px 8px}}
 .cav{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--line-2);display:block;margin-bottom:10px}
 .award .season{display:inline-flex;gap:.45em;align-items:baseline;margin-top:10px;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dark);background:var(--yellow);padding:4px 9px;border-radius:99px;width:max-content}
 .award .season i{font-style:normal;opacity:.75}
@@ -893,28 +881,7 @@ footer .copy a{display:inline;padding:0;color:var(--ink-2);text-decoration:under
     </ul>
   </div>
 
-  <div class="tile s6 founder">
-    <div class="fph"><img src="media/img/founder-moaz.jpg" width="720" height="900" loading="lazy" decoding="async" alt="Moaz Moamen, fondatore di Joy Boy Agency, sul Mar Rosso"></div>
-    <div class="fx">
-      <span class="role">I fondatori · 01</span>
-      <h3>Moaz Moamen</h3>
-      <span class="ftitle">Fondatore</span>
-      <p>Guida i team al resort: scaletta, turni e standard in pista, ogni sera della stagione. Il primo contatto per un nuovo programma.</p>
-      <div class="fl"><a class="btn small" href="https://wa.me/201021281660" target="_blank" rel="noopener">Scrivi su WhatsApp</a></div>
-    </div>
-  </div>
-  <div class="tile s6 founder">
-    <div class="fph"><img src="media/img/founder-seif.jpg" width="720" height="900" loading="lazy" decoding="async" alt="Seif Abas, co-fondatore di Joy Boy Agency"></div>
-    <div class="fx">
-      <span class="role">I fondatori · 02</span>
-      <h3>Seif Abas</h3>
-      <span class="ftitle">Co-fondatore</span>
-      <p>Gestisce la parte ufficio: personale e contratti, il piano d'azione settimanale e il report mensile che arriva sulla vostra scrivania. Il vostro contatto per proposte e documenti.</p>
-      <div class="fl"><a class="btn small" href="https://wa.me/201001570273" target="_blank" rel="noopener">Scrivi su WhatsApp</a><a class="btn small ghost" href="mailto:seifabas33@gmail.com">Scrivi a Seif</a></div>
-    </div>
-  </div>
-
-  <!-- ── section 2 · how we work ── -->
+<!-- ── section 2 · how we work ── -->
   <div class="strip" id="how">
     <span class="num mono">02</span>
     <h2>Come lavoriamo</h2>
