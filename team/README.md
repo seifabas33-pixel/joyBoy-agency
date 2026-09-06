@@ -86,11 +86,15 @@ Keep CSV exports off shared drives and delete them after use.
 - **Status rule** (same code in `portal.js`, the admin page and the Sheets
   script): checked in by shift start + grace → Present; later → Half day; no
   check-in after that time → Absent. Admins can override any day (present, half
-  day, absent, excused, day off); the override wins everywhere.
+  day, absent, sick, vacation, excused, day off); the override wins everywhere.
 - **Google Sheet**: `tools/sheets-sync.gs` (setup steps at the top of the file)
   pulls the last 62 days into a tab "Attendance (portal)" in your own sheet,
-  on demand from a "Joy Boy" menu or hourly. The admin page also has *Export
-  month CSV*.
+  on demand from a "Joy Boy" menu or hourly. The same menu has *Import this
+  month tab into the portal*: it reads the owner's hand-kept monthly grid (names
+  in column B, one column per day, letters P/H/A/S/V/O/E) and writes each marked
+  day into `attendance/` as a manual override, matching stage names to
+  `preferredName`/`fullName` (or a mapping tab "Portal names": sheet name →
+  email). The admin page also has *Export month CSV*.
 - Limits worth knowing: browser GPS can be spoofed by a determined person, so
   the check-in is evidence, not proof; accuracy indoors can be 50–100 m, so set
   the radius generously (300–800 m for a resort). Times are Egypt time.

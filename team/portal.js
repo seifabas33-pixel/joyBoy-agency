@@ -155,7 +155,8 @@ export function parseLatLng(text){
   if (dms){ const f = (d, m, sec, h) => (+d + (+m) / 60 + (+(sec || 0)) / 3600) * (/[SW]/i.test(h) ? -1 : 1); const lat = f(dms[1], dms[2], dms[3], dms[4]), lng = f(dms[5], dms[6], dms[7], dms[8]); if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return { lat: +lat.toFixed(6), lng: +lng.toFixed(6) }; }
   return null;
 }
-export const ATT_LABEL = { present: "Present", "half-day": "Half day", absent: "Absent", excused: "Excused", off: "Day off", pending: "Not yet" };
+export const ATT_LABEL = { present: "Present", "half-day": "Half day", absent: "Absent", sick: "Sick", vacation: "Vacation", excused: "Excused", off: "Day off", pending: "Not yet" };
+export const ATT_OVERRIDES = ["present", "half-day", "absent", "sick", "vacation", "excused", "off"];
 /**
  * Status of one day. Automatic rule: checked in by shift start + grace → present; later → half day; no check-in → absent
  * (or "pending" while the shift has not started yet today). An admin override wins.

@@ -24,7 +24,13 @@
  *  5. Reload the Sheet: a "Joy Boy" menu appears. Use "Sync attendance now" any time, or run
  *     `installHourlyTrigger` once so the sheet refreshes itself every hour.
  *
- * What it writes: a tab "Attendance (portal)" with one row per person and day
+ * Import (sheet → portal): open one of your monthly grid tabs (names in column B, one
+ * column per day with a letter) and use Joy Boy → "Import this month tab into the portal".
+ * Letters: P present · H half day · A absent · S sick · V vacation · O day off · E excused.
+ * Names are matched to the portal's stage name / full name; for anyone it cannot match,
+ * add a tab "Portal names" with the sheet name in column A and the person's Gmail in column B.
+ *
+ * What the sync writes: a tab "Attendance (portal)" with one row per person and day
  * (date, name, email, hotel, check-in, check-out, status, late minutes, distance, override, by),
  * and a tab "Hotels (portal)". Other tabs in your sheet are never touched.
  * Status rule = the same one the portal uses: checked in by shift start + grace → Present,
@@ -35,7 +41,7 @@ const DAYS_BACK = 62;                 // how much history to (re)write each run
 const TZ = "Africa/Cairo";
 const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)";
 
-function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Refresh every hour (install)", "installHourlyTrigger").addToUi(); }
+function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addToUi(); }
 function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); try { SpreadsheetApp.getUi().alert("Done — the sheet now refreshes every hour."); } catch (e) {} }
 
 function syncAttendance(){
@@ -59,7 +65,7 @@ function syncAttendance(){
 }
 
 /* ── status rule (mirror of team/portal.js attStatus) ── */
-const LABEL = { present: "Present", "half-day": "Half day", absent: "Absent", excused: "Excused", off: "Day off", pending: "Not yet" };
+const LABEL = { present: "Present", "half-day": "Half day", absent: "Absent", sick: "Sick", vacation: "Vacation", excused: "Excused", off: "Day off", pending: "Not yet" };
 function status(r, h, date, today){
   const start = toMin(h.shiftStart) == null ? 540 : toMin(h.shiftStart), grace = h.graceMin == null ? 10 : +h.graceMin;
   if (r && r.override) return { label: LABEL[r.override] || r.override, lateMin: r.checkInAt ? Math.max(0, toMin(hhmm(r.checkInAt)) - start) : null };
@@ -92,4 +98,68 @@ function writeTab(name, header, rows){
   sh.clearContents(); sh.getRange(1, 1, 1, header.length).setValues([header]).setFontWeight("bold");
   if (rows.length) sh.getRange(2, 1, rows.length, header.length).setValues(rows);
   sh.setFrozenRows(1); sh.autoResizeColumns(1, header.length);
+}
+
+/* ────────────────────────── Import: monthly grid tab → portal ────────────────────────── */
+const LETTER = { P: "present", H: "half-day", A: "absent", S: "sick", V: "vacation", O: "off", E: "excused" };
+const norm = t => String(t || "").toLowerCase().replace(/\(.*?\)/g, "").replace(/[^a-z0-9\u0600-\u06ff ]+/g, " ").replace(/\s+/g, " ").trim();
+
+function importGrid(){
+  const ui = SpreadsheetApp.getUi(), ss = SpreadsheetApp.getActive(), sh = ss.getActiveSheet();
+  if ([ATT_TAB, HOTEL_TAB, "Portal names", "Import log"].includes(sh.getName())) return ui.alert("Open one of your monthly grid tabs first (for example \"September. 26\"), then run the import.");
+  const values = sh.getDataRange().getValues();
+  // header row = the row with the most day cells (Date objects or "9/1" texts) in the first 15 rows
+  let hdr = -1, best = 0; for (let r = 0; r < Math.min(15, values.length); r++){ const n = values[r].filter(isDayCell).length; if (n > best){ best = n; hdr = r; } }
+  if (hdr < 0 || best < 5) return ui.alert("Could not find the row with the dates (9/1, 9/2, …) in the first 15 rows.");
+  const yearGuess = (() => { for (let r = 0; r < Math.min(6, values.length); r++) for (const c of values[r]) { const m = /(20\d{2})/.exec(String(c)); if (m) return +m[1]; } return new Date().getFullYear(); })();
+  const dayCols = []; values[hdr].forEach((c, i) => { const d = dayKeyOf(c, yearGuess); if (d) dayCols.push({ col: i, date: d }); });
+  const today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd");
+  // people from the portal + optional mapping tab
+  const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f }));
+  const hotels = Object.fromEntries(fetchAll("hotels").map(d => [d.id, d.f]));
+  const map = {}; const mt = ss.getSheetByName("Portal names"); if (mt) mt.getDataRange().getValues().forEach(r => { if (r[0] && r[1]) map[norm(r[0])] = String(r[1]).toLowerCase().trim(); });
+  const findEmp = name => { const n = norm(name); if (!n) return null;
+    if (map[n]) return employees.find(e => String(e.email).toLowerCase() === map[n]) || null;
+    return employees.find(e => norm(e.preferredName) === n) || employees.find(e => norm(e.fullName) === n) || employees.find(e => norm(e.fullName).split(" ")[0] === n.split(" ")[0] && n.split(" ").length === 1) || null; };
+  const existing = {}; fetchAll("attendance").forEach(d => existing[d.id] = d.f);
+  const me = Session.getActiveUser().getEmail() || "sheet-import";
+  const writes = [], log = [], unmatched = new Set(), unknown = new Set();
+  for (let r = hdr + 1; r < values.length; r++){
+    const name = values[r][1] || values[r][0]; if (!String(name).trim()) continue;
+    const emp = findEmp(name); if (!emp){ unmatched.add(String(name).trim()); continue; }
+    for (const { col, date } of dayCols){
+      const raw = String(values[r][col] || "").trim().toUpperCase(); if (!raw || date > today) continue;
+      const code = LETTER[raw]; if (!code){ unknown.add(raw); continue; }
+      const id = emp.uid + "_" + date, cur = existing[id];
+      if (code === "present" && cur && cur.checkInAt && !cur.override) continue;      // real check-in already there: keep the automatic status
+      if (cur && cur.override === code && cur.source === "sheet") continue;           // already imported, unchanged
+      const hotelId = (cur && cur.hotelId) || emp.hotelId || "";
+      writes.push({ id, fields: { uid: emp.uid, email: emp.email || "", name: emp.fullName || String(name), hotelId, hotelName: (hotels[hotelId] || {}).name || sh.getName(), date, override: code, overrideBy: me, source: "sheet" } });
+      log.push([date, String(name).trim(), emp.email || "", LABEL[code]]);
+    }
+  }
+  patchAll(writes);
+  const lg = ss.getSheetByName("Import log") || ss.insertSheet("Import log"); lg.clearContents();
+  lg.getRange(1, 1, 1, 4).setValues([["Date", "Sheet name", "Portal account", "Imported as"]]).setFontWeight("bold");
+  if (log.length) lg.getRange(2, 1, log.length, 4).setValues(log);
+  let msg = `Imported ${writes.length} day(s) from "${sh.getName()}" into the portal.`;
+  if (unmatched.size) msg += `\n\nNot found in the portal (add them to a tab "Portal names": column A = this name, column B = their Gmail): ${[...unmatched].join(", ")}`;
+  if (unknown.size) msg += `\n\nLetters I did not understand (use P/H/A/S/V/O/E): ${[...unknown].join(", ")}`;
+  ui.alert(msg);
+  syncAttendance();
+}
+function isDayCell(c){ return c instanceof Date || /^\s*\d{1,2}\/\d{1,2}(\/\d{2,4})?\s*$/.test(String(c)); }
+function dayKeyOf(c, year){
+  if (c instanceof Date) return Utilities.formatDate(c, TZ, "yyyy-MM-dd");
+  const m = /^\s*(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\s*$/.exec(String(c)); if (!m) return null;
+  const y = m[3] ? (+m[3] < 100 ? 2000 + +m[3] : +m[3]) : year;
+  return y + "-" + ("0" + m[1]).slice(-2) + "-" + ("0" + m[2]).slice(-2);          // sheet uses M/D
+}
+function patchAll(writes){
+  const enc = v => typeof v === "number" ? (Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v }) : typeof v === "boolean" ? { booleanValue: v } : { stringValue: String(v) };
+  for (let i = 0; i < writes.length; i += 40){
+    const reqs = writes.slice(i, i + 40).map(w => { const mask = Object.keys(w.fields).map(k => "updateMask.fieldPaths=" + k).join("&");
+      return { url: `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/attendance/${w.id}?${mask}`, method: "patch", contentType: "application/json", headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() }, payload: JSON.stringify({ fields: Object.fromEntries(Object.entries(w.fields).map(([k, v]) => [k, enc(v)])) }), muteHttpExceptions: true }; });
+    UrlFetchApp.fetchAll(reqs).forEach((res, j) => { if (res.getResponseCode() >= 300) throw new Error("Write failed for " + writes[i + j].id + ": " + res.getContentText().slice(0, 200)); });
+  }
 }
