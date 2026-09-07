@@ -47,7 +47,9 @@ const TZ = "Africa/Cairo";
 const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)";
 
 function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addToUi(); }
-function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); try { SpreadsheetApp.getUi().alert("Done — the sheet now refreshes every hour."); } catch (e) {} }
+function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); note("Done — the sheet now refreshes every hour."); }
+/** Non-blocking confirmation: a toast in the sheet if it is open, otherwise just the log (an alert would wait for a click and time out). */
+function note(msg){ Logger.log(msg); try { SpreadsheetApp.getActive().toast(msg, "Joy Boy", 8); } catch (e) {} }
 
 function syncAttendance(){
   const hotels = fetchAll("hotels").map(d => ({ id: d.id, ...d.f }));
@@ -179,7 +181,7 @@ function installDigestTriggers(){
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "sendDigest").forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger("sendDigest").timeBased().atHour(10).nearMinute(30).everyDays(1).inTimezone(TZ).create();
   ScriptApp.newTrigger("sendDigest").timeBased().atHour(20).nearMinute(30).everyDays(1).inTimezone(TZ).create();
-  try { SpreadsheetApp.getUi().alert("Done — the office gets a digest at about 10:30 and 20:30 Egypt time."); } catch (e) {}
+  note("Done — the office gets a digest at about 10:30 and 20:30 Egypt time.");
 }
 
 function sendDigest(){
