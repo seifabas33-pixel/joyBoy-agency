@@ -60,8 +60,14 @@ async function firebaseBackend(){
     attendanceRange: async (from, to) => { const s = await F.getDocs(F.query(F.collection(db, "attendance"), F.where("date", ">=", from), F.where("date", "<=", to))); return s.docs.map(att).sort((a, b) => a.date.localeCompare(b.date)); },
     setAttendance: (id, patch) => F.setDoc(F.doc(db, "attendance", id), { ...patch, reviewedAt: ts() }, { merge: true }),
     deleteAttendance: id => F.deleteDoc(F.doc(db, "attendance", id)),
+    // requests: "I could not check in" — written from anywhere, decided by the office
+    sendRequest: async rec => { const id = `${rec.uid}_${rec.date}`; await F.setDoc(F.doc(db, "requests", id), { ...rec, status: "open", createdAt: ts() }); const s = await F.getDoc(F.doc(db, "requests", id)); return att(s); },
+    myRequest: async (uid, date) => { const s = await F.getDoc(F.doc(db, "requests", `${uid}_${date}`)); return s.exists() ? att(s) : null; },
+    requestsOn: async date => { const s = await F.getDocs(F.query(F.collection(db, "requests"), F.where("date", "==", date))); return s.docs.map(att); },
+    openRequests: async () => { const s = await F.getDocs(F.query(F.collection(db, "requests"), F.where("status", "==", "open"))); return s.docs.map(att).sort((a, b) => b.date.localeCompare(a.date)); },
+    decideRequest: (id, patch) => F.updateDoc(F.doc(db, "requests", id), { ...patch, decidedAt: ts() }),
   };
-  function att(snap){ const d = snap.data() || {}; for (const k of ["checkInAt","checkOutAt","reviewedAt"]) if (d[k] && d[k].toDate) d[k] = d[k].toDate().toISOString(); return { id: snap.id, ...d }; }
+  function att(snap){ const d = snap.data() || {}; for (const k of ["checkInAt","checkOutAt","reviewedAt","createdAt","decidedAt"]) if (d[k] && d[k].toDate) d[k] = d[k].toDate().toISOString(); return { id: snap.id, ...d }; }
 }
 
 /* ─────────────── Demo (localStorage) ─────────────── */
@@ -108,6 +114,11 @@ function demoBackend(){
     attendanceRange: async (from, to) => Object.entries(get("att") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date >= from && r.date <= to).sort((a, b) => a.date.localeCompare(b.date)),
     setAttendance: async (id, patch) => { const a = get("att") || {}; a[id] = { ...(a[id] || {}), ...patch, reviewedAt: now() }; set("att", a); },
     deleteAttendance: async id => { const a = get("att") || {}; delete a[id]; set("att", a); },
+    sendRequest: async rec => { const r = get("req") || {}; const id = `${rec.uid}_${rec.date}`; if (r[id]) throw new Error("A request for today was already sent"); r[id] = { ...rec, status: "open", createdAt: now() }; set("req", r); return { id, ...r[id] }; },
+    myRequest: async (uid, date) => { const r = (get("req") || {})[`${uid}_${date}`]; return r ? { id: `${uid}_${date}`, ...r } : null; },
+    requestsOn: async date => Object.entries(get("req") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date === date),
+    openRequests: async () => Object.entries(get("req") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.status === "open").sort((a, b) => b.date.localeCompare(a.date)),
+    decideRequest: async (id, patch) => { const r = get("req") || {}; r[id] = { ...(r[id] || {}), ...patch, decidedAt: now() }; set("req", r); },
   };
 }
 
@@ -156,6 +167,8 @@ export function parseLatLng(text){
   return null;
 }
 export const ATT_LABEL = { present: "Present", "half-day": "Half day", absent: "Absent", sick: "Sick", vacation: "Vacation", excused: "Excused", off: "Day off", pending: "Not yet" };
+/** Badge text for a status: a late check-in that nobody has decided on yet reads "Late · needs decision". */
+export const attLabel = st => st.review ? "Late · needs decision" : ATT_LABEL[st.code];
 export const ATT_OVERRIDES = ["present", "half-day", "absent", "sick", "vacation", "excused", "off"];
 /**
  * Status of one day. Automatic rule: checked in by shift start + grace → present; later → half day; no check-in → absent
@@ -164,7 +177,7 @@ export const ATT_OVERRIDES = ["present", "half-day", "absent", "sick", "vacation
 export function attStatus(rec, hotel, today = dayKey()){
   const start = toMin(hotel && hotel.shiftStart) ?? 9 * 60, grace = hotel && hotel.graceMin != null ? +hotel.graceMin : 10;
   if (rec && rec.override) return { code: rec.override, lateMin: rec.checkInAt ? Math.max(0, toMin(hhmm(rec.checkInAt)) - start) : null, auto: false };
-  if (rec && rec.checkInAt){ const late = toMin(hhmm(rec.checkInAt)) - start; return { code: late <= grace ? "present" : "half-day", lateMin: Math.max(0, late), auto: true }; }
+  if (rec && rec.checkInAt){ const late = toMin(hhmm(rec.checkInAt)) - start; return late <= grace ? { code: "present", lateMin: Math.max(0, late), auto: true } : { code: "half-day", lateMin: late, auto: true, review: true }; }
   const date = rec ? rec.date : today;
   if (date > today) return { code: "pending", lateMin: null, auto: true };
   if (date === today && toMin(hhmm(new Date())) <= start + grace) return { code: "pending", lateMin: null, auto: true };

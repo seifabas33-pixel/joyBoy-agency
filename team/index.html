@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609070648">
-<script src="firebase-config.js?v=202609070648"></script>
+<link rel="stylesheet" href="portal.css?v=202609070744">
+<script src="firebase-config.js?v=202609070744"></script>
 </head>
 <body>
 <div class="topbar"><div class="topbar-inner">
@@ -140,6 +140,11 @@
       <p class="eyebrow">Today · <span id="att-hotel"></span> · <span id="att-date"></span></p>
       <div class="att-now" id="att-body"></div>
       <div class="actions" style="margin:14px 0 6px"><button class="btn" id="btn-in" type="button">Check in now</button><button class="btn ghost" id="btn-out" type="button" hidden>Check out</button></div>
+      <div class="reqbox" id="reqbox" hidden>
+        <p class="att-line"><b>Could not check in?</b> Tell the office what happened and they decide your day.</p>
+        <textarea class="in" id="req-reason" maxlength="300" placeholder="e.g. GPS refused me at the staff gate at 09:40 / I was at the pool bar setting up / traffic, arrived 10:05"></textarea>
+        <div class="actions" style="margin:10px 0 0"><button class="btn small" id="req-send" type="button">Send to the office</button></div>
+      </div>
       <p class="hint" id="att-hint"></p>
       <details class="hist"><summary>Last 14 days</summary><div id="att-hist"></div></details>
     </div>
@@ -163,7 +168,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, distanceM, attStatus, ATT_LABEL } from "./portal.js?v=202609070648";
+import { initBackend, DEMO, isAdminEmail, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, distanceM, attStatus, ATT_LABEL, attLabel } from "./portal.js?v=202609070744";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -285,7 +290,7 @@ function renderProfile(){
   loadAttendance();
 }
 /* ── attendance (approved staff assigned to a hotel) ── */
-let hotel = null, todayRec = null, hist = [];
+let hotel = null, todayRec = null, hist = [], todayReq = null, lastGeo = null;
 async function loadAttendance(){
   const p = profile; show("att", false); hotel = null; todayRec = null; hist = [];
   if (!p || p.status !== "approved" || !p.hotelId) return;
@@ -294,18 +299,21 @@ async function loadAttendance(){
   const today = dayKey();
   try { hist = await be.myAttendance(user.uid, addDays(today, -14)); } catch (ex) { console.warn(ex); }
   todayRec = hist.find(r => r.date === today) || null;
+  try { todayReq = await be.myRequest(user.uid, today); } catch { todayReq = null; }
   $("att-hotel").textContent = hotel.name; $("att-date").textContent = today; show("att", true); paintAtt();
 }
 function paintAtt(){
   const st = attStatus(todayRec, hotel), today = dayKey();
   const late = st.lateMin ? ` · late by ${st.lateMin} min` : "";
+  const reqLine = todayReq ? (todayReq.status === "open" ? `<p class="att-line req-note">Your request was sent to the office at ${hhmm(todayReq.createdAt)} — waiting for their decision.</p>` : `<p class="att-line req-note">The office decided: <b>${ATT_LABEL[todayReq.decision] || todayReq.decision}</b>.</p>`) : "";
   $("att-body").innerHTML = todayRec && todayRec.checkInAt
-    ? `<span class="status att-${st.code}">${ATT_LABEL[st.code]}</span><p class="att-line">Checked in at <b>${hhmm(todayRec.checkInAt)}</b>${late}${todayRec.checkOutAt ? ` · out at <b>${hhmm(todayRec.checkOutAt)}</b>` : ""}</p>`
-    : `<span class="status att-${st.code}">${st.code === "pending" ? "Not checked in" : ATT_LABEL[st.code]}</span><p class="att-line">Shift starts at <b>${esc(hotel.shiftStart || "09:00")}</b>. Check in from the hotel when you arrive.</p>`;
+    ? `<span class="status att-${st.review ? "review" : st.code}">${attLabel(st)}</span><p class="att-line">Checked in at <b>${hhmm(todayRec.checkInAt)}</b>${late}${todayRec.checkOutAt ? ` · out at <b>${hhmm(todayRec.checkOutAt)}</b>` : ""}${st.review ? " · the office will confirm your day" : ""}</p>${reqLine}`
+    : `<span class="status att-${todayReq && todayReq.status === "open" ? "review" : st.code}">${todayReq && todayReq.status === "open" ? "Request sent · waiting" : st.code === "pending" ? "Not checked in" : ATT_LABEL[st.code]}</span><p class="att-line">Shift starts at <b>${esc(hotel.shiftStart || "09:00")}</b>. Check in from the hotel when you arrive.</p>${reqLine}`;
   show("btn-in", !todayRec); show("btn-out", !!todayRec && !todayRec.checkOutAt);
-  $("att-hint").textContent = `Check-in only works at ${hotel.name} (within ${hotel.radiusM || 300} m) and uses your phone's location once. Arriving after ${esc(hotel.shiftStart || "09:00")} plus ${hotel.graceMin ?? 10} minutes counts as a half day automatically; talk to your team leader if something went wrong.`;
+  show("reqbox", !todayRec && !todayReq && $("reqbox").dataset.open === "1");
+  $("att-hint").textContent = `Check-in only works at ${hotel.name} (within ${hotel.radiusM || 300} m) and uses your phone's location once. Arriving after ${esc(hotel.shiftStart || "09:00")} plus ${hotel.graceMin ?? 10} minutes is marked late and the office decides the day. If check-in fails, send the office a note from here.`;
   const days = []; for (let i = 1; i <= 14; i++) days.push(addDays(today, -i));
-  $("att-hist").innerHTML = `<table class="mini"><tbody>${days.map(d => { const r = hist.find(x => x.date === d); const s = attStatus(r || { date: d }, hotel, today); return `<tr><td>${d}</td><td>${r && r.checkInAt ? hhmm(r.checkInAt) : "—"}</td><td>${r && r.checkOutAt ? hhmm(r.checkOutAt) : "—"}</td><td><span class="status att-${s.code}">${ATT_LABEL[s.code]}</span></td></tr>`; }).join("")}</tbody></table>`;
+  $("att-hist").innerHTML = `<table class="mini"><tbody>${days.map(d => { const r = hist.find(x => x.date === d); const s = attStatus(r || { date: d }, hotel, today); return `<tr><td>${d}</td><td>${r && r.checkInAt ? hhmm(r.checkInAt) : "—"}</td><td>${r && r.checkOutAt ? hhmm(r.checkOutAt) : "—"}</td><td><span class="status att-${s.review ? "review" : s.code}">${attLabel(s)}</span></td></tr>`; }).join("")}</tbody></table>`;
 }
 const geo = () => new Promise((res, rej) => { if (!navigator.geolocation) return rej(new Error("This browser has no location access")); navigator.geolocation.getCurrentPosition(p => res(p.coords), e => rej(new Error(e.code === 1 ? "Location permission was refused. Allow location for this site in your browser settings and try again." : "Could not get your location. Turn on GPS, step outside if you are indoors, and try again.")), { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }); });
 $("btn-in").addEventListener("click", async () => {
@@ -313,15 +321,23 @@ $("btn-in").addEventListener("click", async () => {
   try {
     let lat = hotel.lat, lng = hotel.lng, accuracy = 0;
     try { const c = await geo(); lat = c.latitude; lng = c.longitude; accuracy = Math.round(c.accuracy || 0); } catch (ex) { if (!DEMO) throw ex; }
-    const distM = distanceM(lat, lng, hotel.lat, hotel.lng);
+    const distM = distanceM(lat, lng, hotel.lat, hotel.lng); lastGeo = { lat, lng, accuracy, distM };
     if (distM > (hotel.radiusM || 300) && !DEMO) throw new Error(`You are about ${distM >= 1000 ? (distM / 1000).toFixed(1) + " km" : distM + " m"} from ${hotel.name}. Check-in works only at the hotel.`);
     b.textContent = "Saving…";
     todayRec = await be.checkIn({ uid: user.uid, email: user.email, name: profile.fullName || user.name || "", hotelId: hotel.id, hotelName: hotel.name, date: dayKey(), lat, lng, accuracy, distM });
     hist = [todayRec, ...hist.filter(r => r.date !== todayRec.date)];
-    const st = attStatus(todayRec, hotel); toast(st.code === "present" ? "Checked in — on time. Have a great day!" : `Checked in — ${st.lateMin} min late, counted as half day`);
+    const st = attStatus(todayRec, hotel); toast(st.code === "present" ? "Checked in — on time. Have a great day!" : `Checked in — ${st.lateMin} min late. The office will confirm your day.`);
     paintAtt();
-  } catch (ex) { toast(/permission|denied/i.test(String(ex)) ? "Check-in refused: you are outside the hotel radius, or not assigned to this hotel." : (ex.message || String(ex))); }
+  } catch (ex) { toast(/permission|denied/i.test(String(ex)) ? "Check-in refused: you are outside the hotel radius, or not assigned to this hotel. You can send the office a note below." : (ex.message || String(ex))); $("reqbox").dataset.open = "1"; show("reqbox", !todayRec && !todayReq); $("req-reason").focus(); }
   finally { b.disabled = false; b.textContent = "Check in now"; }
+});
+$("req-send").addEventListener("click", async () => {
+  const reason = $("req-reason").value.trim(); if (reason.length < 5) return toast("Write a short reason first");
+  const b = $("req-send"); b.disabled = true;
+  try {
+    const g = lastGeo || {}; todayReq = await be.sendRequest({ uid: user.uid, email: user.email, name: profile.fullName || user.name || "", hotelId: hotel.id, hotelName: hotel.name, date: dayKey(), reason, lat: g.lat ?? null, lng: g.lng ?? null, accuracy: g.accuracy ?? null, distM: g.distM ?? null });
+    $("reqbox").dataset.open = "0"; toast("Sent. The office will decide your day."); paintAtt();
+  } catch (ex) { toast("Could not send: " + (ex.message || ex)); } finally { b.disabled = false; }
 });
 $("btn-out").addEventListener("click", async () => {
   const b = $("btn-out"); b.disabled = true;

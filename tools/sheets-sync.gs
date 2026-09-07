@@ -58,10 +58,10 @@ function syncAttendance(){
     const people = employees.filter(e => e.status === "approved" && e.hotelId && (!firstDay[e.uid] || d >= firstDay[e.uid])).map(e => ({ e, r: dayRecs.find(r => r.uid === e.uid) || null, hotelId: e.hotelId }));
     dayRecs.forEach(r => { if (!people.some(x => x.e.uid === r.uid)) people.push({ e: { fullName: r.name, email: r.email }, r, hotelId: r.hotelId }); });
     people.forEach(x => { const h = byHotel[x.hotelId] || {}; const st = status(x.r, h, d, today);
-      rows.push([d, x.e.fullName || "", x.e.email || "", h.name || x.hotelId || "", x.r && x.r.checkInAt ? hhmm(x.r.checkInAt) : "", x.r && x.r.checkOutAt ? hhmm(x.r.checkOutAt) : "", st.label, st.lateMin == null ? "" : st.lateMin, x.r && x.r.distM != null ? x.r.distM : "", x.r && x.r.override ? x.r.override : "", x.r && x.r.overrideBy ? x.r.overrideBy : ""]); });
+      rows.push([d, x.e.fullName || "", x.e.email || "", h.name || x.hotelId || "", x.r && x.r.checkInAt ? hhmm(x.r.checkInAt) : "", x.r && x.r.checkOutAt ? hhmm(x.r.checkOutAt) : "", st.label, st.lateMin == null ? "" : st.lateMin, x.r && x.r.distM != null ? x.r.distM : "", x.r && x.r.override ? x.r.override : "", x.r && x.r.overrideBy ? x.r.overrideBy : "", st.review ? "yes" : ""]); });
   }
   rows.sort((a, b) => (a[0] < b[0] ? 1 : a[0] > b[0] ? -1 : String(a[3]).localeCompare(b[3]) || String(a[1]).localeCompare(b[1])));
-  writeTab(ATT_TAB, ["Date","Name","Email","Hotel","Check-in","Check-out","Status","Late (min)","Distance (m)","Override","Override by"], rows);
+  writeTab(ATT_TAB, ["Date","Name","Email","Hotel","Check-in","Check-out","Status","Late (min)","Distance (m)","Override","Override by","Needs decision"], rows);
   writeTab(HOTEL_TAB, ["Hotel","Town","Shift start","Grace (min)","Radius (m)","Active","Staff assigned"], hotels.map(h => [h.name, h.city || "", h.shiftStart, h.graceMin, h.radiusM, h.active === false ? "no" : "yes", employees.filter(e => e.hotelId === h.id && e.status === "approved").length]));
   SpreadsheetApp.getActive().toast("Attendance synced: " + rows.length + " rows", "Joy Boy", 5);
 }
@@ -71,7 +71,7 @@ const LABEL = { present: "Present", "half-day": "Half day", absent: "Absent", si
 function status(r, h, date, today){
   const start = toMin(h.shiftStart) == null ? 540 : toMin(h.shiftStart), grace = h.graceMin == null ? 10 : +h.graceMin;
   if (r && r.override) return { label: LABEL[r.override] || r.override, lateMin: r.checkInAt ? Math.max(0, toMin(hhmm(r.checkInAt)) - start) : null };
-  if (r && r.checkInAt){ const late = toMin(hhmm(r.checkInAt)) - start; return { label: late <= grace ? LABEL.present : LABEL["half-day"], lateMin: Math.max(0, late) }; }
+  if (r && r.checkInAt){ const late = toMin(hhmm(r.checkInAt)) - start; return late <= grace ? { label: LABEL.present, lateMin: Math.max(0, late) } : { label: LABEL["half-day"], lateMin: late, review: true }; }
   if (date === today && toMin(hhmm(new Date())) <= start + grace) return { label: LABEL.pending, lateMin: null };
   return { label: LABEL.absent, lateMin: null };
 }

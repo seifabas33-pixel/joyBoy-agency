@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609070648">
-<script src="firebase-config.js?v=202609070648"></script>
+<link rel="stylesheet" href="portal.css?v=202609070744">
+<script src="firebase-config.js?v=202609070744"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 </head>
 <body>
@@ -47,11 +47,12 @@
         <button class="btn small" id="a-csv" type="button">Export month CSV</button>
       </div>
       <div class="stats" id="a-stats"></div>
+      <div class="decide" id="a-decide"></div>
       <div class="tablewrap"><table>
         <thead><tr><th>Person</th><th>Hotel</th><th>Check-in</th><th>Check-out</th><th>Status</th><th>Late</th><th>Distance</th><th>Override</th></tr></thead>
         <tbody id="a-rows"></tbody>
       </table><div class="empty" id="a-empty" hidden>Nobody is assigned to a hotel yet. Assign staff from their profile (Roster → open a person → Hotel).</div></div>
-      <p class="hint" style="margin-top:10px">Automatic rule: checked in by shift start + grace → Present; later → Half day; no check-in after that time → Absent. Use Override for sick days, vacation, days off or corrections; the override wins in the export. Rows marked "manual" came from an override or from the Google Sheet import.</p>
+      <p class="hint" style="margin-top:10px">Automatic rule: checked in by shift start + grace → Present; later → <b>Late · needs decision</b> (counts as Half day until you decide); no check-in after that time → Absent. Staff who could not check in can send you a note; it appears above the table. Use Override for sick days, vacation, days off or corrections; the override wins in the export. Rows marked "manual" came from an override or from the Google Sheet import.</p>
     </div>
 
     <div id="v-hotels" hidden>
@@ -63,7 +64,7 @@
           <label class="f"><span>Town</span><input class="in" id="h-city" placeholder="Marsa Alam"></label>
           <label class="f full"><span>Location <b class="req">*</b> — paste a Google Maps link or "lat, lng"</span><input class="in" id="h-loc" placeholder="25.0676, 34.8934  (or a Maps link that contains @lat,lng)"><span class="hint" id="h-loc-hint">In Google Maps press and hold on the animation office or stage, copy the two numbers shown at the top and paste them here. Or tap the button while standing at the hotel.</span></label>
           <div class="full"><button class="btn ghost small" id="h-here" type="button">Use my current location</button></div>
-          <label class="f"><span>Allowed radius (metres)</span><input class="in" type="number" id="h-radius" value="300" min="50" max="3000"><span class="hint">Resort grounds are big: 300–800 m is typical. Phones are accurate to about 10–30 m outdoors.</span></label>
+          <label class="f"><span>Allowed radius (metres)</span><input class="in" type="number" id="h-radius" value="300" min="50" max="3000"><span class="hint" id="h-radius-hint">Resort grounds are big: 300–800 m is typical. Phones are accurate to about 10–30 m outdoors and 50–100 m indoors, so anything under 200 m will refuse honest people.</span></label>
           <label class="f"><span>Shift starts at</span><input class="in" type="time" id="h-start" value="09:00"></label>
           <label class="f"><span>Grace minutes</span><input class="in" type="number" id="h-grace" value="10" min="0" max="120"><span class="hint">Checking in later than start + grace counts as a half day.</span></label>
           <label class="f"><span>Active</span><select class="in" id="h-active"><option value="1">Yes — staff can check in</option><option value="0">No — season closed</option></select></label>
@@ -99,13 +100,13 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES } from "./portal.js?v=202609070648";
+import { initBackend, DEMO, isAdminEmail, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel } from "./portal.js?v=202609070744";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
 $("f-skill").innerHTML += SKILLS.map(s => `<option>${s}</option>`).join("");
 $("f-lang").innerHTML += LANGS.map(s => `<option>${s}</option>`).join("");
-let be, user, all = [], cur = null, hotels = [], hotelEdit = null, attDay = dayKey(), attRecs = [];
+let be, user, all = [], cur = null, hotels = [], hotelEdit = null, attDay = dayKey(), attRecs = [], attReqs = [];
 const hotelName = id => (hotels.find(h => h.id === id) || {}).name || (id ? "Unknown hotel" : "—");
 
 function filtered(){
@@ -192,6 +193,7 @@ function editHotel(id){
 $("h-new").addEventListener("click", () => editHotel(null));
 $("h-loc").addEventListener("input", () => { const v = $("h-loc").value.trim(), ll = parseLatLng(v); $("h-loc-hint").textContent = ll ? `Understood: ${ll.lat.toFixed(5)}, ${ll.lng.toFixed(5)}` : (/goo\.gl|maps\.app|[?&]cid=|\/place\//.test(v) ? "This is a place link without coordinates. In Google Maps press and hold on the spot until a pin drops, then tap the two numbers at the top (e.g. 25.0731, 34.8976) and paste them here." : v ? "Could not read coordinates from this text. In Google Maps, press and hold on the spot, then copy the numbers shown at the top." : "In Google Maps press and hold on the animation office or stage, copy the two numbers shown at the top and paste them here. Or tap the button while standing at the hotel."); });
 $("h-here").addEventListener("click", () => { if (!navigator.geolocation) return toast("No location access in this browser"); const b = $("h-here"); b.disabled = true; b.textContent = "Locating…"; navigator.geolocation.getCurrentPosition(p => { $("h-loc").value = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`; $("h-loc").dispatchEvent(new Event("input")); b.disabled = false; b.textContent = "Use my current location"; toast(`Location set (±${Math.round(p.coords.accuracy)} m)`); }, () => { b.disabled = false; b.textContent = "Use my current location"; toast("Could not get your location"); }, { enableHighAccuracy: true, timeout: 20000 }); });
+$("h-radius").addEventListener("input", () => { const v = +$("h-radius").value || 0; $("h-radius-hint").style.color = v < 200 ? "#FFB3A3" : ""; $("h-radius-hint").textContent = v < 200 ? `${v} m is smaller than a phone's usual GPS error at a resort — staff standing at the hotel will be refused. Use at least 300 m.` : "Resort grounds are big: 300–800 m is typical. Phones are accurate to about 10–30 m outdoors and 50–100 m indoors, so anything under 200 m will refuse honest people."; });
 $("h-save").addEventListener("click", async () => {
   const name = $("h-name").value.trim(), ll = parseLatLng($("h-loc").value), radiusM = Math.min(3000, Math.max(50, +$("h-radius").value || 300)), shiftStart = $("h-start").value || "09:00", graceMin = Math.max(0, +$("h-grace").value || 0);
   if (name.length < 2) return toast("Enter the hotel name"); if (!ll) return toast("Paste a Google Maps link or coordinates");
@@ -214,7 +216,15 @@ $("a-next").addEventListener("click", () => setDay(addDays(attDay, 1)));
 $("a-today").addEventListener("click", () => setDay(dayKey()));
 $("a-hotel").addEventListener("change", paintAtt);
 $("a-refresh").addEventListener("click", loadAtt);
-async function loadAtt(){ try { attRecs = await be.attendanceOn(attDay); } catch (ex) { attRecs = []; toast("Could not load attendance: " + (ex.message || ex)); } paintAtt(); }
+async function loadAtt(){ try { [attRecs, attReqs] = await Promise.all([be.attendanceOn(attDay), be.requestsOn(attDay).catch(() => [])]); } catch (ex) { attRecs = []; attReqs = []; toast("Could not load attendance: " + (ex.message || ex)); } paintAtt(); }
+async function decide(uid, code, req){
+  const x = attRows(attDay, attRecs).find(r => r.p.uid === uid) || {}, id = `${uid}_${attDay}`;
+  try {
+    await be.setAttendance(id, { uid, email: (x.p && x.p.email) || (req && req.email) || "", name: (x.p && x.p.fullName) || (req && req.name) || "", hotelId: x.hotelId || (req && req.hotelId) || "", hotelName: (x.hotel && x.hotel.name) || (req && req.hotelName) || "", date: attDay, override: code, overrideBy: user.email, source: req ? "request" : "decision" });
+    if (req) await be.decideRequest(req.id, { status: "decided", decision: code, by: user.email });
+    toast("Decided: " + ATT_LABEL[code]); loadAtt();
+  } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
+}
 function attRows(day, recs){
   // every approved person with a hotel gets a row, plus anyone who has a record that day
   const staff = all.filter(p => p.status === "approved" && p.hotelId && day >= String(p.createdAt || "").slice(0, 10));
@@ -225,11 +235,16 @@ function attRows(day, recs){
 function paintAtt(){
   const hf = $("a-hotel").value; const rows = attRows(attDay, attRecs).filter(x => !hf || x.hotelId === hf).sort((a, b) => String(a.hotel.name || "").localeCompare(String(b.hotel.name || "")) || String(a.p.fullName || "").localeCompare(String(b.p.fullName || "")));
   const n = c => rows.filter(x => x.st.code === c).length;
-  $("a-stats").innerHTML = [["Expected", rows.length], ["Present", n("present")], ["Half day", n("half-day")], ["Absent", n("absent")], ["Sick / vacation / off", n("sick") + n("vacation") + n("excused") + n("off")]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+  const openReqs = attReqs.filter(r => r.status === "open" && (!hf || r.hotelId === hf)), lateRows = rows.filter(x => x.st.review);
+  $("a-stats").innerHTML = [["Expected", rows.length], ["Present", n("present")], ["Half day", n("half-day")], ["Absent", n("absent")], ["Needs decision", openReqs.length + lateRows.length], ["Sick / vacation / off", n("sick") + n("vacation") + n("excused") + n("off")]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+  const btns = (uid, rid) => `<span class="acts">${["present","half-day","absent"].map(c => `<button class="btn small ${c === "present" ? "ok" : c === "absent" ? "danger" : "ghost"}" data-dec="${c}" data-uid="${esc(uid)}" ${rid ? `data-req="${esc(rid)}"` : ""}>${ATT_LABEL[c]}</button>`).join("")}</span>`;
+  $("a-decide").innerHTML = lateRows.map(x => `<div class="d"><div><b>${esc(x.p.fullName || x.p.email)}</b><br><small>${esc(x.hotel.name || "")} · checked in ${hhmm(x.r.checkInAt)} · ${x.st.lateMin} min late · ${x.r.distM != null ? x.r.distM + " m from the hotel" : ""}</small></div><span class="why">Late check-in — decide the day.</span>${btns(x.p.uid)}</div>`).join("")
+    + openReqs.map(r => `<div class="d"><div><b>${esc(r.name || r.email)}</b><br><small>${esc(r.hotelName || hotelName(r.hotelId))} · sent ${hhmm(r.createdAt)}${r.distM != null ? ` · was ${r.distM >= 1000 ? (r.distM / 1000).toFixed(1) + " km" : r.distM + " m"} from the hotel (±${r.accuracy || "?"} m)` : ""}</small></div><span class="why">“${esc(r.reason || "")}”</span>${btns(r.uid, r.id)}</div>`).join("");
+  $("a-decide").querySelectorAll("[data-dec]").forEach(b => b.onclick = () => decide(b.dataset.uid, b.dataset.dec, b.dataset.req ? attReqs.find(r => r.id === b.dataset.req) : null));
   $("a-rows").innerHTML = rows.map(x => `<tr data-uid="${esc(x.p.uid)}" style="cursor:default">
     <td><div class="who"><img src="${esc(x.p.photoThumb || "../media/img/logo.jpg")}" alt=""><div><b>${esc(x.p.fullName || x.p.email || "—")}</b><small>${esc(x.p.email || "")}</small></div></div></td>
     <td>${esc(x.hotel.name || hotelName(x.hotelId))}</td><td>${x.r && x.r.checkInAt ? hhmm(x.r.checkInAt) : "—"}</td><td>${x.r && x.r.checkOutAt ? hhmm(x.r.checkOutAt) : "—"}</td>
-    <td><span class="status att-${x.st.code}">${ATT_LABEL[x.st.code]}</span>${x.st.auto ? "" : " <small class='hint'>manual</small>"}</td><td>${x.st.lateMin ? x.st.lateMin + " min" : "—"}</td><td>${x.r && x.r.distM != null ? x.r.distM + " m" : "—"}</td>
+    <td><span class="status att-${x.st.review ? "review" : x.st.code}">${attLabel(x.st)}</span>${x.st.auto ? "" : " <small class='hint'>manual</small>"}</td><td>${x.st.lateMin ? x.st.lateMin + " min" : "—"}</td><td>${x.r && x.r.distM != null ? x.r.distM + " m" : "—"}</td>
     <td><select class="in tiny" data-ov="${esc(x.p.uid)}"><option value="">auto</option>${ATT_OVERRIDES.map(c => `<option value="${c}" ${x.r && x.r.override === c ? "selected" : ""}>${ATT_LABEL[c]}</option>`).join("")}</select></td></tr>`).join("");
   show("a-empty", rows.length === 0);
   $("a-rows").querySelectorAll("[data-ov]").forEach(sel => sel.onchange = async () => {

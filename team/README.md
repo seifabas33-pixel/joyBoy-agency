@@ -95,6 +95,12 @@ Keep CSV exports off shared drives and delete them after use.
   day into `attendance/` as a manual override, matching stage names to
   `preferredName`/`fullName` (or a mapping tab "Portal names": sheet name →
   email). The admin page also has *Export month CSV*.
+- **Decisions**: a check-in after start + grace is recorded but flagged *Late ·
+  needs decision*; staff who cannot check in (GPS, radius) send a note to
+  `requests/{uid}_{date}` from the same card. Both appear at the top of the
+  admin Attendance tab with Present / Half day / Absent buttons; a decision
+  writes the attendance override and closes the request. Undecided late
+  check-ins fall back to Half day in exports.
 - Limits worth knowing: browser GPS can be spoofed by a determined person, so
   the check-in is evidence, not proof; accuracy indoors can be 50–100 m, so set
   the radius generously (300–800 m for a resort). Times are Egypt time.

@@ -102,6 +102,19 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // ── Requests: "I could not check in" notes, sent from anywhere; the office decides. One per person and day. ──
+    match /requests/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if isOwner(request.resource.data.uid)
+        && id == request.auth.uid + '_' + request.resource.data.date
+        && request.resource.data.date.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.status == 'open'
+        && request.resource.data.reason is string && request.resource.data.reason.size() >= 5 && request.resource.data.reason.size() <= 300
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'hotelId', 'hotelName', 'date', 'reason', 'lat', 'lng', 'accuracy', 'distM', 'status', 'createdAt']);
+      allow update, delete: if isAdmin();
+    }
+
     match /{document=**} { allow read, write: if false; }
   }
 }
