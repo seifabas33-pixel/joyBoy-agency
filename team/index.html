@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609070744">
-<script src="firebase-config.js?v=202609070744"></script>
+<link rel="stylesheet" href="portal.css?v=202609070845">
+<script src="firebase-config.js?v=202609070845"></script>
 </head>
 <body>
 <div class="topbar"><div class="topbar-inner">
@@ -120,7 +120,7 @@
           <div class="f full" id="f-relocate"><span>Can you live at the resort for the season? <b class="req">*</b></span><div class="seg"><label><input type="radio" name="relocate" value="Yes"><span>Yes</span></label><label><input type="radio" name="relocate" value="No"><span>No</span></label></div><span class="err">Please choose.</span></div>
           <label class="f full"><span>Medical notes or allergies (optional)</span><textarea class="in" id="medical" placeholder="Only what the team leader should know in an emergency"></textarea></label>
           <label class="f full" id="f-invite"><span>Invite code from the office <b class="req">*</b></span><input class="in mono" id="inviteCode" autocomplete="off" placeholder="Ask Mr. Moaz or Mr. Seif"><span class="err">The code is required to register.</span></label>
-          <div class="full f" id="f-consent"><label class="consent"><input type="checkbox" id="consent"><span>I confirm this information is true and I agree that Joy Boy Agency stores it and uses it only for staffing, contracts, hotel security passes and payroll. Medical notes are optional and, if I give them, may be shared with my team leader for my safety. I can ask for my data to be corrected or deleted at any time (<a href="../legal.html#privacy" target="_blank">privacy policy</a>).</span></label><span class="err">Please confirm.</span></div>
+          <div class="full f" id="f-consent"><label class="consent"><input type="checkbox" id="consent"><span>I confirm this information is true and I agree that Joy Boy Agency stores it and uses it only for staffing, contracts, hotel security passes and payroll. Medical notes are optional and, if I give them, may be shared with my team leader for my safety. I can ask for my data to be corrected or deleted at any time (<a href="../legal.html#privacy" target="_blank" rel="noopener">privacy policy</a>).</span></label><span class="err">Please confirm.</span></div>
         </div>
       </div>
 
@@ -168,7 +168,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, distanceM, attStatus, ATT_LABEL, attLabel } from "./portal.js?v=202609070744";
+import { initBackend, DEMO, isAdminEmail, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, distanceM, attStatus, ATT_LABEL, attLabel } from "./portal.js?v=202609070845";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);

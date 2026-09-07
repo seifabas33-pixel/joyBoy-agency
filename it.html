@@ -20,12 +20,12 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="me" href="https://www.instagram.com/joyboyentertainment/">
-<meta name="description" content="Il portfolio di Joy Boy Agency: intrattenimento e animazione per i resort del Mar Rosso — i risultati, gli spettacoli in video e il team che c&#x27;è dietro.">
+<meta name="description" content="Facciamo noi la serata nei resort del Mar Rosso: spettacoli serali, animazione diurna, programma bambini e musica dal vivo, con un team residente e una sola direzione responsabile. Premi, recensioni testuali degli ospiti e gli show in video.">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="it_IT">
 <meta property="og:site_name" content="Joy Boy Agency">
-<meta property="og:title" content="Joy Boy Agency — Intrattenimento che si guadagna le recensioni">
-<meta property="og:description" content="Intrattenimento e animazione per i resort del Mar Rosso — i risultati, gli spettacoli in video e il team che c&#x27;è dietro.">
+<meta property="og:title" content="Joy Boy Agency — Facciamo noi la serata">
+<meta property="og:description" content="Spettacoli serali, animazione diurna, programma bambini e musica dal vivo per i resort del Mar Rosso, con un team residente e una sola direzione responsabile.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -321,7 +321,7 @@ body.menu-open .burger span:nth-child(3){top:17px;transform:rotate(-45deg)}
 .ph.award:hover .frame img{transform:none}
 .ph.wide .frame{height:400px;flex:none}
 .ph .body,.reelv .body{padding:14px 17px 16px}
-.ph h4,.reelv h4{font-size:14.5px;font-weight:700}
+.ph h3,.reelv h3{font-size:14.5px;font-weight:700}
 .ph p,.reelv p{font-size:12.5px;color:var(--ink-3);line-height:1.5;margin-top:3px}
 .reelv video{width:100%;height:100%;aspect-ratio:16/10;object-fit:cover;display:block;background:#000}
 .reelv.s3 video,.reelv.s4 video{aspect-ratio:3/4}
@@ -489,11 +489,14 @@ footer{
 footer .fbrand{display:flex;align-items:center;gap:10px;color:var(--ink);font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:16px;margin-bottom:10px}
 footer .fbrand img{width:32px;height:32px;border-radius:50%;background:#fff;display:block}
 footer p{max-width:44ch}
-footer h5{margin:0 0 8px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:500}
-footer a{color:var(--ink-2);text-decoration:none;display:block;padding:3px 0;transition:color .2s}
+footer h4{margin:0 0 8px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:500}
+footer a{color:var(--ink-2);text-decoration:none;display:block;padding:5px 0;transition:color .2s;overflow-wrap:anywhere}
+footer p,footer .copy span{overflow-wrap:anywhere;min-width:0}
+footer>div{min-width:0}
 footer a:hover{color:var(--accent)}
 footer .copy{grid-column:1/-1;border-top:1px solid var(--line);padding:14px 0 0;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12px}
 @media(max-width:700px){footer{grid-template-columns:1fr 1fr;gap:22px}footer>div:first-child{grid-column:1/-1}}
+@media(max-width:560px){footer{grid-template-columns:1fr;gap:18px}}
 @media (prefers-reduced-motion: reduce){.strip::after{width:120px}}
 
 /* ════════ BOLD & PLAYFUL LAYER ════════ */
@@ -615,7 +618,7 @@ h1,h2,h3,h4{font-variation-settings:"opsz" 96}
 .step:hover .n{transform:rotate(6deg) scale(1.1)}
 .step:nth-child(1){--sc:var(--coral)}.step:nth-child(2){--sc:var(--yellow)}.step:nth-child(3){--sc:var(--pink)}.step:nth-child(4){--sc:var(--violet)}.step:nth-child(5){--sc:var(--aqua)}
 .step:nth-child(3) .n,.step:nth-child(4) .n{color:#fff}
-.step h4{font-size:clamp(24px,2.1vw,30px);font-weight:800;letter-spacing:-.03em;line-height:1.05;margin-top:10px}
+.step h3{font-size:clamp(24px,2.1vw,30px);font-weight:800;letter-spacing:-.03em;line-height:1.05;margin-top:10px}
 .step p{font-size:16px;color:var(--ink-2);line-height:1.55}
 @media(max-width:920px){.timeline{grid-template-columns:repeat(2,1fr);gap:26px 18px}.timeline::before{display:none}}
 @media(max-width:560px){.timeline{grid-template-columns:1fr}}
@@ -728,7 +731,7 @@ html.loading .wcol,html.loading .rot i{animation-play-state:paused}
 .mh-cols{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:26px;padding-top:6px;border-top:1px solid var(--line-2)}
 .mh-cols .tile.reelv{grid-row:span 2;border-radius:6px;border:0;background:var(--raised)}
 .mh-cols .reelv video{aspect-ratio:16/10}
-.mh-cols .col h4{font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin-bottom:8px}
+.mh-cols .col h3{font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin-bottom:8px}
 .mh-cols .col p{font-size:13px;color:var(--ink-2);line-height:1.55}
 .mh-cols .col .num{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:44px;letter-spacing:-.04em;line-height:1;color:var(--aqua);display:block;margin-bottom:6px}
 @media(max-width:920px){.mh-cols{grid-template-columns:1fr 1fr}.mh-cols .tile.reelv{grid-column:1/-1;grid-row:auto}}
@@ -818,11 +821,11 @@ footer .copy a{display:inline;padding:0;color:var(--ink-2);text-decoration:under
 
 <header class="hero" id="top">
   <div class="wall" aria-hidden="true">
-    <div class="wcol" style="--d:46s"><img src="media/img/gallery-white-sensation.jpg" width="680" height="907" alt="" decoding="async"><img src="media/img/poster-reel-fire.jpg" width="560" height="280" alt="" decoding="async"><img src="media/img/gallery-curtain-call.jpg" width="880" height="695" alt="" decoding="async"><img src="media/img/poster-reel-kids.jpg" width="480" height="816" alt="" decoding="async"><img src="media/img/poster-gallery-aftershow.jpg" width="720" height="408" alt="" decoding="async"><img src="media/img/gallery-white-sensation.jpg" width="680" height="907" alt="" decoding="async"><img src="media/img/poster-reel-fire.jpg" width="560" height="280" alt="" decoding="async"><img src="media/img/gallery-curtain-call.jpg" width="880" height="695" alt="" decoding="async"><img src="media/img/poster-reel-kids.jpg" width="480" height="816" alt="" decoding="async"><img src="media/img/poster-gallery-aftershow.jpg" width="720" height="408" alt="" decoding="async"></div>
-    <div class="wcol rev" style="--d:58s"><img src="media/img/poster-reel-egypt.jpg" width="480" height="800" alt="" decoding="async"><img src="media/img/gallery-daytime-line.jpg" width="880" height="660" alt="" decoding="async"><img src="media/img/poster-reel-light.jpg" width="480" height="848" alt="" decoding="async"><img src="media/img/gallery-theme-night-sendoff.jpg" width="880" height="660" alt="" decoding="async"><img src="media/img/poster-reel-egypt.jpg" width="480" height="800" alt="" decoding="async"><img src="media/img/gallery-daytime-line.jpg" width="880" height="660" alt="" decoding="async"><img src="media/img/poster-reel-light.jpg" width="480" height="848" alt="" decoding="async"><img src="media/img/gallery-theme-night-sendoff.jpg" width="880" height="660" alt="" decoding="async"></div>
-    <div class="wcol" style="--d:52s"><img src="media/img/poster-reel-theme.jpg" width="480" height="800" alt="" decoding="async"><img src="media/img/poster-hero.jpg" width="480" height="854" alt="" decoding="async"><img src="media/img/gallery-white-sensation.jpg" width="680" height="907" alt="" decoding="async"><img src="media/img/poster-reel-fire.jpg" width="560" height="280" alt="" decoding="async"><img src="media/img/gallery-curtain-call.jpg" width="880" height="695" alt="" decoding="async"><img src="media/img/poster-reel-theme.jpg" width="480" height="800" alt="" decoding="async"><img src="media/img/poster-hero.jpg" width="480" height="854" alt="" decoding="async"><img src="media/img/gallery-white-sensation.jpg" width="680" height="907" alt="" decoding="async"><img src="media/img/poster-reel-fire.jpg" width="560" height="280" alt="" decoding="async"><img src="media/img/gallery-curtain-call.jpg" width="880" height="695" alt="" decoding="async"></div>
-    <div class="wcol rev" style="--d:64s"><img src="media/img/poster-reel-kids.jpg" width="480" height="816" alt="" decoding="async"><img src="media/img/gallery-theme-night-sendoff.jpg" width="880" height="660" alt="" decoding="async"><img src="media/img/poster-reel-egypt.jpg" width="480" height="800" alt="" decoding="async"><img src="media/img/poster-gallery-aftershow.jpg" width="720" height="408" alt="" decoding="async"><img src="media/img/gallery-daytime-line.jpg" width="880" height="660" alt="" decoding="async"><img src="media/img/poster-reel-kids.jpg" width="480" height="816" alt="" decoding="async"><img src="media/img/gallery-theme-night-sendoff.jpg" width="880" height="660" alt="" decoding="async"><img src="media/img/poster-reel-egypt.jpg" width="480" height="800" alt="" decoding="async"><img src="media/img/poster-gallery-aftershow.jpg" width="720" height="408" alt="" decoding="async"><img src="media/img/gallery-daytime-line.jpg" width="880" height="660" alt="" decoding="async"></div>
-    <div class="wcol" style="--d:49s"><img src="media/img/poster-reel-light.jpg" width="480" height="848" alt="" decoding="async"><img src="media/img/poster-reel-theme.jpg" width="480" height="800" alt="" decoding="async"><img src="media/img/poster-hero.jpg" width="480" height="854" alt="" decoding="async"><img src="media/img/gallery-white-sensation.jpg" width="680" height="907" alt="" decoding="async"><img src="media/img/poster-reel-light.jpg" width="480" height="848" alt="" decoding="async"><img src="media/img/poster-reel-theme.jpg" width="480" height="800" alt="" decoding="async"><img src="media/img/poster-hero.jpg" width="480" height="854" alt="" decoding="async"><img src="media/img/gallery-white-sensation.jpg" width="680" height="907" alt="" decoding="async"></div>
+    <div class="wcol" style="--d:46s"><img src="media/img/wall/gallery-white-sensation.jpg" width="480" height="640" alt="" decoding="async"><img src="media/img/wall/poster-reel-fire.jpg" width="480" height="240" alt="" decoding="async"><img src="media/img/wall/gallery-curtain-call.jpg" width="480" height="379" alt="" decoding="async"><img src="media/img/wall/poster-reel-kids.jpg" width="480" height="816" alt="" decoding="async"><img src="media/img/wall/poster-gallery-aftershow.jpg" width="480" height="272" alt="" decoding="async"><img src="media/img/wall/gallery-white-sensation.jpg" width="480" height="640" alt="" decoding="async" loading="lazy"><img src="media/img/wall/poster-reel-fire.jpg" width="480" height="240" alt="" decoding="async" loading="lazy"><img src="media/img/wall/gallery-curtain-call.jpg" width="480" height="379" alt="" decoding="async" loading="lazy"><img src="media/img/wall/poster-reel-kids.jpg" width="480" height="816" alt="" decoding="async" loading="lazy"><img src="media/img/wall/poster-gallery-aftershow.jpg" width="480" height="272" alt="" decoding="async" loading="lazy"></div>
+    <div class="wcol rev" style="--d:58s"><img src="media/img/wall/poster-reel-egypt.jpg" width="480" height="800" alt="" decoding="async"><img src="media/img/wall/gallery-daytime-line.jpg" width="480" height="360" alt="" decoding="async"><img src="media/img/wall/poster-reel-light.jpg" width="480" height="848" alt="" decoding="async"><img src="media/img/wall/gallery-theme-night-sendoff.jpg" width="480" height="360" alt="" decoding="async"><img src="media/img/wall/poster-reel-egypt.jpg" width="480" height="800" alt="" decoding="async" loading="lazy"><img src="media/img/wall/gallery-daytime-line.jpg" width="480" height="360" alt="" decoding="async" loading="lazy"><img src="media/img/wall/poster-reel-light.jpg" width="480" height="848" alt="" decoding="async" loading="lazy"><img src="media/img/wall/gallery-theme-night-sendoff.jpg" width="480" height="360" alt="" decoding="async" loading="lazy"></div>
+    <div class="wcol" style="--d:52s"><img src="media/img/wall/poster-reel-theme.jpg" width="480" height="800" alt="" decoding="async"><img src="media/img/wall/poster-hero.jpg" width="480" height="854" alt="" decoding="async"><img src="media/img/wall/gallery-white-sensation.jpg" width="480" height="640" alt="" decoding="async"><img src="media/img/wall/poster-reel-fire.jpg" width="480" height="240" alt="" decoding="async"><img src="media/img/wall/gallery-curtain-call.jpg" width="480" height="379" alt="" decoding="async"><img src="media/img/wall/poster-reel-theme.jpg" width="480" height="800" alt="" decoding="async" loading="lazy"><img src="media/img/wall/poster-hero.jpg" width="480" height="854" alt="" decoding="async" loading="lazy"><img src="media/img/wall/gallery-white-sensation.jpg" width="480" height="640" alt="" decoding="async" loading="lazy"><img src="media/img/wall/poster-reel-fire.jpg" width="480" height="240" alt="" decoding="async" loading="lazy"><img src="media/img/wall/gallery-curtain-call.jpg" width="480" height="379" alt="" decoding="async" loading="lazy"></div>
+    <div class="wcol rev" style="--d:64s"><img src="media/img/wall/poster-reel-kids.jpg" width="480" height="816" alt="" decoding="async"><img src="media/img/wall/gallery-theme-night-sendoff.jpg" width="480" height="360" alt="" decoding="async"><img src="media/img/wall/poster-reel-egypt.jpg" width="480" height="800" alt="" decoding="async"><img src="media/img/wall/poster-gallery-aftershow.jpg" width="480" height="272" alt="" decoding="async"><img src="media/img/wall/gallery-daytime-line.jpg" width="480" height="360" alt="" decoding="async"><img src="media/img/wall/poster-reel-kids.jpg" width="480" height="816" alt="" decoding="async" loading="lazy"><img src="media/img/wall/gallery-theme-night-sendoff.jpg" width="480" height="360" alt="" decoding="async" loading="lazy"><img src="media/img/wall/poster-reel-egypt.jpg" width="480" height="800" alt="" decoding="async" loading="lazy"><img src="media/img/wall/poster-gallery-aftershow.jpg" width="480" height="272" alt="" decoding="async" loading="lazy"><img src="media/img/wall/gallery-daytime-line.jpg" width="480" height="360" alt="" decoding="async" loading="lazy"></div>
+    <div class="wcol" style="--d:49s"><img src="media/img/wall/poster-reel-light.jpg" width="480" height="848" alt="" decoding="async"><img src="media/img/wall/poster-reel-theme.jpg" width="480" height="800" alt="" decoding="async"><img src="media/img/wall/poster-hero.jpg" width="480" height="854" alt="" decoding="async"><img src="media/img/wall/gallery-white-sensation.jpg" width="480" height="640" alt="" decoding="async"><img src="media/img/wall/poster-reel-light.jpg" width="480" height="848" alt="" decoding="async" loading="lazy"><img src="media/img/wall/poster-reel-theme.jpg" width="480" height="800" alt="" decoding="async" loading="lazy"><img src="media/img/wall/poster-hero.jpg" width="480" height="854" alt="" decoding="async" loading="lazy"><img src="media/img/wall/gallery-white-sensation.jpg" width="480" height="640" alt="" decoding="async" loading="lazy"></div>
   </div>
   <div class="dim" aria-hidden="true"></div>
   <div class="glow g1"></div><div class="glow g2"></div>
@@ -888,11 +891,11 @@ footer .copy a{display:inline;padding:0;color:var(--ink-2);text-decoration:under
     <span class="sub">Dal primo sopralluogo nella vostra struttura al report mensile &mdash; cinque passi, un unico team responsabile.</span>
   </div>
   <div class="timeline">
-    <div class="step"><span class="n">1</span><h4>Il brief</h4><p>Ci raccontate mix di ospiti, location e stagione. Visitiamo la struttura e ascoltiamo prima di proporre qualsiasi cosa.</p></div>
-    <div class="step"><span class="n">2</span><h4>Progettazione del programma</h4><p>Un programma settimanale costruito per il vostro resort: show serali, programma diurno, programma bambini e musica dal vivo, su repertorio a rotazione.</p></div>
-    <div class="step"><span class="n">3</span><h4>Team in struttura</h4><p>Un team residente vive in hotel, con un team leader responsabile di scaletta, turni e standard.</p></div>
-    <div class="step"><span class="n">4</span><h4>Piano d'azione settimanale</h4><p>Ogni evento ha una scadenza di allestimento, un controllo costumi, un orario di soundcheck e un responsabile nominato. Niente è lasciato al caso.</p></div>
-    <div class="step"><span class="n">5</span><h4>Report mensile</h4><p>Puntualità, sessioni svolte e menzioni nelle recensioni degli ospiti &mdash; ogni mese sulla vostra scrivania, così vedete ciò che vedono i vostri ospiti.</p></div>
+    <div class="step"><span class="n">1</span><h3>Il brief</h3><p>Ci raccontate mix di ospiti, location e stagione. Visitiamo la struttura e ascoltiamo prima di proporre qualsiasi cosa.</p></div>
+    <div class="step"><span class="n">2</span><h3>Progettazione del programma</h3><p>Un programma settimanale costruito per il vostro resort: show serali, programma diurno, programma bambini e musica dal vivo, su repertorio a rotazione.</p></div>
+    <div class="step"><span class="n">3</span><h3>Team in struttura</h3><p>Un team residente vive in hotel, con un team leader responsabile di scaletta, turni e standard.</p></div>
+    <div class="step"><span class="n">4</span><h3>Piano d'azione settimanale</h3><p>Ogni evento ha una scadenza di allestimento, un controllo costumi, un orario di soundcheck e un responsabile nominato. Niente è lasciato al caso.</p></div>
+    <div class="step"><span class="n">5</span><h3>Report mensile</h3><p>Puntualità, sessioni svolte e menzioni nelle recensioni degli ospiti &mdash; ogni mese sulla vostra scrivania, così vedete ciò che vedono i vostri ospiti.</p></div>
   </div>
 
   <!-- ── section 3 · awards ── -->
@@ -904,15 +907,15 @@ footer .copy a{display:inline;padding:0;color:var(--ink-2);text-decoration:under
 
   <div class="tile ph award filled s4">
     <div class="frame"><img src="media/img/award-tripadvisor-casa-blue.jpg" width="880" height="1019" loading="lazy" decoding="async" alt="Scheda TripAdvisor: Casa Blue Beach Resort, 4,9, al 2º posto su 108 hotel a Marsa Alam"></div>
-    <div class="body"><h4>Casa Blue — 2º su 108 a Marsa Alam</h4><p>TripAdvisor's own listing card: 4.9, Travellers' Choice territory. Joy Boy ran the shows programme here in the 2024–2025 seasons.</p><span class="season"><i>Le nostre stagioni</i> <b>2024–2025</b></span></div>
+    <div class="body"><h3>Casa Blue — 2º su 108 a Marsa Alam</h3><p>La scheda ufficiale di TripAdvisor: 4,9, livello Travellers' Choice. Joy Boy ha gestito qui il programma spettacoli nelle stagioni 2024–2025.</p><span class="season"><i>Le nostre stagioni</i> <b>2024–2025</b></span></div>
   </div>
   <div class="tile ph award filled s4">
     <div class="frame"><img src="media/img/award-holidaycheck-2025.jpg" width="880" height="1107" loading="lazy" decoding="async" alt="Certificato HolidayCheck Award 2025 per il Casa Blue Resort"></div>
-    <div class="body"><h4>HolidayCheck Award 2025</h4><p>«Uno degli hotel più amati al mondo» — il certificato ufficiale di HolidayCheck, firmato dal CEO.</p></div>
+    <div class="body"><h3>HolidayCheck Award 2025</h3><p>«Uno degli hotel più amati al mondo» — il certificato ufficiale di HolidayCheck, firmato dal CEO.</p></div>
   </div>
   <div class="tile ph award filled s4">
     <div class="frame"><img src="media/img/award-booking-2025.jpg" width="880" height="887" loading="lazy" decoding="async" alt="Booking.com Traveller Review Awards 2025: Casa Blue Resort, 9,9 su 10"></div>
-    <div class="body"><h4>Booking.com Traveller Review Awards 2025 — 9.9/10</h4><p>Assegnato al Casa Blue Resort. Un 9,9 è la fascia più alta dei premi annuali di Booking.</p></div>
+    <div class="body"><h3>Booking.com Traveller Review Awards 2025 — 9.9/10</h3><p>Assegnato al Casa Blue Resort. Un 9,9 è la fascia più alta dei premi annuali di Booking.</p></div>
   </div>
 
   <div class="tile s3 yellow">
@@ -926,15 +929,15 @@ footer .copy a{display:inline;padding:0;color:var(--ink-2);text-decoration:under
   </div>
   <div class="tile ph award filled s3">
     <div class="frame"><img src="media/img/rank-solymar-reef.jpg" width="540" height="507" loading="lazy" decoding="async" alt="Scheda TripAdvisor: Solymar Reef Marsa, 3º su 79 hotel a Marsa Alam"></div>
-    <div class="body"><h4>Solymar Reef Marsa — #3</h4><p>4,5 · 2.692 recensioni</p><span class="season"><i>Le nostre stagioni</i> <b>2021–2022</b></span></div>
+    <div class="body"><h3>Solymar Reef Marsa — #3</h3><p>4,5 · 2.692 recensioni</p><span class="season"><i>Le nostre stagioni</i> <b>2021–2022</b></span></div>
   </div>
   <div class="tile ph award filled s3">
     <div class="frame"><img src="media/img/rank-jaz-grand.jpg" width="540" height="366" loading="lazy" decoding="async" alt="Scheda TripAdvisor: Jaz Grand Marsa, 4º su 79 hotel a Marsa Alam"></div>
-    <div class="body"><h4>Jaz Grand Marsa — #4</h4><p>4,5 · 4.275 recensioni</p><span class="season"><i>Le nostre stagioni</i> <b>2021–2022</b></span></div>
+    <div class="body"><h3>Jaz Grand Marsa — #4</h3><p>4,5 · 4.275 recensioni</p><span class="season"><i>Le nostre stagioni</i> <b>2021–2022</b></span></div>
   </div>
   <div class="tile ph award filled s3">
     <div class="frame"><img src="media/img/rank-hilton-nubian.jpg" width="880" height="1030" loading="lazy" decoding="async" alt="Scheda TripAdvisor: Hilton Marsa Alam Nubian Resort, 9º su 93 hotel a Marsa Alam"></div>
-    <div class="body"><h4>Hilton Marsa Alam Nubian — #9</h4><p>4,5 · 7.715 recensioni</p><span class="season"><i>Le nostre stagioni</i> <b>2022–2023</b></span></div>
+    <div class="body"><h3>Hilton Marsa Alam Nubian — #9</h3><p>4,5 · 7.715 recensioni</p><span class="season"><i>Le nostre stagioni</i> <b>2022–2023</b></span></div>
   </div>
 
   <!-- ── section 4 · guest voices ── -->
@@ -963,23 +966,23 @@ footer .copy a{display:inline;padding:0;color:var(--ink-2);text-decoration:under
 
   <div class="tile reelv s6">
     <div class="frame"><video controls preload="none" playsinline poster="media/img/poster-reel-fire.jpg"><source src="media/reel-fire.mp4" type="video/mp4"></video><button class="playbtn" type="button" aria-label="Riproduci: Fire Show"><span></span></button><span class="dur">0:21</span></div>
-    <div class="body"><h4>Fire Show</h4><p>0:21 · spettacolo di fuoco sul palco dell'anfiteatro — la sera che gli ospiti filmano da soli.</p></div>
+    <div class="body"><h3>Fire Show</h3><p>0:21 · spettacolo di fuoco sul palco dell'anfiteatro — la sera che gli ospiti filmano da soli.</p></div>
   </div>
   <div class="tile reelv s3">
     <div class="frame"><video controls preload="none" playsinline poster="media/img/poster-reel-egypt.jpg"><source src="media/reel-egypt.mp4" type="video/mp4"></video><button class="playbtn" type="button" aria-label="Riproduci: Echo of Egypt Night"><span></span></button><span class="dur">0:40</span></div>
-    <div class="body"><h4>Echo of Egypt Night</h4><p>0:40 · l'evento serale — lanterne, laser e il palco dorato.</p></div>
+    <div class="body"><h3>Echo of Egypt Night</h3><p>0:40 · l'evento serale — lanterne, laser e il palco dorato.</p></div>
   </div>
   <div class="tile reelv s3">
     <div class="frame"><video controls preload="none" playsinline poster="media/img/poster-reel-kids.jpg"><source src="media/reel-kids.mp4" type="video/mp4"></video><button class="playbtn" type="button" aria-label="Riproduci: Programma bambini"><span></span></button><span class="dur">0:12</span></div>
-    <div class="body"><h4>Programma bambini</h4><p>0:12 · giornata dei personaggi in spiaggia — i costumi vanno dagli ospiti.</p></div>
+    <div class="body"><h3>Programma bambini</h3><p>0:12 · giornata dei personaggi in spiaggia — i costumi vanno dagli ospiti.</p></div>
   </div>
   <div class="tile reelv s3">
     <div class="frame"><video controls preload="none" playsinline poster="media/img/poster-reel-light.jpg"><source src="media/reel-light.mp4" type="video/mp4"></video><button class="playbtn" type="button" aria-label="Riproduci: Light Show"><span></span></button><span class="dur">0:12</span></div>
-    <div class="body"><h4>Light Show</h4><p>0:12 · tute LED e ventagli luminosi dopo il tramonto.</p></div>
+    <div class="body"><h3>Light Show</h3><p>0:12 · tute LED e ventagli luminosi dopo il tramonto.</p></div>
   </div>
   <div class="tile reelv s3">
     <div class="frame"><video controls preload="none" playsinline poster="media/img/poster-reel-theme.jpg"><source src="media/reel-theme.mp4" type="video/mp4"></video><button class="playbtn" type="button" aria-label="Riproduci: Theme Night Parade"><span></span></button><span class="dur">0:18</span></div>
-    <div class="body"><h4>Theme Night Parade</h4><p>0:18 · sfilata in costume tra il pubblico serale.</p></div>
+    <div class="body"><h3>Theme Night Parade</h3><p>0:18 · sfilata in costume tra il pubblico serale.</p></div>
   </div>
   <div class="tile s6 violet statement">
     <span class="eyebrow">Così come filmato</span>
@@ -1002,12 +1005,12 @@ footer .copy a{display:inline;padding:0;color:var(--ink-2);text-decoration:under
     <div class="mh-cols">
       <div class="tile reelv">
         <div class="frame"><video controls preload="none" playsinline poster="media/img/poster-gallery-aftershow.jpg"><source src="media/gallery-aftershow.mp4" type="video/mp4"></video><button class="playbtn" type="button" aria-label="Riproduci: Dopo lo show"><span></span></button><span class="dur">0:07</span></div>
-        <div class="body"><h4>Dopo lo show</h4><p>0:07 &middot; il momento in cui il programma serale finisce &mdash; il pubblico resta, in piedi.</p></div>
+        <div class="body"><h3>Dopo lo show</h3><p>0:07 &middot; il momento in cui il programma serale finisce &mdash; il pubblico resta, in piedi.</p></div>
       </div>
-      <div class="col"><span class="num">2</span><h4>resort, un unico standard.</h4><p>Casa Blue Beach Resort in 2024–2025, True Beach Resort in 2026 &mdash; lo stesso piano settimanale, lo stesso registro, le stesse facce per tutta la settimana.</p></div>
-      <div class="col"><span class="num">7/7</span><h4>Ogni sera è sera di programma.</h4><p>Quello che vedete qui non è una settimana di gala. Sono serate normali, fotografate perché gli ospiti hanno chiesto la foto.</p></div>
-      <div class="col"><h4>Niente studio, niente comparse.</h4><p>Ogni immagine e clip di questa pagina è stata realizzata in un resort che gestiamo. Le persone inquadrate sono veri ospiti.</p></div>
-      <div class="col"><h4>Volete l'album completo?</h4><p>Chiedetecelo su WhatsApp e vi invieremo il set fotografico della stagione e i reel in piena risoluzione.</p></div>
+      <div class="col"><span class="num">2</span><h3>resort, un unico standard.</h3><p>Casa Blue Beach Resort in 2024–2025, True Beach Resort in 2026 &mdash; lo stesso piano settimanale, lo stesso registro, le stesse facce per tutta la settimana.</p></div>
+      <div class="col"><span class="num">7/7</span><h3>Ogni sera è sera di programma.</h3><p>Quello che vedete qui non è una settimana di gala. Sono serate normali, fotografate perché gli ospiti hanno chiesto la foto.</p></div>
+      <div class="col"><h3>Niente studio, niente comparse.</h3><p>Ogni immagine e clip di questa pagina è stata realizzata in un resort che gestiamo. Le persone inquadrate sono veri ospiti.</p></div>
+      <div class="col"><h3>Volete l'album completo?</h3><p>Chiedetecelo su WhatsApp e vi invieremo il set fotografico della stagione e i reel in piena risoluzione.</p></div>
     </div>
   </section>
 
@@ -1137,7 +1140,7 @@ footer .copy a{display:inline;padding:0;color:var(--ink-2);text-decoration:under
       <p>Intrattenimento &amp; gestione dell'animazione per i resort del Mar Rosso &mdash; un unico team residente, un unico reparto responsabile, sette sere a settimana.</p>
     </div>
     <div>
-      <h5>Esplora</h5>
+      <h4>Esplora</h4>
       <a href="#agency">L'agenzia</a>
       <a href="#how">Come lavoriamo</a>
       <a href="#awards">Premi &amp; classifiche</a>
@@ -1147,7 +1150,7 @@ footer .copy a{display:inline;padding:0;color:var(--ink-2);text-decoration:under
       <a href="#prices">Cosa offriamo</a>
     </div>
     <div>
-      <h5>Contatti</h5>
+      <h4>Contatti</h4>
       <a href="https://wa.me/201021281660" target="_blank" rel="noopener">WhatsApp &middot; Sig. Moaz Moamen</a>
       <a href="tel:+201001570273">+20 100 157 0273 &middot; Sig. Seif Abas</a>
       <a href="https://wa.me/201001570273" target="_blank" rel="noopener">WhatsApp &middot; Sig. Seif Abas</a>
@@ -1318,7 +1321,7 @@ footer .copy a{display:inline;padding:0;color:var(--ink-2);text-decoration:under
         var tile = img.closest(".tile"), body = tile ? tile.querySelector(".body") : null;
         var fig = img.closest("figure"), fc = fig ? fig.querySelector("figcaption") : null;
         var title = "", text = "";
-        if (body){ var h = body.querySelector("h4"), p = body.querySelector("p"); title = h ? h.textContent : ""; text = p ? p.textContent : ""; }
+        if (body){ var h = body.querySelector("h3"), p = body.querySelector("p"); title = h ? h.textContent : ""; text = p ? p.textContent : ""; }
         else if (fc){ var sm = fc.querySelector("small"); title = (sm ? fc.textContent.replace(sm.textContent, "") : fc.textContent).trim(); text = sm ? sm.textContent : (img.dataset.cap || ""); }
         lbimg.src = img.currentSrc || img.src; lbimg.alt = img.alt;
         lbcap.innerHTML = (title ? "<b>" + title + "</b>" : "") + text;

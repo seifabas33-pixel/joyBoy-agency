@@ -93,7 +93,7 @@ the pre-launch checklist below. Preloader with the logo must always show
 17. Accessibility → skip link, landmarks, aria-labels, focus management in the lightbox, reduced-motion support, contrast
 18. Test forms → no forms; WhatsApp/tel/mailto links must be checked
 19. Broken links → run the link check (anchors, media, external) before deploy
-20. Performance → HTML ~105 KB, images as lazy files with width/height; no hero video any more (the spotlight wall reuses the gallery/poster JPGs already on the page); reels stay preload=none
+20. Performance → HTML ~120 KB, images as lazy files with width/height; the hero wall uses 480px copies in media/img/wall/ (~330 KB, second half of each column lazy); reels stay preload=none
 
 Open items the owner knows about: Actions billing block; sensitive figures in
 old git history (needs repo recreation); no analytics; custom domain not bought.
