@@ -35,10 +35,12 @@ nothing saved beyond the visitor's own browser).
 
 ## 2. Connect the site
 - Paste the values into `team/firebase-config.js` (the six fields).
-- Admins are listed in **two** places that must stay identical:
-  `team/firebase-config.js` and `team/firestore.rules` (re-publish the rules after
-  any change). Google reports the account's exact spelling, so a dotted Gmail
-  variant (`first.last@`) must be listed as such.
+- **Built-in admins** are listed in two places that must stay identical:
+  `team/firebase-config.js` and `isBuiltInAdmin()` in `team/firestore.rules`.
+  They can never be locked out. **Further admins** are added from the admin page
+  (Hotels & office → Office accounts), which writes `admins/{email}`; no code or
+  rules change needed. Google reports the account's exact spelling, so a dotted
+  Gmail (`first.last@`) is a different id from the undotted one.
 - Deploy as usual (copy `team/` to `gh-pages`).
 
 ## 3. Test
@@ -104,3 +106,33 @@ Keep CSV exports off shared drives and delete them after use.
 - Limits worth knowing: browser GPS can be spoofed by a determined person, so
   the check-in is evidence, not proof; accuracy indoors can be 50–100 m, so set
   the radius generously (300–800 m for a resort). Times are Egypt time.
+
+## Hardening the Firebase key (10 minutes, console only)
+
+The web API key in `firebase-config.js` is public by design, but it should only
+work from our own addresses. In the Google Cloud console (project
+*joy-boy-agency*) → **APIs & Services → Credentials** → the key named
+"Browser key (auto created by Firebase)":
+
+1. **Application restrictions** → *Websites* → add
+   `seifabas33-pixel.github.io/*`, `joy-boy-agency.firebaseapp.com/*`,
+   `joy-boy-agency.web.app/*` and `localhost/*` (for demo/testing).
+2. **API restrictions** → *Restrict key* → tick **Identity Toolkit API**,
+   **Token Service API** and **Cloud Firestore API**. Save.
+
+If sign-in stops working afterwards, a referrer is mistyped: open the key again
+and compare against the list above. Changes take up to five minutes to apply.
+
+## Office digest e-mails
+
+`tools/sheets-sync.gs` → Joy Boy menu → *Install twice-daily digest*: at about
+10:30 and 20:30 Egypt time every office account (built-in + `admins/`) gets an
+e-mail with pending registrations, late check-ins and requests that need a
+decision, and who has not checked in yet. Needs the `script.send_mail` scope in
+`appsscript.json` (see the header of the script).
+
+## Installable app
+
+`team/manifest.webmanifest` + `team/icons/` make the portal installable
+("Add to Home Screen"). It then opens full-screen in the system browser, which
+also avoids the Instagram in-app browser and its blocked pop-ups.

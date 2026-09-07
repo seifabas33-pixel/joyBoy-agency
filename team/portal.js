@@ -4,7 +4,9 @@
 const cfg = window.JB_FIREBASE || {};
 export const DEMO = !cfg.apiKey || /PASTE/.test(cfg.apiKey);
 export const ADMINS = (window.JB_ADMINS || []).map(e => e.toLowerCase());
-export const isAdminEmail = e => !!e && ADMINS.includes(String(e).toLowerCase());
+export const isAdminEmail = e => !!e && ADMINS.includes(String(e).toLowerCase());   // built-in list (synchronous)
+/** Built-in list OR an entry in admins/{email}. Use this one for access decisions. */
+export async function isAdminUser(be, email){ if (isAdminEmail(email)) return true; try { return await be.isListedAdmin(email); } catch { return false; } }
 const FB = "https://www.gstatic.com/firebasejs/10.14.1/";
 
 export async function initBackend(){
@@ -66,6 +68,11 @@ async function firebaseBackend(){
     requestsOn: async date => { const s = await F.getDocs(F.query(F.collection(db, "requests"), F.where("date", "==", date))); return s.docs.map(att); },
     openRequests: async () => { const s = await F.getDocs(F.query(F.collection(db, "requests"), F.where("status", "==", "open"))); return s.docs.map(att).sort((a, b) => b.date.localeCompare(a.date)); },
     decideRequest: (id, patch) => F.updateDoc(F.doc(db, "requests", id), { ...patch, decidedAt: ts() }),
+    // office accounts (admins/{email})
+    isListedAdmin: async email => { const s = await F.getDoc(F.doc(db, "admins", String(email || "").toLowerCase())); return s.exists(); },
+    listAdmins: async () => { const s = await F.getDocs(F.collection(db, "admins")); return s.docs.map(d => ({ email: d.id, ...d.data(), addedAt: d.data().addedAt && d.data().addedAt.toDate ? d.data().addedAt.toDate().toISOString() : d.data().addedAt })); },
+    addAdmin: (email, by, name) => F.setDoc(F.doc(db, "admins", String(email).toLowerCase()), { addedBy: by, name: name || "", addedAt: ts() }),
+    removeAdmin: email => F.deleteDoc(F.doc(db, "admins", String(email).toLowerCase())),
   };
   function att(snap){ const d = snap.data() || {}; for (const k of ["checkInAt","checkOutAt","reviewedAt","createdAt","decidedAt"]) if (d[k] && d[k].toDate) d[k] = d[k].toDate().toISOString(); return { id: snap.id, ...d }; }
 }
@@ -119,6 +126,10 @@ function demoBackend(){
     requestsOn: async date => Object.entries(get("req") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date === date),
     openRequests: async () => Object.entries(get("req") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.status === "open").sort((a, b) => b.date.localeCompare(a.date)),
     decideRequest: async (id, patch) => { const r = get("req") || {}; r[id] = { ...(r[id] || {}), ...patch, decidedAt: now() }; set("req", r); },
+    isListedAdmin: async email => !!(get("admins") || {})[String(email || "").toLowerCase()],
+    listAdmins: async () => Object.entries(get("admins") || {}).map(([email, a]) => ({ email, ...a })),
+    addAdmin: async (email, by, name) => { const a = get("admins") || {}; a[String(email).toLowerCase()] = { addedBy: by, name: name || "", addedAt: now() }; set("admins", a); },
+    removeAdmin: async email => { const a = get("admins") || {}; delete a[String(email).toLowerCase()]; set("admins", a); },
   };
 }
 
