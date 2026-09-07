@@ -52,7 +52,7 @@ Static pages on Pages + **Firebase** (Google sign-in, Firestore; NO Storage — 
 approve/reject, notes, CSV, invite code), `team/portal.js` (backend layer,
 demo mode when `firebase-config.js` still has PASTE placeholders),
 `team/firestore.rules` + `team/storage.rules` (paste into the console),
-`team/README.md` (setup). Data model: `employees/{uid}` (status pending/
+`team/README.md` (setup). **Before every team/ deploy run `python3 tools/bump-portal.py`**: it stamps `?v=` on the portal.js / portal.css / firebase-config.js references so a cached old script never runs against a new page (that mismatch shows up as a blank portal or "could not start"). Data model: `employees/{uid}` (status pending/
 approved/rejected; admin-only fields status/reviewedBy/reviewedAt), office notes in `employees/{uid}/private/notes` (admin-only),
 `settings/registration.inviteCode` (rules enforce it on create; the code is set from the admin page and must never be written into the repo). Admin emails are hard-coded in config AND
 firestore.rules — keep the two lists identical (four accounts as of 2026-09-06: Seif's two Gmail spellings, the agency Gmail, Mr. Moaz's). **Live since 2026-09-06**: rules published, invite code set from the admin page, registration + approval + both admins verified by the owner. Project: joy-boy-agency (Spark/free plan). **Personal data never goes
