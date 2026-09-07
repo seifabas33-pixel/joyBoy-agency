@@ -14,6 +14,7 @@
  *            "https://www.googleapis.com/auth/spreadsheets.currentonly",
  *            "https://www.googleapis.com/auth/script.external_request",
  *            "https://www.googleapis.com/auth/script.scriptapp",
+ *            "https://www.googleapis.com/auth/script.send_mail",
  *            "https://www.googleapis.com/auth/datastore"
  *          ]
  *        }
@@ -30,6 +31,10 @@
  * Names are matched to the portal's stage name / full name; for anyone it cannot match,
  * add a tab "Portal names" with the sheet name in column A and the person's Gmail in column B.
  *
+ * Digest e-mails: Joy Boy → "Install twice-daily digest" sends the office accounts a short e-mail at
+ * about 10:30 and 20:30 Egypt time with pending registrations, late check-ins and requests that need a
+ * decision, and who has not checked in yet. "Send digest now" sends one immediately.
+ *
  * What the sync writes: a tab "Attendance (portal)" with one row per person and day
  * (date, name, email, hotel, check-in, check-out, status, late minutes, distance, override, by),
  * and a tab "Hotels (portal)". Other tabs in your sheet are never touched.
@@ -41,7 +46,7 @@ const DAYS_BACK = 62;                 // how much history to (re)write each run
 const TZ = "Africa/Cairo";
 const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)";
 
-function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addToUi(); }
+function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addToUi(); }
 function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); try { SpreadsheetApp.getUi().alert("Done — the sheet now refreshes every hour."); } catch (e) {} }
 
 function syncAttendance(){
@@ -164,4 +169,45 @@ function patchAll(writes){
       return { url: `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/attendance/${w.id}?${mask}`, method: "patch", contentType: "application/json", headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() }, payload: JSON.stringify({ fields: Object.fromEntries(Object.entries(w.fields).map(([k, v]) => [k, enc(v)])) }), muteHttpExceptions: true }; });
     UrlFetchApp.fetchAll(reqs).forEach((res, j) => { if (res.getResponseCode() >= 300) throw new Error("Write failed for " + writes[i + j].id + ": " + res.getContentText().slice(0, 200)); });
   }
+}
+
+/* ────────────────────────── Digest e-mail for the office ────────────────────────── */
+const BUILT_IN_ADMINS = ["seifabas33@gmail.com", "seif.abas33@gmail.com", "joyboyentertainmentagency@gmail.com", "the.z.1417@gmail.com"];
+const ADMIN_URL = "https://seifabas33-pixel.github.io/joyBoy-agency/team/admin.html";
+
+function installDigestTriggers(){
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "sendDigest").forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger("sendDigest").timeBased().atHour(10).nearMinute(30).everyDays(1).inTimezone(TZ).create();
+  ScriptApp.newTrigger("sendDigest").timeBased().atHour(20).nearMinute(30).everyDays(1).inTimezone(TZ).create();
+  try { SpreadsheetApp.getUi().alert("Done — the office gets a digest at about 10:30 and 20:30 Egypt time."); } catch (e) {}
+}
+
+function sendDigest(){
+  const today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd"), nowMin = toMin(hhmm(new Date()));
+  const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f }));
+  const hotels = Object.fromEntries(fetchAll("hotels").map(d => [d.id, d.f]));
+  const att = fetchAll("attendance").map(d => ({ id: d.id, ...d.f })).filter(r => r.date === today);
+  const reqs = fetchAll("requests").map(d => ({ id: d.id, ...d.f })).filter(r => r.status === "open");
+  const admins = fetchAll("admins").map(d => d.id);
+  const to = [...new Set(BUILT_IN_ADMINS.concat(admins))].join(",");
+  const name = e => e.preferredName || e.fullName || e.email;
+  const pending = employees.filter(e => (e.status || "pending") === "pending");
+  const active = employees.filter(e => e.status === "approved" && e.hotelId);
+  const late = [], absent = [], present = [];
+  active.forEach(e => { const h = hotels[e.hotelId] || {}, r = att.find(a => a.uid === e.uid); const st = status(r, h, today, today);
+    if (r && r.checkInAt && st.label === LABEL["half-day"] && !r.override) late.push(`${name(e)} — ${h.name || ""}, in at ${hhmm(r.checkInAt)} (${st.lateMin} min late)`);
+    else if (r && r.checkInAt) present.push(name(e));
+    else if (!r || !r.override){ const start = toMin(h.shiftStart) == null ? 540 : toMin(h.shiftStart), grace = h.graceMin == null ? 10 : +h.graceMin; if (nowMin > start + grace) absent.push(`${name(e)} — ${h.name || ""}`); } });
+  const lines = [];
+  lines.push(`Joy Boy office digest — ${today} ${hhmm(new Date())} (Egypt time)`, "");
+  lines.push(`Present today: ${present.length} of ${active.length} assigned staff.`, "");
+  if (pending.length) lines.push(`PENDING REGISTRATIONS (${pending.length}):`, ...pending.map(e => `  • ${name(e)} — ${e.email}`), "");
+  if (late.length) lines.push(`LATE CHECK-INS — NEED A DECISION (${late.length}):`, ...late.map(x => "  • " + x), "");
+  if (reqs.length) lines.push(`REQUESTS FROM STAFF (${reqs.length}):`, ...reqs.map(r => `  • ${r.name || r.email} — ${r.date}: "${r.reason}"`), "");
+  if (absent.length) lines.push(`NOT CHECKED IN YET (${absent.length}):`, ...absent.map(x => "  • " + x), "");
+  if (!pending.length && !late.length && !reqs.length && !absent.length) lines.push("Nothing needs a decision right now.", "");
+  lines.push(`Decide here: ${ADMIN_URL}#att`, "", "This e-mail is generated by the attendance sheet script. Personal data — do not forward outside the office.");
+  const todo = pending.length + late.length + reqs.length;
+  MailApp.sendEmail({ to, subject: `Joy Boy · ${today} · ${todo ? todo + " to decide" : "all clear"} · ${present.length}/${active.length} present`, body: lines.join("\n"), name: "Joy Boy office" });
+  try { SpreadsheetApp.getActive().toast("Digest sent to " + to.split(",").length + " office accounts", "Joy Boy", 5); } catch (e) {}
 }

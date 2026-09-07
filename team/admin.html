@@ -7,12 +7,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Joy Boy Agency office: roster, attendance and hotels. Admin accounts only.">
 <meta name="theme-color" content="#0D0A14">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Joy Boy">
 <link rel="icon" type="image/png" sizes="64x64" href="../media/img/favicon-64.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609070926">
-<script src="firebase-config.js?v=202609070926"></script>
+<link rel="stylesheet" href="portal.css?v=202609071040">
+<script src="firebase-config.js?v=202609071040"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 </head>
 <body>
@@ -37,7 +42,7 @@
 
   <section id="s-admin" hidden>
     <div class="hero" style="padding-top:18px"><span class="eyebrow" id="view-eyebrow">Roster</span><h1 style="font-size:clamp(30px,5vw,48px)" id="view-title">Team <em>registrations</em></h1></div>
-    <div class="tabs" role="tablist"><button class="on" data-view="roster" role="tab">Roster</button><button data-view="att" role="tab">Attendance</button><button data-view="hotels" role="tab">Hotels</button></div>
+    <div class="tabs" role="tablist"><button class="on" data-view="roster" role="tab">Roster</button><button data-view="att" role="tab">Attendance</button><button data-view="hotels" role="tab">Hotels &amp; office</button></div>
 
     <div id="v-att" hidden>
       <div class="toolbar">
@@ -72,6 +77,16 @@
         </div>
         <div class="actions"><button class="btn small" id="h-save" type="button">Save hotel</button><button class="btn ghost small" id="h-new" type="button" hidden>New hotel</button><span style="flex:1"></span><button class="btn ghost small" id="h-del" type="button" hidden style="border-color:rgba(255,77,46,.6);color:#FFB3A3">Delete hotel…</button></div>
       </div>
+      <div class="card" style="margin-top:14px">
+        <h2 style="font-size:22px;font-weight:800">Office accounts</h2>
+        <p class="hint" style="margin-top:6px">Google accounts that can open this admin page. Built-in accounts cannot be removed. Adding someone here is enough — no code or rules change needed.</p>
+        <div id="admins" style="margin-top:12px"></div>
+        <div class="grid" style="margin-top:12px">
+          <label class="f"><span>Gmail address</span><input class="in" id="adm-email" type="email" placeholder="name@gmail.com" autocomplete="off"></label>
+          <label class="f"><span>Name (optional)</span><input class="in" id="adm-name" placeholder="Who is this?"></label>
+        </div>
+        <div class="actions"><button class="btn small" id="adm-add" type="button">Add office account</button></div>
+      </div>
     </div>
 
     <div id="v-roster">
@@ -101,7 +116,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel } from "./portal.js?v=202609070926";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel } from "./portal.js?v=202609071040";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -173,8 +188,8 @@ $("drawer-bg").addEventListener("click", closeDrawer);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
 
 /* ── views ── */
-const VIEWS = { roster: ["Roster", "Team <em>registrations</em>"], att: ["Attendance", "Who is <em>on the floor</em>"], hotels: ["Hotels", "Where the <em>teams</em> work"] };
-function setView(v){ document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === v)); ["roster","att","hotels"].forEach(k => show("v-" + k, k === v)); $("view-eyebrow").textContent = VIEWS[v][0]; $("view-title").innerHTML = VIEWS[v][1]; if (v === "att") loadAtt(); if (v === "hotels") paintHotels(); location.hash = v; }
+const VIEWS = { roster: ["Roster", "Team <em>registrations</em>"], att: ["Attendance", "Who is <em>on the floor</em>"], hotels: ["Hotels & office", "Where the <em>teams</em> work"] };
+function setView(v){ document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === v)); ["roster","att","hotels"].forEach(k => show("v-" + k, k === v)); $("view-eyebrow").textContent = VIEWS[v][0]; $("view-title").innerHTML = VIEWS[v][1]; if (v === "att") loadAtt(); if (v === "hotels"){ paintHotels(); paintAdmins(); } location.hash = v; }
 document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
 
 /* ── hotels ── */
@@ -192,6 +207,19 @@ function editHotel(id){
   show("h-new", !!h); show("h-del", !!h); paintHotels(); if (h) $("h-name").scrollIntoView({ behavior: "smooth", block: "center" });
 }
 $("h-new").addEventListener("click", () => editHotel(null));
+
+/* ── office accounts ── */
+async function paintAdmins(){
+  let list = []; try { list = await be.listAdmins(); } catch (ex) { $("admins").innerHTML = `<p class="hint">Could not load the list: ${esc(ex.message || ex)}</p>`; return; }
+  const rows = ADMINS.map(e => ({ email: e, builtin: true })).concat(list.filter(a => !ADMINS.includes(a.email)).map(a => ({ ...a, builtin: false })));
+  $("admins").innerHTML = `<table class="mini" style="width:100%"><tbody>${rows.map(a => `<tr><td><b>${esc(a.email)}</b>${a.name ? ` <small class="hint">· ${esc(a.name)}</small>` : ""}</td><td class="hint">${a.builtin ? "built-in" : "added by " + esc(a.addedBy || "?")}</td><td style="text-align:right">${a.builtin ? "" : `<button class="btn ghost small" data-rm="${esc(a.email)}">Remove</button>`}</td></tr>`).join("")}</tbody></table>`;
+  $("admins").querySelectorAll("[data-rm]").forEach(b => b.onclick = async () => { if (!confirm(`Remove ${b.dataset.rm} from the office accounts?`)) return; try { await be.removeAdmin(b.dataset.rm); toast("Removed"); paintAdmins(); } catch (ex) { toast("Could not remove: " + (ex.message || ex)); } });
+}
+$("adm-add").addEventListener("click", async () => {
+  const email = $("adm-email").value.trim().toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast("Enter a valid email address");
+  try { await be.addAdmin(email, user.email, $("adm-name").value.trim()); $("adm-email").value = ""; $("adm-name").value = ""; toast("Added " + email + " — they can sign in now"); paintAdmins(); } catch (ex) { toast("Could not add: " + (ex.message || ex)); }
+});
 $("h-loc").addEventListener("input", () => { const v = $("h-loc").value.trim(), ll = parseLatLng(v); $("h-loc-hint").textContent = ll ? `Understood: ${ll.lat.toFixed(5)}, ${ll.lng.toFixed(5)}` : (/goo\.gl|maps\.app|[?&]cid=|\/place\//.test(v) ? "This is a place link without coordinates. In Google Maps press and hold on the spot until a pin drops, then tap the two numbers at the top (e.g. 25.0731, 34.8976) and paste them here." : v ? "Could not read coordinates from this text. In Google Maps, press and hold on the spot, then copy the numbers shown at the top." : "In Google Maps press and hold on the animation office or stage, copy the two numbers shown at the top and paste them here. Or tap the button while standing at the hotel."); });
 $("h-here").addEventListener("click", () => { if (!navigator.geolocation) return toast("No location access in this browser"); const b = $("h-here"); b.disabled = true; b.textContent = "Locating…"; navigator.geolocation.getCurrentPosition(p => { $("h-loc").value = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`; $("h-loc").dispatchEvent(new Event("input")); b.disabled = false; b.textContent = "Use my current location"; toast(`Location set (±${Math.round(p.coords.accuracy)} m)`); }, () => { b.disabled = false; b.textContent = "Use my current location"; toast("Could not get your location"); }, { enableHighAccuracy: true, timeout: 20000 }); });
 $("h-radius").addEventListener("input", () => { const v = +$("h-radius").value || 0; $("h-radius-hint").style.color = v < 200 ? "#FFB3A3" : ""; $("h-radius-hint").textContent = v < 200 ? `${v} m is smaller than a phone's usual GPS error at a resort — staff standing at the hotel will be refused. Use at least 300 m.` : "Resort grounds are big: 300–800 m is typical. Phones are accurate to about 10–30 m outdoors and 50–100 m indoors, so anything under 200 m will refuse honest people."; });
@@ -296,7 +324,7 @@ try {
     user = u; show("who", !!u); ["s-auth","s-deny","s-admin"].forEach(id => show(id, false));
     if (!u) return show("s-auth", true);
     $("who-name").textContent = u.name || u.email; $("who-img").src = u.photo || "../media/img/logo.jpg";
-    if (!isAdminEmail(u.email)){ $("deny-msg").textContent = `${u.email} is not in the admin list. Admins are set in firebase-config.js and the security rules.`; return show("s-deny", true); }
+    if (!(await isAdminUser(be, u.email))){ $("deny-msg").textContent = `${u.email} is not an office account. An existing admin can add it under Hotels & office → Office accounts.`; return show("s-deny", true); }
     show("s-admin", true);
     try { [all, hotels] = await Promise.all([be.listEmployees(), be.listHotels()]); render(); paintHotels(); } catch (ex) { err("Could not load the roster: " + (ex.message || ex)); }
     const v = location.hash.replace("#", ""); if (VIEWS[v] && v !== "roster") setView(v);

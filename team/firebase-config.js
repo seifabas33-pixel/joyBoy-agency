@@ -12,7 +12,7 @@ window.JB_FIREBASE = {
   messagingSenderId: "366857907850",
   appId: "1:366857907850:web:f81e450575760c77180773"
 };
-// Admin accounts (must match the list inside firestore.rules / storage.rules).
+// Built-in admin accounts (must match isBuiltInAdmin() in firestore.rules). More admins are added from the admin page (Hotels & office → Office accounts).
 window.JB_ADMINS = [
   "seifabas33@gmail.com",
   "seif.abas33@gmail.com",
