@@ -211,3 +211,15 @@ table.mini td{padding:7px 8px}
 .hotel .n{display:inline-block;margin-top:10px;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#9DF2E0}
 .hotel.inactive{opacity:.55}
 select.in.tiny{padding:6px 28px 6px 10px;font-size:13px;min-width:0;width:auto}
+
+/* requests / decisions */
+.status.att-review{color:#FFD9A3;border-color:rgba(255,170,70,.55);background:rgba(255,170,70,.12)}
+.reqbox{margin-top:12px;padding:14px;border-radius:14px;background:var(--raised);border:1px dashed var(--line-2)}
+.reqbox textarea{min-height:76px;margin-top:8px}
+.req-note{color:#FFD9A3;font-size:13.5px}
+.decide{display:grid;gap:10px;margin-bottom:16px}
+.decide .d{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;background:var(--surface);border:1px solid rgba(255,170,70,.45);border-left:4px solid #FFAA46;border-radius:14px;padding:12px 14px}
+.decide .d b{font-size:15px}
+.decide .d small{color:var(--ink-3);font-size:12.5px}
+.decide .d .why{flex:1 1 260px;font-size:14px;color:var(--ink-2)}
+.decide .d .acts{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
