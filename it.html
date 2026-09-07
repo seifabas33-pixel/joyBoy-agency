@@ -266,6 +266,15 @@ body.menu-open .burger span:nth-child(3){top:17px;transform:rotate(-45deg)}
 .award .season i{font-style:normal;opacity:.75}
 .award .season b{font-weight:700}
 .tile a:not(.btn),.quote cite a,.faq .a a,.strip .sub a,footer .copy a{display:inline-block;padding:6px 0;margin:-6px 0}
+.btn.join{background:transparent;color:var(--aqua);border:2px solid var(--aqua);box-shadow:0 0 0 0 rgba(34,227,192,.35);animation:joinpulse 2.8s ease-out infinite}
+.btn.join .dot{width:9px;height:9px;border-radius:50%;background:var(--aqua);box-shadow:0 0 12px var(--aqua)}
+.btn.join:hover{background:var(--aqua);color:var(--dark)}
+@keyframes joinpulse{0%{box-shadow:0 0 0 0 rgba(34,227,192,.45)}70%{box-shadow:0 0 0 14px rgba(34,227,192,0)}100%{box-shadow:0 0 0 0 rgba(34,227,192,0)}}
+.joinpill{display:none;flex:none;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:99px;border:1.5px solid var(--aqua);color:var(--aqua);font-weight:700;font-size:13px;text-decoration:none;white-space:nowrap;transition:background .25s,color .25s,transform .25s}
+.joinpill::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--aqua);box-shadow:0 0 10px var(--aqua)}
+.joinpill:hover{background:var(--aqua);color:var(--dark);transform:translateY(-1px)}
+@media(min-width:1181px){.joinpill{display:inline-flex}}
+@media (prefers-reduced-motion: reduce){.btn.join{animation:none}}
 .tile.flat{background:var(--raised)}
 .tile.invert{background:#F5F6F8;border-color:#FFFFFF;color:#14161D}
 .tile.invert .eyebrow{color:#D8451D}
@@ -811,6 +820,7 @@ footer .copy a{display:inline-block;padding:6px 0;margin:-6px 0;color:var(--ink-
       <a href="team/" class="nav-more nav-join" rel="nofollow">Unisciti al team</a>
     </nav>
     <details class="lang"><summary aria-label="Lingua"><span class="cur">IT</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary><div class="lang-menu"><a href="./" lang="en" hreflang="en">English</a><a href="de.html" lang="de" hreflang="de">Deutsch</a><a href="it.html" lang="it" hreflang="it" class="on" aria-current="page">Italiano</a></div></details>
+    <a class="joinpill" href="team/" rel="nofollow">Unisciti al team</a>
     <a class="iconbtn" href="https://www.instagram.com/joyboyentertainment/" target="_blank" rel="noopener" aria-label="Joy Boy Agency su Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
     <button class="themetoggle" id="tt" type="button" aria-label="Passa dal tema scuro a quello chiaro">
       <svg class="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M19.4 4.6l-1.8 1.8M6.4 17.6l-1.8 1.8"/></svg>
@@ -846,6 +856,7 @@ footer .copy a{display:inline-block;padding:6px 0;margin:-6px 0;color:var(--ink-
     <div class="btnrow">
       <a class="btn" href="#contact">Parliamone &rarr;</a>
       <a class="btn ghost" href="#reels">Guarda gli show</a>
+      <a class="btn join" href="team/" rel="nofollow"><span class="dot"></span>Unisciti al nostro team</a>
     </div>
   </div>
   </div>
