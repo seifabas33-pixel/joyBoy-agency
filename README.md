@@ -13,7 +13,8 @@ animation management for Red Sea resorts.
 | `portfolio.html` | The agency portfolio (English source) — no prices, sendable to any client |
 | `de.html`, `it.html` | German and Italian versions, **generated** from `portfolio.html` — edit the English page, then re-run the generator (see below) |
 | `team/` | Staff portal: Google sign-in registration + admin roster on Firebase (setup in `team/README.md`) |
-| `media/` | Show reels (MP4) and `media/img/` — photos, posters, logo, favicons, social image |
+| `media/` | Show reels (MP4) and `media/img/` — photos, posters, logo, favicons, social image; `media/img/wall/` holds the 480px copies used by the homepage hero wall |
+| `tools/` | `i18n.py` (DE/IT generator), `bump-portal.py` (cache-safe portal deploys), `sheets-sync.gs` (Google Sheets attendance sync + grid import), `firebase-check.sh` (public-endpoint probe) |
 | `legal.html`, `404.html`, `robots.txt`, `sitemap.xml` | Privacy & terms, custom not-found page, crawler files |
 | `CLAUDE.md` | Project memory for Claude: deploy steps, hard rules, design direction, the 20-point launch checklist |
 
@@ -24,8 +25,8 @@ animation management for Red Sea resorts.
 - Anjum dashboard: **https://seifabas33-pixel.github.io/joyBoy-agency/anjum.html**
 - `/portfolio.html` still works — it redirects to the homepage.
 - Privacy & terms: **https://seifabas33-pixel.github.io/joyBoy-agency/legal.html**
+- Staff portal: **https://seifabas33-pixel.github.io/joyBoy-agency/team/** (admins: `team/admin.html`)
 - ~~Proposal~~ — deactivated. The old `/proposal.html` link now returns 404.
-  The Anjum PDF remains valid wherever it was already sent.
 
 The portfolio is the general-purpose piece for any prospect: the agency, the
 Casa Blue awards, the reels and gallery, and the service catalogue with **no
@@ -36,13 +37,13 @@ awards, what guests wrote (verbatim TripAdvisor reviews of True Beach Resort,
 Aug 2026), the reels, the gallery and what we offer.
 It has a dark and a light theme (sun/moon toggle),
 a branded preloader, a spotlight hero (a drifting wall of programme photos lit
-where the pointer goes, with a rotating headline word), a newspaper-style masthead for
+where the pointer goes, with a rotating headline word), founders' avatars in the contact block, a newspaper-style masthead for
 the Our work section, a lightbox and custom play buttons on the reels; all images are files under
-`media/img/` (the HTML itself is ~76 KB).
+`media/img/` (the HTML itself is ~120 KB; the whole homepage loads in about 470 KB).
 
 Published by GitHub Pages **from the `gh-pages` branch** (Settings → Pages →
 Deploy from a branch). To update the live site, copy the changed files
-(`index.html` = the portfolio, `anjum.html` = the dashboard, `media/` including `media/img/`)
+(`index.html` = the portfolio, `de.html`, `it.html`, `anjum.html` = the dashboard, `team/`, `media/` including `media/img/`)
 onto `gh-pages` and push — GitHub
 rebuilds the site automatically within a minute.
 
@@ -57,7 +58,7 @@ the Pages source can be switched back to "GitHub Actions".
 dictionary (one entry per English text fragment). After changing English copy,
 add the new fragments to the dictionary and regenerate both files; guest
 quotes stay in English on purpose (verbatim from TripAdvisor). The generator
-lives with Claude's session tooling — ask Claude to "regenerate de/it".
+is `tools/i18n.py` (`python3 tools/i18n.py`); the dictionaries are inside it.
 
 ## Making a proposal for a new hotel
 

@@ -15,6 +15,8 @@
 <meta property="og:description" content="Anjum sits at 4.9 from 1,602 reviews, so the score has no upside left - only downside. Entertainment is the most-mentioned subject in its recent reviews, and the named reason two guests marked it down.">
 <meta property="og:url" content="https://seifabas33-pixel.github.io/joyBoy-agency/">
 <meta name="twitter:card" content="summary">
+<link rel="icon" type="image/png" sizes="64x64" href="media/img/favicon-64.png">
+<link rel="apple-touch-icon" href="media/img/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -212,7 +214,7 @@ h1{font-size:clamp(38px,6.4vw,68px);font-weight:800;max-width:15ch}
 .g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
 .g3{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
 .g4{grid-template-columns:repeat(auto-fit,minmax(158px,1fr))}
-.jobs{grid-template-columns:repeat(auto-fit,minmax(390px,1fr))}
+.jobs{grid-template-columns:repeat(auto-fit,minmax(min(390px,100%),1fr))}
 
 /* stat tiles */
 .stat{
@@ -322,6 +324,8 @@ h1{font-size:clamp(38px,6.4vw,68px);font-weight:800;max-width:15ch}
 /* ─────────── tables ─────────── */
 .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
 table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+.wrap a,.wrap p,.wrap li,.wrap td{overflow-wrap:anywhere}
+@media(max-width:600px){table{min-width:0;display:block;overflow-x:auto}}
 th,td{padding:11px 15px;text-align:left;border-bottom:1px solid var(--line-soft);vertical-align:top}
 th{
   font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
@@ -413,7 +417,7 @@ html{scroll-behavior:smooth}
   </div>
 </div>
 
-<div class="wrap">
+<main class="wrap" id="main">
 
   <header class="masthead">
     <div class="lockup">
@@ -1016,7 +1020,7 @@ html{scroll-behavior:smooth}
     <p>Joy Boy Agency · prepared 21 August 2026 for the SUNRISE Anjum Resort meeting, 22 August 2026.</p>
   </footer>
 
-</div>
+</main>
 
 <script>
 (function(){
