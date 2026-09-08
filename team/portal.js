@@ -237,10 +237,11 @@ export function shiftStatus(rec, shift, date, today = dayKey(), nowMin = toMin(h
  * before shifts existed (day check-in) is judged by the old rule.
  */
 export function dayStatus(dayRec, shiftRecs, shifts, hotel, date, today = dayKey()){
-  if (dayRec && dayRec.override) return { code: dayRec.override, auto: false, review: false, lateMin: null, done: 0, total: shifts.length, shifts: [] };
-  if ((!shiftRecs || !shiftRecs.length) && dayRec && dayRec.checkInAt) return { ...attStatus(dayRec, hotel, today), done: 1, total: 1, shifts: [] };
+  // per-shift statuses are always computed, so shift check-ins stay visible even when the office marked the day
   const sts = shifts.map(s => ({ shift: s, rec: (shiftRecs || []).find(r => r.shift === s.key) || null, st: shiftStatus((shiftRecs || []).find(r => r.shift === s.key) || null, s, date, today) }));
   const done = sts.filter(x => ["present", "late", "excused"].includes(x.st.code)).length, pend = sts.filter(x => x.st.code === "pending").length, review = sts.some(x => x.st.review);
+  if (dayRec && dayRec.override) return { code: dayRec.override, auto: false, review: false, lateMin: null, done, total: shifts.length, shifts: sts };
+  if (!sts.some(x => x.rec) && dayRec && dayRec.checkInAt) return { ...attStatus(dayRec, hotel, today), done: 1, total: 1, shifts: [] }; // record from before shifts existed
   const code = !shifts.length ? "pending" : pend > 0 ? "pending" : done === shifts.length ? "present" : done > 0 ? "half-day" : "absent";
   return { code, auto: true, review, lateMin: null, done, total: shifts.length, shifts: sts };
 }

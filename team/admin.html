@@ -18,8 +18,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609081144">
-<script src="firebase-config.js?v=202609081144"></script>
+<link rel="stylesheet" href="portal.css?v=202609081218">
+<script src="firebase-config.js?v=202609081218"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 </head>
 <body>
@@ -153,7 +153,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText } from "./portal.js?v=202609081144";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText } from "./portal.js?v=202609081218";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -398,7 +398,7 @@ function paintAttInner(){
   $("a-rows").innerHTML = rows.map(x => `<tr data-uid="${esc(x.p.uid)}" style="cursor:default">
     <td><div class="who"><img src="${esc(x.p.photoThumb || "../media/img/logo.jpg")}" alt=""><div><b>${esc(x.p.fullName || x.p.email || "—")}</b><small>${esc(x.p.email || "")}</small></div></div></td>
     <td>${esc(x.hotel.name || hotelName(x.hotelId))}</td>${Array.from({ length: maxS }, (_, i) => cell((x.day.shifts || [])[i]))}${!(x.day.shifts || []).length && x.dayRec && x.dayRec.checkInAt ? "" : ""}
-    <td><span class="status att-${x.day.review ? "review" : x.day.code}">${dayLabel(x.day)}</span>${x.day.auto ? "" : " <small class='hint'>manual</small>"}${!(x.day.shifts || []).length && x.dayRec && x.dayRec.checkInAt ? `<br><small class="hint">in ${hhmm(x.dayRec.checkInAt)}${x.dayRec.checkOutAt ? " → " + hhmm(x.dayRec.checkOutAt) : ""} (old day format)</small>` : ""}</td>
+    <td><span class="status att-${x.day.review ? "review" : x.day.code}">${dayLabel(x.day)}</span>${x.day.auto ? "" : " <small class='hint'>manual</small>"}${x.dayRec && x.dayRec.checkInAt ? `<br><small class="hint">in ${hhmm(x.dayRec.checkInAt)}${x.dayRec.checkOutAt ? " → " + hhmm(x.dayRec.checkOutAt) : ""} (old day format)</small>` : ""}</td>
     <td><select class="in tiny" data-ov="${esc(x.p.uid)}"><option value="">auto</option>${ATT_OVERRIDES.map(c => `<option value="${c}" ${x.dayRec && x.dayRec.override === c ? "selected" : ""}>${ATT_LABEL[c]}</option>`).join("")}</select></td></tr>`).join("");
   show("a-empty", rows.length === 0);
   $("a-rows").querySelectorAll("[data-ov]").forEach(sel => sel.onchange = async () => {
