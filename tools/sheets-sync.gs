@@ -94,10 +94,10 @@ function shiftStatus(r, sh, date, today, nowMin){
 }
 function dayStatus(dayRec, srecs, shifts, h, date, today){
   const nowMin = toMin(hhmm(new Date()));
-  if (dayRec && dayRec.override) return { code: dayRec.override, label: LABEL[dayRec.override] || dayRec.override, shifts: [], review: false };
-  if (!srecs.length && dayRec && dayRec.checkInAt){ const st = status(dayRec, h, date, today); return { code: st.label === LABEL.present ? "present" : st.label === LABEL["half-day"] ? "half-day" : "absent", label: st.label, shifts: [], review: !!st.review, legacy: dayRec }; }
   const sts = shifts.map(sh => { const r = srecs.find(x => x.shift === sh.key) || null; return { sh, r, st: shiftStatus(r, sh, date, today, nowMin) }; });
   const done = sts.filter(x => ["present","late","excused"].indexOf(x.st.code) >= 0).length, pend = sts.filter(x => x.st.code === "pending").length, review = sts.some(x => x.st.review);
+  if (dayRec && dayRec.override) return { code: dayRec.override, label: LABEL[dayRec.override] || dayRec.override, shifts: sts, review: false };
+  if (!srecs.length && dayRec && dayRec.checkInAt){ const st = status(dayRec, h, date, today); return { code: st.label === LABEL.present ? "present" : st.label === LABEL["half-day"] ? "half-day" : "absent", label: st.label, shifts: [], review: !!st.review, legacy: dayRec }; }
   const code = !shifts.length ? "pending" : pend > 0 ? "pending" : done === shifts.length ? "present" : done > 0 ? "half-day" : "absent";
   return { code, label: review ? "Late (undecided)" : code === "pending" && done ? done + "/" + shifts.length + " so far" : LABEL[code], shifts: sts, review };
 }
