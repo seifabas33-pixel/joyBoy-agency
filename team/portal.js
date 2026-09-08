@@ -21,10 +21,12 @@ async function firebaseBackend(){
   const auth = A.getAuth(app), db = F.getFirestore(app);
   const provider = new A.GoogleAuthProvider(); provider.setCustomParameters({ prompt: "select_account" });
   const user = u => u ? { uid: u.uid, email: u.email, name: u.displayName || "", photo: u.photoURL || "", verified: !!u.emailVerified } : null;
-  try { await A.getRedirectResult(auth); } catch (e) { console.warn(e); }
+  A.getRedirectResult(auth).catch(() => {});                                   // popup sign-in only; never block start-up on this
   const ts = () => F.serverTimestamp();
   const clean = d => { const o = {}; for (const k in d){ if (d[k] instanceof Date) o[k] = F.Timestamp.fromDate(d[k]); else if (d[k] && d[k].toDate) o[k] = d[k].toDate().toISOString(); else o[k] = d[k]; } return o; };
-  const plain = snap => { const d = snap.data(); for (const k of ["createdAt","updatedAt","reviewedAt"]) if (d[k] && d[k].toDate) d[k] = d[k].toDate().toISOString(); return d; };
+  // every Firestore Timestamp becomes an ISO string, whatever the field is called (setAt, decidedAt, …)
+  const iso = d => { for (const k in d) if (d[k] && typeof d[k].toDate === "function") d[k] = d[k].toDate().toISOString(); return d; };
+  const plain = snap => iso(snap.data() || {});
   return {
     mode: "firebase",
     onUser: cb => A.onAuthStateChanged(auth, u => cb(user(u))),
@@ -77,7 +79,7 @@ async function firebaseBackend(){
     addAdmin: (email, by, name) => F.setDoc(F.doc(db, "admins", String(email).toLowerCase()), { addedBy: by, name: name || "", addedAt: ts() }),
     removeAdmin: email => F.deleteDoc(F.doc(db, "admins", String(email).toLowerCase())),
   };
-  function att(snap){ const d = snap.data() || {}; for (const k of ["checkInAt","checkOutAt","reviewedAt","createdAt","decidedAt"]) if (d[k] && d[k].toDate) d[k] = d[k].toDate().toISOString(); return { id: snap.id, ...d }; }
+  function att(snap){ return { id: snap.id, ...iso(snap.data() || {}) }; }
 }
 
 /* ─────────────── Demo (localStorage) ─────────────── */
@@ -169,7 +171,7 @@ export const TZ = "Africa/Cairo";
 /** YYYY-MM-DD in Egypt time. */
 export function dayKey(d = new Date()){ return new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(d)); }
 /** HH:MM in Egypt time. */
-export function hhmm(d){ if (!d) return ""; return new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(d)); }
+export function hhmm(d){ if (!d) return ""; if (typeof d.toDate === "function") d = d.toDate(); const t = new Date(d); if (isNaN(t)) return ""; return new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(t); }
 export function addDays(key, n){ const d = new Date(key + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
 export const toMin = t => { const m = /^(\d{1,2}):(\d{2})$/.exec(String(t || "").trim()); return m ? (+m[1]) * 60 + (+m[2]) : null; };
 /** Metres between two points (haversine). */
