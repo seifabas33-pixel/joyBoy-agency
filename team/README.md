@@ -158,3 +158,12 @@ also avoids the Instagram in-app browser and its blocked pop-ups.
 - Admin → **Programme** tab: pick the day and hotel, add activities (start, until, activity, place = a spot or free text, who = staff chips or Everyone, note). Edit / Delete per row, **Copy yesterday**, **Share on WhatsApp** (plain text of the day).
 - Stored in the same document as the shift plan: `plans/{hotelId}_{date}.tasks` = `[{id, time, end, title, place, placeKey, uids, names, all, note}]` (+ `tasksBy`, `tasksAt`). `savePlan` and `saveTasks` both merge, so shifts and tasks never overwrite each other. No rules change needed (plans: read signed-in, write admin).
 - Staff card "Programme": today's activities with their own highlighted (yellow frame, "You"), the next one framed green, past ones dimmed, a "Whole team" toggle, and tomorrow's programme collapsed underneath as soon as the office enters it.
+
+### Pay & sales (2026-09-08)
+
+- **Salary**: Roster → open a person → *Salary* (monthly salary or daily rate, EGP) → `employees/{uid}/private/pay` (admin-only).
+- **Items & commission**: Pay & sales → *Items & commission* → `settings/sales.items` `[{key,name,unit,price,commissionPct,commissionUnit}]` (readable by signed-in staff so their card can show commission). Defaults: Lottery, T-shirts, Disco tour, 10 %.
+- **Sales**: Pay & sales → *Sales*: day + hotel, person, item, quantity, amount collected (auto = qty × price, editable), note → `sales/{uid}_{date}_{item}` with the commission stored. One line per person, item and day; saving again replaces it. Month summary per person × item below the day list.
+- **Payroll**: Pay & sales → *Payroll*: month; per person the salary, days Present / half / absent (from attendance, `dayStatus` per day; sick/vacation/excused/off are paid), base (monthly: salary − absent × salary/days-in-month − half × ½; daily: rate × days worked), commission, adjustments (+ bonus / − advance / − deduction, with note), net. **Mark paid** writes `payroll/{uid}_{YYYY-MM}` with `status: "paid"` and frozen numbers; the person then sees the payslip on their card (rules: own + paid only). Reopen sets it back to draft. CSV export.
+- Staff card *Your sales*: this month's sales per item and commission; *Payslips* lists paid months with the breakdown.
+- Rules: `sales` and `payroll` are admin-write; staff read their own sales, and payroll only when paid. **Re-publish `firestore.rules`.** Payroll is not synced to the Google Sheet (keep pay data inside the portal).

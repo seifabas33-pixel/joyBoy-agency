@@ -278,3 +278,19 @@ table.mini td .m.rv{color:#FFD9A3}
 .task.done{opacity:.45}
 table td.tm{font-family:"IBM Plex Mono",monospace;white-space:nowrap}
 .rowacts{display:flex;gap:6px;white-space:nowrap}
+
+/* ── pay & sales (2026-09-08) ── */
+.paytabs{display:flex;gap:6px;margin:-6px 0 16px;flex-wrap:wrap}
+.paytabs button{background:var(--surface);border:1px solid var(--line);color:var(--ink-2);border-radius:10px;padding:8px 14px;font-weight:600;font-size:13px;cursor:pointer}
+.paytabs button.on{border-color:var(--aqua,#22E3C0);color:#9DF2E0}
+.itemgrid{display:grid;grid-template-columns:minmax(0,1.6fr) 80px 90px 80px 90px 36px;gap:8px;align-items:center}
+.itemgrid .hd{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-family:"IBM Plex Mono",monospace}
+.itemgrid .in{min-width:0;padding:8px 10px}
+@media(max-width:640px){.itemgrid{grid-template-columns:minmax(0,1.4fr) 64px 72px 64px 72px 32px;gap:6px;font-size:12px}}
+.adj{font-size:13px;white-space:nowrap}
+.lnk{background:none;border:0;color:#FFB3A3;cursor:pointer;font-size:14px;padding:0 4px}
+.slip{margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--raised)}
+.slip .sh{display:flex;justify-content:space-between;align-items:baseline}
+.slip .sh b{font-size:16px}
+.slip .net{font-family:"IBM Plex Mono",monospace;color:#9DF2E0;font-weight:700}
+.slip table.mini{margin-top:6px}

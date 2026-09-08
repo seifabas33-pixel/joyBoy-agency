@@ -44,6 +44,20 @@ service cloud.firestore {
     match /settings/{doc} {
       allow read, write: if isAdmin();
     }
+    // Sales items (names, prices, commission) are readable by signed-in staff so their card can show commission.
+    match /settings/sales {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+    // ── Pay & sales: written by the office only. Staff read their own sales, and their own payslip once it is marked paid. ──
+    match /sales/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow write: if isAdmin();
+    }
+    match /payroll/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid && resource.data.status == 'paid');
+      allow write: if isAdmin();
+    }
 
     // One document per employee, keyed by their Google uid.
     match /employees/{uid} {

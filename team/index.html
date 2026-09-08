@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609081218">
-<script src="firebase-config.js?v=202609081218"></script>
+<link rel="stylesheet" href="portal.css?v=202609082247">
+<script src="firebase-config.js?v=202609082247"></script>
 </head>
 <body>
 <div class="topbar"><div class="topbar-inner">
@@ -165,6 +165,12 @@
       <details class="hist" id="prog-tmrw-wrap" hidden style="margin-top:12px"><summary>Tomorrow</summary><div class="tasks" id="prog-tmrw"></div></details>
       <p class="hint" style="margin-top:10px">Your own activities are highlighted; the green frame is the next one. Times are Egypt time.</p>
     </div>
+    <div class="card" id="pay" hidden>
+      <p class="eyebrow">Your sales · <span id="pay-month"></span></p>
+      <div id="pay-sales"></div>
+      <details class="hist" id="pay-slips-wrap" hidden style="margin-top:12px"><summary>Payslips</summary><div id="pay-slips"></div></details>
+      <p class="hint" style="margin-top:10px">Sales are recorded by the office when you hand in the money; commission is calculated automatically. A payslip appears here once the office marks the month as paid.</p>
+    </div>
     <div class="card">
       <div class="pcard">
         <img class="avatar" id="p-avatar" alt="">
@@ -185,7 +191,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine } from "./portal.js?v=202609081218";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL } from "./portal.js?v=202609082247";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -320,6 +326,7 @@ async function loadAttendance(){
   [hist, plan, reqs, planTmrw] = await Promise.all([be.myAttendance(user.uid, addDays(today, -14)).catch(ex => { console.warn(ex); return []; }), be.getPlan(hotel.id, today).catch(() => null), be.myRequests(user.uid, today).catch(() => []), be.getPlan(hotel.id, addDays(today, 1)).catch(() => null)]);
   dayRec = hist.find(r => r.date === today && !r.shift) || null; recs = hist.filter(r => r.date === today && r.shift);
   $("att-hotel").textContent = hotel.name; $("att-date").textContent = today; show("att", true); paintAtt(); paintProg();
+  loadPay();
 }
 const whereText = k => { const sp = plannedSpot(hotel, plan, k); return sp ? `at the <b>${esc(sp.name)}</b>` : `anywhere at ${esc(hotel.name)}`; };
 function paintAtt(){
@@ -343,6 +350,15 @@ function paintAtt(){
     const dr = hist.find(x => x.date === d && !x.shift) || null, srs = hist.filter(x => x.date === d && x.shift), ds = dayStatus(dr, srs, shifts, hotel, d, today);
     const marks = ds.shifts && ds.shifts.length ? ds.shifts.map(x => `<span class="m ${x.st.code === "present" || x.st.code === "excused" ? "ok" : x.st.review ? "rv" : x.st.code === "absent" ? "no" : ""}">${esc(x.shift.name.slice(0, 3))} ${x.rec && x.rec.checkInAt ? hhmm(x.rec.checkInAt) : "—"}</span>`).join(" ") : (dr && dr.checkInAt ? `<span class="m ok">in ${hhmm(dr.checkInAt)}</span>` : "");
     return `<tr><td>${d}</td><td>${marks}</td><td><span class="status att-${ds.review ? "review" : ds.code}">${dayLabel(ds)}</span></td></tr>`; }).join("")}</tbody></table>`;
+}
+async function loadPay(){
+  const m = monthKey(), [from] = monthRange(m); let cfg = {}, sales = [], slips = [];
+  try { [cfg, sales, slips] = await Promise.all([be.getSalesSettings().catch(() => ({})), be.mySales(user.uid, from).catch(() => []), be.myPayroll(user.uid).catch(() => [])]); } catch {}
+  $("pay-month").textContent = m; show("pay", true);
+  const its = salesItems(cfg), tot = sales.reduce((s, r) => s + (+r.amount || 0), 0), com = sales.reduce((s, r) => s + (+r.commission || 0), 0);
+  $("pay-sales").innerHTML = sales.length ? `<table class="mini"><tbody>${its.map(i => { const x = sales.filter(r => r.item === i.key); if (!x.length) return ""; const q = x.reduce((s, r) => s + (+r.qty || 0), 0), a = x.reduce((s, r) => s + (+r.amount || 0), 0), c = x.reduce((s, r) => s + (+r.commission || 0), 0); return `<tr><td>${esc(i.name)}</td><td>${q ? q + " " + esc(i.unit || "") : ""}</td><td>${money(a)}</td><td>${money(c)}</td></tr>`; }).join("")}<tr><td><b>Total</b></td><td></td><td><b>${money(tot)}</b></td><td><b>${money(com)}</b> <small class="hint">commission</small></td></tr></tbody></table>` : `<p class="hint">No sales recorded for you this month yet.</p>`;
+  show("pay-slips-wrap", slips.length > 0);
+  $("pay-slips").innerHTML = slips.map(d => `<div class="slip"><div class="sh"><b>${esc(d.month)}</b><span class="net">${money(d.net, d.currency)}</span></div><table class="mini"><tbody><tr><td>${d.payType === "day" ? "Daily rate" : "Salary"}</td><td>${money(d.salary, d.currency)}${d.payType === "day" ? ` × ${d.worked} days` : ""}</td></tr>${d.deducted ? `<tr><td>Absences</td><td>−${money(d.deducted, d.currency)} <small class="hint">${(d.days || {}).absent || 0} absent · ${(d.days || {})["half-day"] || 0} half</small></td></tr>` : ""}<tr><td>Base</td><td>${money(d.base, d.currency)}</td></tr><tr><td>Commission</td><td>${money(d.commission, d.currency)}</td></tr>${(d.adjustments || []).map(a => `<tr><td>${esc(ADJ_LABEL[a.type] || a.type)}${a.note ? ` <small class="hint">${esc(a.note)}</small>` : ""}</td><td>${a.type === "bonus" ? "+" : "−"}${money(a.amount, d.currency)}</td></tr>`).join("")}<tr><td><b>Net</b></td><td><b>${money(d.net, d.currency)}</b></td></tr></tbody></table><small class="hint">Paid ${d.paidAt ? new Date(d.paidAt).toLocaleDateString("en-GB") : ""}</small></div>`).join("");
 }
 function taskRows(tasks, all, isToday){
   const now = nowMin(); let nextDone = false;
