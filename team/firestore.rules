@@ -98,8 +98,11 @@ service cloud.firestore {
       let h = get(/databases/$(database)/documents/hotels/$(d.hotelId)).data;
       let dx = (d.lng - h.lng) * h.cosLat * 111320.0;
       let dy = (d.lat - h.lat) * 110540.0;
+      // A phone indoors reports a fix that is off by 50–100 m: allow the reported accuracy on top of the radius, capped at 100 m.
+      let tol = (d.accuracy is number && d.accuracy > 0) ? (d.accuracy < 100.0 ? d.accuracy : 100.0) : 0.0;
+      let r = h.radiusM + tol;
       return d.lat is number && d.lng is number && h.active == true
-        && dx * dx + dy * dy <= h.radiusM * h.radiusM;
+        && dx * dx + dy * dy <= r * r;
     }
     match /attendance/{id} {
       allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);

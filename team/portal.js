@@ -166,6 +166,16 @@ export function hhmm(d){ if (!d) return ""; return new Intl.DateTimeFormat("en-G
 export function addDays(key, n){ const d = new Date(key + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
 export const toMin = t => { const m = /^(\d{1,2}):(\d{2})$/.exec(String(t || "").trim()); return m ? (+m[1]) * 60 + (+m[2]) : null; };
 /** Metres between two points (haversine). */
+/* Same maths as insideFence() in firestore.rules (equirectangular with the hotel's stored cosLat), so the phone predicts the server's answer. */
+export function fenceDistM(lat, lng, hotel){ const cos = typeof hotel.cosLat === "number" ? hotel.cosLat : Math.cos(hotel.lat * Math.PI / 180); const dx = (lng - hotel.lng) * cos * 111320, dy = (lat - hotel.lat) * 110540; return Math.round(Math.sqrt(dx * dx + dy * dy)); }
+export function fenceTolM(accuracy){ return accuracy > 0 ? Math.min(100, accuracy) : 0; }
+/* Why a check-in would be refused by the rules, before we try — "" when everything looks fine. */
+export function fenceProblem(hotel){
+  if (!hotel) return "No hotel is assigned to you yet. Ask the office.";
+  if (hotel.active === false) return `${hotel.name} is marked closed in the office, so check-in is switched off. Ask the office to reopen it.`;
+  if (typeof hotel.lat !== "number" || typeof hotel.lng !== "number" || typeof hotel.cosLat !== "number" || typeof hotel.radiusM !== "number" || !(hotel.radiusM > 0)) return `The location of ${hotel.name} is incomplete in the office. Ask the office to open Hotels, check the pin and radius and save the hotel again.`;
+  return "";
+}
 export function distanceM(lat1, lng1, lat2, lng2){ const R = 6371000, r = Math.PI / 180, dLat = (lat2 - lat1) * r, dLng = (lng2 - lng1) * r; const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(dLng / 2) ** 2; return Math.round(2 * R * Math.asin(Math.sqrt(a))); }
 /** Accepts "25.0676, 34.8934", a Google Maps link (…@25.06,34.89,17z or ?q=25.06,34.89 or !3d25.06!4d34.89) → {lat,lng} or null. */
 export function parseLatLng(text){
