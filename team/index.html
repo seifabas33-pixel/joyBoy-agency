@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609081131">
-<script src="firebase-config.js?v=202609081131"></script>
+<link rel="stylesheet" href="portal.css?v=202609081144">
+<script src="firebase-config.js?v=202609081144"></script>
 </head>
 <body>
 <div class="topbar"><div class="topbar-inner">
@@ -158,6 +158,13 @@
       <p class="hint" id="att-hint"></p>
       <details class="hist"><summary>Last 14 days</summary><div id="att-hist"></div></details>
     </div>
+    <div class="card prog" id="prog" hidden>
+      <p class="eyebrow">Programme · <span id="prog-hotel"></span></p>
+      <div class="proghead"><h3 id="prog-title">Today</h3><label class="chip"><input type="checkbox" id="prog-all"><span>Whole team</span></label></div>
+      <div class="tasks" id="prog-today"></div>
+      <details class="hist" id="prog-tmrw-wrap" hidden style="margin-top:12px"><summary>Tomorrow</summary><div class="tasks" id="prog-tmrw"></div></details>
+      <p class="hint" style="margin-top:10px">Your own activities are highlighted; the green frame is the next one. Times are Egypt time.</p>
+    </div>
     <div class="card">
       <div class="pcard">
         <img class="avatar" id="p-avatar" alt="">
@@ -178,7 +185,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN } from "./portal.js?v=202609081131";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine } from "./portal.js?v=202609081144";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -300,19 +307,19 @@ function renderProfile(){
   loadAttendance();
 }
 /* ── attendance (approved staff assigned to a hotel) ── */
-let hotel = null, shifts = [], plan = null, dayRec = null, recs = [], hist = [], reqs = [], cur = null, lastGeo = null;
+let hotel = null, shifts = [], plan = null, planTmrw = null, dayRec = null, recs = [], hist = [], reqs = [], cur = null, lastGeo = null;
 const nowMin = () => toMin(hhmm(new Date()));
 const recOf = k => recs.find(r => r.shift === k) || null, reqOf = k => reqs.find(r => r.shift === k) || null;
 async function loadAttendance(){
-  const p = profile; show("att", false); hotel = null; shifts = []; plan = null; dayRec = null; recs = []; hist = []; reqs = [];
+  const p = profile; show("att", false); show("prog", false); hotel = null; shifts = []; plan = null; planTmrw = null; dayRec = null; recs = []; hist = []; reqs = [];
   if (!p || p.status !== "approved" || !p.hotelId) return;
   try { hotel = await be.getHotel(p.hotelId); } catch (ex) { console.warn(ex); }
   if (!hotel) return;
   shifts = hotelShifts(hotel);
   const today = dayKey();
-  [hist, plan, reqs] = await Promise.all([be.myAttendance(user.uid, addDays(today, -14)).catch(ex => { console.warn(ex); return []; }), be.getPlan(hotel.id, today).catch(() => null), be.myRequests(user.uid, today).catch(() => [])]);
+  [hist, plan, reqs, planTmrw] = await Promise.all([be.myAttendance(user.uid, addDays(today, -14)).catch(ex => { console.warn(ex); return []; }), be.getPlan(hotel.id, today).catch(() => null), be.myRequests(user.uid, today).catch(() => []), be.getPlan(hotel.id, addDays(today, 1)).catch(() => null)]);
   dayRec = hist.find(r => r.date === today && !r.shift) || null; recs = hist.filter(r => r.date === today && r.shift);
-  $("att-hotel").textContent = hotel.name; $("att-date").textContent = today; show("att", true); paintAtt();
+  $("att-hotel").textContent = hotel.name; $("att-date").textContent = today; show("att", true); paintAtt(); paintProg();
 }
 const whereText = k => { const sp = plannedSpot(hotel, plan, k); return sp ? `at the <b>${esc(sp.name)}</b>` : `anywhere at ${esc(hotel.name)}`; };
 function paintAtt(){
@@ -337,6 +344,22 @@ function paintAtt(){
     const marks = ds.shifts && ds.shifts.length ? ds.shifts.map(x => `<span class="m ${x.st.code === "present" || x.st.code === "excused" ? "ok" : x.st.review ? "rv" : x.st.code === "absent" ? "no" : ""}">${esc(x.shift.name.slice(0, 3))} ${x.rec && x.rec.checkInAt ? hhmm(x.rec.checkInAt) : "—"}</span>`).join(" ") : (dr && dr.checkInAt ? `<span class="m ok">in ${hhmm(dr.checkInAt)}</span>` : "");
     return `<tr><td>${d}</td><td>${marks}</td><td><span class="status att-${ds.review ? "review" : ds.code}">${dayLabel(ds)}</span></td></tr>`; }).join("")}</tbody></table>`;
 }
+function taskRows(tasks, all, isToday){
+  const now = nowMin(); let nextDone = false;
+  const list = sortTasks(tasks).filter(t => all || taskIsMine(t, user.uid));
+  return list.map(t => { const mine = taskIsMine(t, user.uid), endM = toMin(t.end) ?? (toMin(t.time) + 60), done = isToday && now > endM, isNext = isToday && !done && !nextDone && mine && now <= endM; if (isNext) nextDone = true;
+    const who = t.all ? `<span class="${mine ? "me" : ""}">everyone</span>` : (t.names || []).map((n, i) => `<span class="${(t.uids || [])[i] === user.uid ? "me" : ""}">${(t.uids || [])[i] === user.uid ? "You" : esc(n.split(" ")[0])}</span>`).join("");
+    return `<div class="task ${mine ? "mine" : ""} ${isNext ? "next" : ""} ${done ? "done" : ""}"><span class="tm">${esc(t.time)}${t.end ? `<small>until ${esc(t.end)}</small>` : ""}</span><div><b>${esc(t.title)}</b>${t.place ? `<div class="pl">${esc(t.place)}</div>` : ""}<div class="who">${who}</div>${t.note ? `<div class="nt">${esc(t.note)}</div>` : ""}</div></div>`; }).join("");
+}
+function paintProg(){
+  if (!hotel) return; const all = $("prog-all").checked, tt = (plan && plan.tasks) || [], tm = (planTmrw && planTmrw.tasks) || [];
+  $("prog-hotel").textContent = hotel.name; show("prog", true);
+  const mineToday = tt.filter(t => taskIsMine(t, user.uid)).length;
+  $("prog-title").textContent = `Today · ${all ? tt.length + " activities" : mineToday + " for you"}`;
+  $("prog-today").innerHTML = taskRows(tt, all, true) || `<p class="hint">${tt.length ? "Nothing assigned to you today — switch on “Whole team” to see the full programme." : "The office has not published today's programme yet."}</p>`;
+  const tmRows = taskRows(tm, all, false); show("prog-tmrw-wrap", !!tm.length); $("prog-tmrw").innerHTML = tmRows || `<p class="hint">Nothing for you tomorrow yet.</p>`;
+}
+$("prog-all").addEventListener("change", paintProg);
 const geo = () => new Promise((res, rej) => { if (!navigator.geolocation) return rej(new Error("This browser has no location access")); navigator.geolocation.getCurrentPosition(p => res(p.coords), e => rej(new Error(e.code === 1 ? "Location permission was refused. Allow location for this site in your browser settings and try again." : "Could not get your location. Turn on GPS, step outside if you are indoors, and try again.")), { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }); });
 $("btn-in").addEventListener("click", async () => {
   const b = $("btn-in"); b.disabled = true; b.textContent = "Locating…"; const sh = cur;

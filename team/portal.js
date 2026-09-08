@@ -58,7 +58,9 @@ async function firebaseBackend(){
     deleteHotel: id => F.deleteDoc(F.doc(db, "hotels", id)),
     // daily plan: which spot each shift checks in at — plans/{hotelId}_{date}
     getPlan: async (hotelId, date) => { const s = await F.getDoc(F.doc(db, "plans", `${hotelId}_${date}`)); return s.exists() ? att(s) : null; },
-    savePlan: (hotelId, date, shifts, by) => F.setDoc(F.doc(db, "plans", `${hotelId}_${date}`), { hotelId, date, shifts, setBy: by, setAt: ts() }),
+    savePlan: (hotelId, date, shifts, by) => F.setDoc(F.doc(db, "plans", `${hotelId}_${date}`), { hotelId, date, shifts, setBy: by, setAt: ts() }, { merge: true }),
+    // the day's programme (activities with time, place and people) lives in the same plan document
+    saveTasks: (hotelId, date, tasks, by) => F.setDoc(F.doc(db, "plans", `${hotelId}_${date}`), { hotelId, date, tasks, tasksBy: by, tasksAt: ts() }, { merge: true }),
     // attendance: one document per person, day AND shift, id = uid_YYYY-MM-DD_s1; day marks by the office live in uid_YYYY-MM-DD. The server stamps the time.
     checkIn: async rec => { const id = `${rec.uid}_${rec.date}_${rec.shift}`; await F.setDoc(F.doc(db, "attendance", id), { ...rec, checkInAt: ts() }, { merge: true }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); }, // merge: keeps an office mark (override) that already exists for the shift
     checkOut: async id => { await F.updateDoc(F.doc(db, "attendance", id), { checkOutAt: ts() }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); },
@@ -122,7 +124,8 @@ function demoBackend(){
     saveHotel: async (id, data) => { const hs = get("hotels") || {}; id = id || "h" + Date.now(); hs[id] = { ...(hs[id] || {}), ...data, updatedAt: now() }; set("hotels", hs); return id; },
     deleteHotel: async id => { const hs = get("hotels") || {}; delete hs[id]; set("hotels", hs); },
     getPlan: async (hotelId, date) => { const p = (get("plans") || {})[`${hotelId}_${date}`]; return p ? { id: `${hotelId}_${date}`, ...p } : null; },
-    savePlan: async (hotelId, date, shifts, by) => { const ps = get("plans") || {}; ps[`${hotelId}_${date}`] = { hotelId, date, shifts, setBy: by, setAt: now() }; set("plans", ps); },
+    savePlan: async (hotelId, date, shifts, by) => { const ps = get("plans") || {}; ps[`${hotelId}_${date}`] = { ...(ps[`${hotelId}_${date}`] || {}), hotelId, date, shifts, setBy: by, setAt: now() }; set("plans", ps); },
+    saveTasks: async (hotelId, date, tasks, by) => { const ps = get("plans") || {}; ps[`${hotelId}_${date}`] = { ...(ps[`${hotelId}_${date}`] || {}), hotelId, date, tasks, tasksBy: by, tasksAt: now() }; set("plans", ps); },
     checkIn: async rec => { const a = get("att") || {}; const id = `${rec.uid}_${rec.date}_${rec.shift}`; if (a[id] && a[id].checkInAt) throw new Error("Already checked in for this shift"); a[id] = { ...(a[id] || {}), ...rec, checkInAt: now() }; set("att", a); return { id, ...a[id] }; },
     checkOut: async id => { const a = get("att") || {}; if (!a[id]) throw new Error("No check-in for this shift"); a[id].checkOutAt = now(); set("att", a); return { id, ...a[id] }; },
     myAttendance: async (uid, from) => Object.entries(get("att") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.uid === uid && (!from || r.date >= from)).sort((a, b) => b.date.localeCompare(a.date)),
@@ -240,6 +243,15 @@ export function dayStatus(dayRec, shiftRecs, shifts, hotel, date, today = dayKey
   const done = sts.filter(x => ["present", "late", "excused"].includes(x.st.code)).length, pend = sts.filter(x => x.st.code === "pending").length, review = sts.some(x => x.st.review);
   const code = !shifts.length ? "pending" : pend > 0 ? "pending" : done === shifts.length ? "present" : done > 0 ? "half-day" : "absent";
   return { code, auto: true, review, lateMin: null, done, total: shifts.length, shifts: sts };
+}
+/* ── the day's programme: [{id,time,end,title,place,placeKey,uids,names,all,note}] sorted by time ── */
+export const taskId = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3);
+export const sortTasks = tasks => (tasks || []).slice().sort((a, b) => String(a.time).localeCompare(String(b.time)) || String(a.title).localeCompare(String(b.title)));
+export const taskIsMine = (t, uid) => !!(t && (t.all || (t.uids || []).includes(uid)));
+/** Plain-text programme for WhatsApp. */
+export function programmeText(hotel, date, tasks){
+  const lines = sortTasks(tasks).map(t => `${t.time}${t.end ? "–" + t.end : ""}  ${t.title}${t.place ? " — " + t.place : ""}${t.all ? " — everyone" : (t.names || []).length ? " — " + t.names.join(", ") : ""}${t.note ? " (" + t.note + ")" : ""}`);
+  return `📋 Programme ${hotel && hotel.name ? hotel.name + " " : ""}${date}\n` + (lines.length ? lines.join("\n") : "Nothing planned yet.");
 }
 /** Badge text for a day: "2/3 so far" while the day is running. */
 export const dayLabel = st => st.review ? "Late · needs decision" : st.code === "pending" && st.done ? `${st.done}/${st.total} so far` : ATT_LABEL[st.code] || st.code;

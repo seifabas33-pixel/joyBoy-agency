@@ -18,8 +18,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609081131">
-<script src="firebase-config.js?v=202609081131"></script>
+<link rel="stylesheet" href="portal.css?v=202609081144">
+<script src="firebase-config.js?v=202609081144"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 </head>
 <body>
@@ -44,7 +44,35 @@
 
   <section id="s-admin" hidden>
     <div class="hero" style="padding-top:18px"><span class="eyebrow" id="view-eyebrow">Roster</span><h1 style="font-size:clamp(30px,5vw,48px)" id="view-title">Team <em>registrations</em></h1></div>
-    <div class="tabs" role="tablist"><button class="on" data-view="roster" role="tab">Roster</button><button data-view="att" role="tab">Attendance</button><button data-view="hotels" role="tab">Hotels &amp; office</button></div>
+    <div class="tabs" role="tablist"><button class="on" data-view="roster" role="tab">Roster</button><button data-view="att" role="tab">Attendance</button><button data-view="prog" role="tab">Programme</button><button data-view="hotels" role="tab">Hotels &amp; office</button></div>
+
+    <div id="v-prog" hidden>
+      <div class="toolbar">
+        <input class="in" type="date" id="p-date"><button class="btn ghost small" id="p-prev" type="button" aria-label="Previous day">‹</button><button class="btn ghost small" id="p-next" type="button" aria-label="Next day">›</button><button class="btn ghost small" id="p-today" type="button">Today</button>
+        <select class="in" id="p-hotel"></select>
+        <span style="flex:1"></span>
+        <button class="btn ghost small" id="p-copy" type="button">Copy yesterday</button>
+        <button class="btn small" id="p-share" type="button">Share on WhatsApp</button>
+      </div>
+      <div class="card">
+        <h2 style="font-size:20px;font-weight:800" id="t-formtitle">Add an activity</h2>
+        <div class="grid" style="margin-top:12px">
+          <label class="f"><span>Starts <b class="req">*</b></span><input class="in" type="time" id="t-time"></label>
+          <label class="f"><span>Until</span><input class="in" type="time" id="t-end"></label>
+          <label class="f full"><span>Activity <b class="req">*</b></span><input class="in" id="t-title" placeholder="Aqua gym · Darts · Mini disco · Show: White Sensation · Meeting"></label>
+          <label class="f"><span>Place</span><select class="in" id="t-place"></select></label>
+          <label class="f"><span>Other place</span><input class="in" id="t-place-other" placeholder="Pool bar, lobby, kids club…"></label>
+          <div class="f full"><span>Who</span><div class="chips" id="t-who" style="margin-top:6px"></div></div>
+          <label class="f full"><span>Note</span><input class="in" id="t-note" maxlength="200" placeholder="Bring the speaker · meet 10 min before · costume: white"></label>
+        </div>
+        <div class="actions"><button class="btn small" id="t-save" type="button">Add activity</button><button class="btn ghost small" id="t-cancel" type="button" hidden>Cancel</button></div>
+      </div>
+      <div class="tablewrap" style="margin-top:14px"><table>
+        <thead><tr><th>Time</th><th>Activity</th><th>Place</th><th>Who</th><th></th></tr></thead>
+        <tbody id="p-rows"></tbody>
+      </table><div class="empty" id="p-empty" hidden>Nothing planned for this day yet. Add the first activity above, or copy yesterday.</div></div>
+      <p class="hint" style="margin-top:10px">Staff see the whole day's programme on their card, their own activities highlighted, and tomorrow's programme as soon as you enter it. Changes are saved immediately. "Share on WhatsApp" sends the day as text to your team group.</p>
+    </div>
 
     <div id="v-att" hidden>
       <div class="toolbar">
@@ -125,7 +153,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS } from "./portal.js?v=202609081131";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText } from "./portal.js?v=202609081144";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -197,8 +225,8 @@ $("drawer-bg").addEventListener("click", closeDrawer);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
 
 /* ── views ── */
-const VIEWS = { roster: ["Roster", "Team <em>registrations</em>"], att: ["Attendance", "Who is <em>on the floor</em>"], hotels: ["Hotels & office", "Where the <em>teams</em> work"] };
-function setView(v){ document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === v)); ["roster","att","hotels"].forEach(k => show("v-" + k, k === v)); $("view-eyebrow").textContent = VIEWS[v][0]; $("view-title").innerHTML = VIEWS[v][1]; if (v === "att") loadAtt(); if (v === "hotels"){ paintHotels(); paintAdmins(); } location.hash = v; }
+const VIEWS = { roster: ["Roster", "Team <em>registrations</em>"], att: ["Attendance", "Who is <em>on the floor</em>"], prog: ["Programme", "What <em>happens</em> today"], hotels: ["Hotels & office", "Where the <em>teams</em> work"] };
+function setView(v){ document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === v)); ["roster","att","prog","hotels"].forEach(k => show("v-" + k, k === v)); $("view-eyebrow").textContent = VIEWS[v][0]; $("view-title").innerHTML = VIEWS[v][1]; if (v === "att") loadAtt(); if (v === "prog") loadProg(); if (v === "hotels"){ paintHotels(); paintAdmins(); } location.hash = v; }
 document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
 
 /* ── hotels ── */
@@ -392,6 +420,80 @@ $("a-csv").addEventListener("click", async () => {
     lines.push([d, x.p.fullName || x.p.email, x.p.email, x.hotel.name || hotelName(x.hotelId), ...sc, x.day.review ? "Late (undecided)" : ATT_LABEL[x.day.code] || x.day.code, x.dayRec && x.dayRec.override ? x.dayRec.override : "", x.dayRec && x.dayRec.override && x.dayRec.overrideBy ? x.dayRec.overrideBy : ""].map(cell).join(","));
   }
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" })); a.download = `joyboy-attendance-${from.slice(0, 7)}.csv`; a.click(); URL.revokeObjectURL(a.href);
+});
+
+/* ── programme: the day's activities per hotel, stored in the plan document ── */
+let progDay = dayKey(), progPlan = null, editTask = null;
+$("p-date").value = progDay;
+const setProgDay = d => { progDay = d; $("p-date").value = d; loadProg(); };
+$("p-date").addEventListener("change", () => { if ($("p-date").value) setProgDay($("p-date").value); });
+$("p-prev").addEventListener("click", () => setProgDay(addDays(progDay, -1)));
+$("p-next").addEventListener("click", () => setProgDay(addDays(progDay, 1)));
+$("p-today").addEventListener("click", () => setProgDay(dayKey()));
+$("p-hotel").addEventListener("change", loadProg);
+const progHotel = () => hotels.find(h => h.id === $("p-hotel").value) || null;
+async function loadProg(){
+  const keep = $("p-hotel").value, act = hotels.filter(h => h.active !== false);
+  $("p-hotel").innerHTML = act.map(h => `<option value="${esc(h.id)}">${esc(h.name)}</option>`).join("") || `<option value="">No active hotel</option>`;
+  if (act.some(h => h.id === keep)) $("p-hotel").value = keep;
+  const h = progHotel(); progPlan = null; if (h){ try { progPlan = await be.getPlan(h.id, progDay); } catch (ex) { toast("Could not load the programme: " + (ex.message || ex)); } }
+  cancelTask(); paintProg();
+}
+function paintProgForm(){
+  const h = progHotel() || {}, spots = hotelSpots(h), staff = all.filter(p => p.status === "approved" && p.hotelId === h.id).sort((a, b) => String(a.fullName).localeCompare(String(b.fullName)));
+  const cur = $("t-place").value;
+  $("t-place").innerHTML = `<option value="">— no place —</option>` + spots.map(sp => `<option value="${esc(sp.key)}">${esc(sp.name)}</option>`).join("") + `<option value="__other">Other (type it) →</option>`;
+  if ([...$("t-place").options].some(o => o.value === cur)) $("t-place").value = cur;
+  const chosen = new Set([...$("t-who").querySelectorAll("input:checked")].map(i => i.value));
+  $("t-who").innerHTML = `<label class="chip"><input type="checkbox" value="__all" ${chosen.has("__all") ? "checked" : ""}><span>Everyone</span></label>` + staff.map(p => `<label class="chip"><input type="checkbox" value="${esc(p.uid)}" ${chosen.has(p.uid) ? "checked" : ""}><span>${esc((p.preferredName || p.fullName || p.email).split(" ")[0])}${staff.filter(q => (q.preferredName || q.fullName || "").split(" ")[0] === (p.preferredName || p.fullName || "").split(" ")[0]).length > 1 ? " " + esc((p.fullName || "").split(" ").slice(-1)[0]) : ""}</span></label>`).join("") + (staff.length ? "" : `<span class="hint">No approved staff assigned to this hotel yet.</span>`);
+}
+function paintProg(){
+  paintProgForm();
+  const h = progHotel(), tasks = sortTasks(progPlan && progPlan.tasks);
+  $("p-rows").innerHTML = tasks.map(t => `<tr data-tid="${esc(t.id)}"><td class="tm">${esc(t.time)}${t.end ? `<br><small class="hint">– ${esc(t.end)}</small>` : ""}</td><td><b>${esc(t.title)}</b>${t.note ? `<br><small class="hint">${esc(t.note)}</small>` : ""}</td><td>${esc(t.place || "—")}</td><td>${t.all ? "Everyone" : esc((t.names || []).map(n => n.split(" ")[0]).join(", ") || "—")}</td><td><span class="rowacts"><button class="btn ghost small" type="button" data-edit="${esc(t.id)}">Edit</button><button class="btn ghost small" type="button" data-del="${esc(t.id)}" style="border-color:rgba(255,77,46,.6);color:#FFB3A3">Delete</button></span></td></tr>`).join("");
+  show("p-empty", tasks.length === 0);
+  $("p-rows").querySelectorAll("[data-edit]").forEach(b => b.onclick = () => startEdit(b.dataset.edit));
+  $("p-rows").querySelectorAll("[data-del]").forEach(b => b.onclick = async () => { const t = tasks.find(x => x.id === b.dataset.del); if (!t || !confirm(`Delete "${t.title}" at ${t.time}?`)) return; await saveTasks(tasks.filter(x => x.id !== t.id)); });
+}
+function readTaskForm(){
+  const h = progHotel(); if (!h) { toast("Pick a hotel first"); return null; }
+  const time = $("t-time").value, end = $("t-end").value, title = $("t-title").value.trim();
+  if (!time) { toast("Set the start time"); return null; } if (title.length < 2) { toast("Name the activity"); return null; }
+  if (end && toMin(end) <= toMin(time)) { toast("The end must be after the start"); return null; }
+  const pk = $("t-place").value, other = $("t-place-other").value.trim(), sp = pk && pk !== "__other" ? hotelSpots(h).find(x => x.key === pk) : null;
+  const place = sp ? sp.name : other, placeKey = sp ? sp.key : "";
+  const picked = [...$("t-who").querySelectorAll("input:checked")].map(i => i.value), allSel = picked.includes("__all"), uids = allSel ? [] : picked.filter(v => v !== "__all");
+  if (!allSel && !uids.length) { toast("Choose who does it (or Everyone)"); return null; }
+  const names = uids.map(u => { const p = all.find(x => x.uid === u); return p ? (p.fullName || p.email) : u; });
+  return { id: editTask || taskId(), time, end, title, place, placeKey, uids, names, all: allSel, note: $("t-note").value.trim() };
+}
+async function saveTasks(tasks){
+  const h = progHotel(); if (!h) return;
+  try { await be.saveTasks(h.id, progDay, tasks, user.email); progPlan = { ...(progPlan || {}), tasks }; toast("Programme saved — staff see it now"); cancelTask(); paintProg(); }
+  catch (ex) { toast("Could not save: " + (ex.message || ex)); }
+}
+function startEdit(id){
+  const t = sortTasks(progPlan && progPlan.tasks).find(x => x.id === id); if (!t) return; editTask = id;
+  $("t-formtitle").textContent = `Edit: ${t.title}`; $("t-save").textContent = "Save changes"; show("t-cancel", true);
+  $("t-time").value = t.time || ""; $("t-end").value = t.end || ""; $("t-title").value = t.title || ""; $("t-note").value = t.note || "";
+  paintProgForm(); $("t-place").value = t.placeKey && [...$("t-place").options].some(o => o.value === t.placeKey) ? t.placeKey : (t.place ? "__other" : ""); $("t-place-other").value = t.placeKey ? "" : (t.place || "");
+  $("t-who").querySelectorAll("input").forEach(i => { i.checked = t.all ? i.value === "__all" : (t.uids || []).includes(i.value); });
+  $("t-time").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+function cancelTask(){ editTask = null; $("t-formtitle").textContent = "Add an activity"; $("t-save").textContent = "Add activity"; show("t-cancel", false); ["t-time","t-end","t-title","t-note","t-place-other"].forEach(id => $(id).value = ""); $("t-place").value = ""; $("t-who").querySelectorAll("input").forEach(i => i.checked = false); }
+$("t-cancel").addEventListener("click", cancelTask);
+$("t-save").addEventListener("click", async () => { const t = readTaskForm(); if (!t) return; const tasks = sortTasks(progPlan && progPlan.tasks).filter(x => x.id !== t.id); await saveTasks([...tasks, t]); });
+$("t-place").addEventListener("change", () => { if ($("t-place").value === "__other") $("t-place-other").focus(); });
+$("p-copy").addEventListener("click", async () => {
+  const h = progHotel(); if (!h) return; let y = null; try { y = await be.getPlan(h.id, addDays(progDay, -1)); } catch {}
+  const src = sortTasks(y && y.tasks); if (!src.length) return toast("Yesterday has no programme to copy");
+  const cur = sortTasks(progPlan && progPlan.tasks); if (cur.length && !confirm(`Add yesterday's ${src.length} activities to the ${cur.length} already planned for ${progDay}?`)) return;
+  await saveTasks([...cur, ...src.map(t => ({ ...t, id: taskId() }))]);
+});
+$("p-share").addEventListener("click", async () => {
+  const h = progHotel(); if (!h) return; const text = programmeText(h, progDay, progPlan && progPlan.tasks);
+  try { if (navigator.share) { await navigator.share({ text }); return; } } catch (ex) { if (ex && ex.name === "AbortError") return; }
+  window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank", "noopener");
 });
 
 $("btn-csv").addEventListener("click", () => {
