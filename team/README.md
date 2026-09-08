@@ -143,3 +143,12 @@ also avoids the Instagram in-app browser and its blocked pop-ups.
 - Rules and page allow the phone's reported GPS accuracy on top of the radius, capped at 100 m, because a phone indoors (meeting room, backstage) is often 50–100 m off.
 - Admin → Hotels → open the hotel → **How far am I from this pin?** shows, from where the admin stands, the distance the server will compute and whether a check-in would pass. Use it standing where the staff check in.
 - If a hotel card says "closed" or "Location incomplete", staff assigned to it are refused; reopen or re-save the hotel.
+
+### Shifts, spots and the daily plan (2026-09-08)
+
+- **Shifts**: each hotel has up to four shifts (default Morning 09:45–12:30, Afternoon 14:45–16:30, Evening 20:00–23:00, grace 5 min), edited in Hotels & office → open the hotel → Shifts. Staff check in **and** out for every shift; the button on their card follows the current shift (opens 90 min before the start, closes 30 min after the end).
+- **Spots**: named places in the resort with their own pin and radius (Beach, Theatre, Terrace…), added in the hotel editor (stand there and tap "Use my current location"). Stored inside the hotel document (`hotels/{id}.spots`).
+- **Plan**: Attendance tab → the card "Where does each shift check in on …" → pick a spot per shift → Save plan (`plans/{hotelId}_{date}`). Staff see "Morning · 09:45–12:30 · at the Beach" and must be inside that spot's radius; without a plan the whole hotel radius applies. "Same as yesterday" copies yesterday's plan into the selects.
+- **Records**: `attendance/{uid}_{date}_{s1..s4}` per shift (uid, email, name, hotelId, hotelName, date, shift, shiftName, spot, spotName, checkInAt, lat, lng, accuracy, distM, checkOutAt, override). Whole-day marks by the office (sick, vacation, off, grid import) stay in `attendance/{uid}_{date}`. Notes from staff are per shift: `requests/{uid}_{date}_{shift}`.
+- **Status**: per shift Present / Late · needs decision / Absent; the day is Present when every shift was attended, Half day when some, Absent when none; a day mark wins. Decisions per shift: Present / Excused / Absent. Same logic in `tools/sheets-sync.gs` (tab "Attendance (portal)" now has per-shift columns; re-paste the script).
+- **Rules**: `insideFence()` reads the plan for the day and checks the record against the planned spot (the record must carry the same `spot` key) or the hotel; the phone's GPS accuracy (max 100 m) is added to the radius. Re-publish `firestore.rules` after this change.

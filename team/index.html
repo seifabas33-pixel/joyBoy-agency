@@ -17,8 +17,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609080728">
-<script src="firebase-config.js?v=202609080728"></script>
+<link rel="stylesheet" href="portal.css?v=202609081110">
+<script src="firebase-config.js?v=202609081110"></script>
 </head>
 <body>
 <div class="topbar"><div class="topbar-inner">
@@ -146,9 +146,10 @@
     <div class="card att" id="att" hidden>
       <p class="eyebrow">Today · <span id="att-hotel"></span> · <span id="att-date"></span></p>
       <div class="att-now" id="att-body"></div>
+      <div class="shifts" id="att-shifts"></div>
       <div class="actions" style="margin:14px 0 6px"><button class="btn" id="btn-in" type="button">Check in now</button><button class="btn ghost" id="btn-out" type="button" hidden>Check out</button></div>
       <div class="reqbox" id="reqbox" hidden>
-        <p class="att-line"><b>Could not check in?</b> Tell the office what happened and they decide your day.</p>
+        <p class="att-line"><b>Could not check in?</b> Tell the office what happened and they decide this shift.</p>
         <textarea class="in" id="req-reason" maxlength="300" placeholder="e.g. GPS refused me at the staff gate at 09:40 / I was at the pool bar setting up / traffic, arrived 10:05"></textarea>
         <div class="actions" style="margin:10px 0 0"><button class="btn small" id="req-send" type="button">Send to the office</button></div>
       </div>
@@ -175,7 +176,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, distanceM, fenceDistM, fenceTolM, fenceProblem, attStatus, ATT_LABEL, attLabel } from "./portal.js?v=202609080728";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN } from "./portal.js?v=202609081110";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -297,66 +298,85 @@ function renderProfile(){
   loadAttendance();
 }
 /* ── attendance (approved staff assigned to a hotel) ── */
-let hotel = null, todayRec = null, hist = [], todayReq = null, lastGeo = null;
+let hotel = null, shifts = [], plan = null, dayRec = null, recs = [], hist = [], reqs = [], cur = null, lastGeo = null;
+const nowMin = () => toMin(hhmm(new Date()));
+const recOf = k => recs.find(r => r.shift === k) || null, reqOf = k => reqs.find(r => r.shift === k) || null;
 async function loadAttendance(){
-  const p = profile; show("att", false); hotel = null; todayRec = null; hist = [];
+  const p = profile; show("att", false); hotel = null; shifts = []; plan = null; dayRec = null; recs = []; hist = []; reqs = [];
   if (!p || p.status !== "approved" || !p.hotelId) return;
   try { hotel = await be.getHotel(p.hotelId); } catch (ex) { console.warn(ex); }
   if (!hotel) return;
+  shifts = hotelShifts(hotel);
   const today = dayKey();
   try { hist = await be.myAttendance(user.uid, addDays(today, -14)); } catch (ex) { console.warn(ex); }
-  todayRec = hist.find(r => r.date === today) || null;
-  try { todayReq = await be.myRequest(user.uid, today); } catch { todayReq = null; }
+  dayRec = hist.find(r => r.date === today && !r.shift) || null; recs = hist.filter(r => r.date === today && r.shift);
+  try { plan = await be.getPlan(hotel.id, today); } catch { plan = null; }
+  try { reqs = await be.myRequests(user.uid, today); } catch { reqs = []; }
   $("att-hotel").textContent = hotel.name; $("att-date").textContent = today; show("att", true); paintAtt();
 }
+const whereText = k => { const sp = plannedSpot(hotel, plan, k); return sp ? `at the <b>${esc(sp.name)}</b>` : `anywhere at ${esc(hotel.name)}`; };
 function paintAtt(){
-  const st = attStatus(todayRec, hotel), today = dayKey();
-  const late = st.lateMin ? ` · late by ${st.lateMin} min` : "";
-  const reqLine = todayReq ? (todayReq.status === "open" ? `<p class="att-line req-note">Your request was sent to the office at ${hhmm(todayReq.createdAt)} — waiting for their decision.</p>` : `<p class="att-line req-note">The office decided: <b>${ATT_LABEL[todayReq.decision] || todayReq.decision}</b>.</p>`) : "";
-  $("att-body").innerHTML = todayRec && todayRec.checkInAt
-    ? `<span class="status att-${st.review ? "review" : st.code}">${attLabel(st)}</span><p class="att-line">Checked in at <b>${hhmm(todayRec.checkInAt)}</b>${late}${todayRec.checkOutAt ? ` · out at <b>${hhmm(todayRec.checkOutAt)}</b>` : ""}${st.review ? " · the office will confirm your day" : ""}</p>${reqLine}`
-    : `<span class="status att-${todayReq && todayReq.status === "open" ? "review" : st.code}">${todayReq && todayReq.status === "open" ? "Request sent · waiting" : st.code === "pending" ? "Not checked in" : ATT_LABEL[st.code]}</span><p class="att-line">${todayRec && todayRec.override ? `The office marked your day as <b>${ATT_LABEL[todayRec.override] || todayRec.override}</b>. You can still check in to record your arrival time.` : `Shift starts at <b>${esc(hotel.shiftStart || "09:00")}</b>. Check in from the hotel when you arrive.`}</p>${reqLine}`;
-  show("btn-in", !todayRec || !todayRec.checkInAt); show("btn-out", !!todayRec && !todayRec.checkOutAt);
-  show("reqbox", !todayRec && !todayReq && $("reqbox").dataset.open === "1");
-  $("att-hint").textContent = `Check-in only works at ${hotel.name} (within ${hotel.radiusM || 300} m) and uses your phone's location once. Arriving after ${esc(hotel.shiftStart || "09:00")} plus ${hotel.graceMin ?? 10} minutes is marked late and the office decides the day. If check-in fails, send the office a note from here.`;
+  const today = dayKey(), now = nowMin(); cur = currentShift(shifts, now);
+  const day = dayStatus(dayRec, recs, shifts, hotel, today, today);
+  $("att-body").innerHTML = `<span class="status att-${day.review ? "review" : day.code}">${dayLabel(day)}</span><p class="att-line">${dayRec && dayRec.override ? `The office marked your day as <b>${ATT_LABEL[dayRec.override] || dayRec.override}</b>. You can still check in to record your shifts.` : shifts.length ? `${shifts.length} shifts today. Check in at the start of each one, from the place shown, and check out when it ends.` : "No shifts are set for your hotel yet — ask the office."}</p>`;
+  $("att-shifts").innerHTML = shifts.map(sh => {
+    const r = recOf(sh.key), q = reqOf(sh.key), st = shiftStatus(r, sh, today, today, now), isCur = cur && cur.key === sh.key;
+    const times = r && r.checkInAt ? `in ${hhmm(r.checkInAt)}${r.checkOutAt ? ` · out ${hhmm(r.checkOutAt)}` : ""}${st.lateMin ? ` · ${st.lateMin} min late` : ""}${st.review ? " · office decides" : ""}` : q ? (q.status === "open" ? `note sent ${hhmm(q.createdAt)} · waiting for the office` : `office decided: ${ATT_LABEL[q.decision] || q.decision}`) : "";
+    return `<div class="shift ${isCur ? "now" : ""}"><div><b>${esc(sh.name)}</b><small>${esc(sh.start)}–${esc(sh.end || "?")} · <span class="where">${whereText(sh.key)}</span></small></div><span class="status att-${st.review ? "review" : q && q.status === "open" && !r ? "review" : st.code}">${st.review ? "Late" : q && q.status === "open" && !r ? "Waiting" : ATT_LABEL[st.code]}</span>${times ? `<span class="t">${times}</span>` : ""}</div>`;
+  }).join("");
+  const r = cur ? recOf(cur.key) : null, q = cur ? reqOf(cur.key) : null;
+  const opens = cur ? toMin(cur.start) - SHIFT_OPEN_MIN : 0, closes = cur ? shiftEndMin(cur) + SHIFT_CLOSE_MIN : 0, tooEarly = cur && now < opens, tooLate = cur && now > closes;
+  const bi = $("btn-in"), bo = $("btn-out");
+  show("btn-in", !!cur && (!r || !r.checkInAt)); show("btn-out", !!r && !!r.checkInAt && !r.checkOutAt);
+  if (cur){ bi.disabled = tooEarly || tooLate; bi.textContent = tooEarly ? `${cur.name} check-in opens at ${String(Math.floor(opens / 60)).padStart(2, "0")}:${String(opens % 60).padStart(2, "0")}` : tooLate ? `${cur.name} shift is over` : `Check in · ${cur.name}`; bo.textContent = `Check out · ${cur.name}`; }
+  show("reqbox", !!cur && (!r || !r.checkInAt) && !(q && q.status === "open") && ($("reqbox").dataset.open === "1" || tooLate));
+  $("att-hint").textContent = `Check-in uses your phone's location once, at the place shown for the shift (within ${cur && plannedSpot(hotel, plan, cur.key) ? (plannedSpot(hotel, plan, cur.key).radiusM || 150) + " m of the " + plannedSpot(hotel, plan, cur.key).name : (hotel.radiusM || 300) + " m of the hotel"}). Arriving later than the start plus ${cur ? cur.graceMin : 5} minutes is marked late and the office decides. Missed a check-in? Send the office a note.`;
   const days = []; for (let i = 1; i <= 14; i++) days.push(addDays(today, -i));
-  $("att-hist").innerHTML = `<table class="mini"><tbody>${days.map(d => { const r = hist.find(x => x.date === d); const s = attStatus(r || { date: d }, hotel, today); return `<tr><td>${d}</td><td>${r && r.checkInAt ? hhmm(r.checkInAt) : "—"}</td><td>${r && r.checkOutAt ? hhmm(r.checkOutAt) : "—"}</td><td><span class="status att-${s.review ? "review" : s.code}">${attLabel(s)}</span></td></tr>`; }).join("")}</tbody></table>`;
+  $("att-hist").innerHTML = `<table class="mini"><tbody>${days.map(d => {
+    const dr = hist.find(x => x.date === d && !x.shift) || null, srs = hist.filter(x => x.date === d && x.shift), ds = dayStatus(dr, srs, shifts, hotel, d, today);
+    const marks = ds.shifts && ds.shifts.length ? ds.shifts.map(x => `<span class="m ${x.st.code === "present" || x.st.code === "excused" ? "ok" : x.st.review ? "rv" : x.st.code === "absent" ? "no" : ""}">${esc(x.shift.name.slice(0, 3))} ${x.rec && x.rec.checkInAt ? hhmm(x.rec.checkInAt) : "—"}</span>`).join(" ") : (dr && dr.checkInAt ? `<span class="m ok">in ${hhmm(dr.checkInAt)}</span>` : "");
+    return `<tr><td>${d}</td><td>${marks}</td><td><span class="status att-${ds.review ? "review" : ds.code}">${dayLabel(ds)}</span></td></tr>`; }).join("")}</tbody></table>`;
 }
 const geo = () => new Promise((res, rej) => { if (!navigator.geolocation) return rej(new Error("This browser has no location access")); navigator.geolocation.getCurrentPosition(p => res(p.coords), e => rej(new Error(e.code === 1 ? "Location permission was refused. Allow location for this site in your browser settings and try again." : "Could not get your location. Turn on GPS, step outside if you are indoors, and try again.")), { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }); });
 $("btn-in").addEventListener("click", async () => {
-  const b = $("btn-in"); b.disabled = true; b.textContent = "Locating…";
+  const b = $("btn-in"); b.disabled = true; b.textContent = "Locating…"; const sh = cur;
   try {
+    if (!sh) throw new Error("No shift to check in for right now.");
     if (profile.status !== "approved") throw new Error("Your profile is not approved yet, so check-in is not open for you. Ask the office.");
     const problem = fenceProblem(hotel); if (problem && !DEMO) throw new Error(problem);
-    let lat = hotel.lat, lng = hotel.lng, accuracy = 0;
+    try { plan = await be.getPlan(hotel.id, dayKey()); } catch {}
+    const sp = plannedSpot(hotel, plan, sh.key), target = sp || hotel, place = sp ? `the ${sp.name}` : hotel.name, radius = target.radiusM || (sp ? 150 : 300);
+    if (sp && (typeof sp.lat !== "number" || typeof sp.lng !== "number" || typeof sp.cosLat !== "number")) throw new Error(`The ${sp.name} spot has no proper pin yet. Ask the office to fix it in Hotels.`);
+    let lat = target.lat, lng = target.lng, accuracy = 0;
     try { const c = await geo(); lat = c.latitude; lng = c.longitude; accuracy = Math.round(c.accuracy || 0); } catch (ex) { if (!DEMO) throw ex; }
-    const distM = distanceM(lat, lng, hotel.lat, hotel.lng), fence = fenceDistM(lat, lng, hotel), radius = hotel.radiusM || 300; lastGeo = { lat, lng, accuracy, distM };
-    if (fence > radius + fenceTolM(accuracy) && !DEMO) throw new Error(`You are about ${fence >= 1000 ? (fence / 1000).toFixed(1) + " km" : fence + " m"} from the ${hotel.name} pin (your phone's GPS is accurate to about ${accuracy || "?"} m; allowed: ${radius} m). Check-in works only at the hotel — if you are at the hotel, step outside or near a window and try again, or send the office a note.`);
+    const fence = fenceDistM(lat, lng, target); lastGeo = { lat, lng, accuracy, distM: fence, place, radius };
+    if (fence > radius + fenceTolM(accuracy) && !DEMO) throw new Error(`You are about ${fence >= 1000 ? (fence / 1000).toFixed(1) + " km" : fence + " m"} from ${place} (your phone's GPS is accurate to about ${accuracy || "?"} m; allowed: ${radius} m). ${sh.name} shift checks in at ${place} today — go there and try again, or send the office a note.`);
     b.textContent = "Saving…";
-    todayRec = await be.checkIn({ uid: user.uid, email: user.email, name: profile.fullName || user.name || "", hotelId: hotel.id, hotelName: hotel.name, date: dayKey(), lat, lng, accuracy, distM });
-    hist = [todayRec, ...hist.filter(r => r.date !== todayRec.date)];
-    const st = attStatus(todayRec, hotel); toast(st.code === "present" ? "Checked in — on time. Have a great day!" : `Checked in — ${st.lateMin} min late. The office will confirm your day.`);
+    const rec = await be.checkIn({ uid: user.uid, email: user.email, name: profile.fullName || user.name || "", hotelId: hotel.id, hotelName: hotel.name, date: dayKey(), shift: sh.key, shiftName: sh.name, spot: sp ? sp.key : "", spotName: sp ? sp.name : "", lat, lng, accuracy, distM: fence });
+    recs = [rec, ...recs.filter(r => r.shift !== rec.shift)]; hist = [rec, ...hist.filter(r => r.id !== rec.id)];
+    const st = shiftStatus(rec, sh, dayKey()); toast(st.code === "present" ? `Checked in for the ${sh.name.toLowerCase()} shift — on time. Have a great one!` : `Checked in — ${st.lateMin} min late. The office will confirm this shift.`);
     paintAtt();
   } catch (ex) {
-    const g = lastGeo || {}, where = g.distM != null ? ` (phone: ${fenceDistM(g.lat, g.lng, hotel)} m from the pin, GPS ±${g.accuracy || "?"} m, allowed ${hotel.radiusM || 300} m, ${hhmm(new Date())})` : "";
+    const g = lastGeo || {}, where = g.distM != null ? ` (phone: ${g.distM} m from ${g.place}, GPS ±${g.accuracy || "?"} m, allowed ${g.radius} m, ${hhmm(new Date())})` : "";
     toast(/permission|denied/i.test(String(ex)) ? `The server refused the check-in${where}. Send the office a note below — the numbers are filled in for them.` : (ex.message || String(ex)));
-    $("reqbox").dataset.open = "1"; show("reqbox", !todayRec && !todayReq);
-    if (!$("req-reason").value.trim() && g.distM != null) $("req-reason").value = `Check-in refused at ${hhmm(new Date())} — I am at the hotel (phone said ${fenceDistM(g.lat, g.lng, hotel)} m from the pin, GPS ±${g.accuracy || "?"} m). `;
-    $("req-reason").focus();
+    $("reqbox").dataset.open = "1";
+    if (!$("req-reason").value.trim() && g.distM != null) $("req-reason").value = `${sh ? sh.name + " shift: " : ""}check-in refused at ${hhmm(new Date())} — I am at ${g.place} (phone said ${g.distM} m away, GPS ±${g.accuracy || "?"} m). `;
+    paintAtt(); $("req-reason").focus();
   }
-  finally { b.disabled = false; b.textContent = "Check in now"; }
+  finally { b.disabled = false; if (!b.hidden && /Locating|Saving/.test(b.textContent)) paintAtt(); }
 });
 $("req-send").addEventListener("click", async () => {
   const reason = $("req-reason").value.trim(); if (reason.length < 5) return toast("Write a short reason first");
+  if (!cur) return toast("No shift to send a note for");
   const b = $("req-send"); b.disabled = true;
   try {
-    const g = lastGeo || {}; todayReq = await be.sendRequest({ uid: user.uid, email: user.email, name: profile.fullName || user.name || "", hotelId: hotel.id, hotelName: hotel.name, date: dayKey(), reason, lat: g.lat ?? null, lng: g.lng ?? null, accuracy: g.accuracy ?? null, distM: g.distM ?? null });
-    $("reqbox").dataset.open = "0"; toast("Sent. The office will decide your day."); paintAtt();
+    const g = lastGeo || {}; const q = await be.sendRequest({ uid: user.uid, email: user.email, name: profile.fullName || user.name || "", hotelId: hotel.id, hotelName: hotel.name, date: dayKey(), shift: cur.key, shiftName: cur.name, reason, lat: g.lat ?? null, lng: g.lng ?? null, accuracy: g.accuracy ?? null, distM: g.distM ?? null });
+    reqs = [q, ...reqs.filter(r => r.shift !== q.shift)]; $("reqbox").dataset.open = "0"; $("req-reason").value = ""; toast("Sent. The office will decide this shift."); paintAtt();
   } catch (ex) { toast("Could not send: " + (ex.message || ex)); } finally { b.disabled = false; }
 });
 $("btn-out").addEventListener("click", async () => {
-  const b = $("btn-out"); b.disabled = true;
-  try { todayRec = await be.checkOut(user.uid, todayRec.date); hist = hist.map(r => r.date === todayRec.date ? todayRec : r); toast("Checked out at " + hhmm(todayRec.checkOutAt)); paintAtt(); }
+  const b = $("btn-out"); b.disabled = true; const r = cur ? recOf(cur.key) : null;
+  try { if (!r) throw new Error("No check-in for this shift"); const rec = await be.checkOut(r.id); recs = recs.map(x => x.id === rec.id ? rec : x); hist = hist.map(x => x.id === rec.id ? rec : x); toast(`Checked out at ${hhmm(rec.checkOutAt)} — see you at the next shift.`); paintAtt(); }
   catch (ex) { toast("Could not check out: " + (ex.message || ex)); } finally { b.disabled = false; }
 });
 

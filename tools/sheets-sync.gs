@@ -63,18 +63,44 @@ function syncAttendance(){
   for (let d = from; d <= today; d = addDays(d, 1)){
     const dayRecs = recs.filter(r => r.date === d);
     const people = employees.filter(e => e.status === "approved" && e.hotelId && (!firstDay[e.uid] || d >= firstDay[e.uid])).map(e => ({ e, r: dayRecs.find(r => r.uid === e.uid) || null, hotelId: e.hotelId }));
-    dayRecs.forEach(r => { if (!people.some(x => x.e.uid === r.uid)) people.push({ e: { fullName: r.name, email: r.email }, r, hotelId: r.hotelId }); });
-    people.forEach(x => { const h = byHotel[x.hotelId] || {}; const st = status(x.r, h, d, today);
-      rows.push([d, x.e.fullName || "", x.e.email || "", h.name || x.hotelId || "", x.r && x.r.checkInAt ? hhmm(x.r.checkInAt) : "", x.r && x.r.checkOutAt ? hhmm(x.r.checkOutAt) : "", st.label, st.lateMin == null ? "" : st.lateMin, x.r && x.r.distM != null ? x.r.distM : "", x.r && x.r.override ? x.r.override : "", x.r && x.r.overrideBy ? x.r.overrideBy : "", st.review ? "yes" : ""]); });
+    dayRecs.forEach(r => { if (!people.some(x => x.e.uid === r.uid)) people.push({ e: { uid: r.uid, fullName: r.name, email: r.email }, r, hotelId: r.hotelId }); });
+    people.forEach(x => { const h = byHotel[x.hotelId] || {}, shifts = hotelShifts(h), dayRec = dayRecs.find(r => r.uid === (x.e.uid || x.r && x.r.uid) && !r.shift) || null, srecs = dayRecs.filter(r => r.uid === (x.e.uid || x.r && x.r.uid) && r.shift);
+      const ds = dayStatus(dayRec, srecs, shifts, h, d, today), cells = [];
+      for (let i = 0; i < 4; i++){ const y = ds.shifts[i]; cells.push(y ? y.sh.name : "", y && y.r && y.r.checkInAt ? hhmm(y.r.checkInAt) : "", y && y.r && y.r.checkOutAt ? hhmm(y.r.checkOutAt) : "", y ? y.st.label : "", y && y.st.lateMin != null ? y.st.lateMin : "", y && y.r && y.r.spotName ? y.r.spotName : ""); }
+      const lg = ds.legacy;
+      rows.push([d, x.e.fullName || "", x.e.email || "", h.name || x.hotelId || ""].concat(cells, [ds.label, lg && lg.checkInAt ? hhmm(lg.checkInAt) : "", lg && lg.checkOutAt ? hhmm(lg.checkOutAt) : "", dayRec && dayRec.override ? dayRec.override : "", dayRec && dayRec.overrideBy ? dayRec.overrideBy : "", ds.review ? "yes" : ""])); });
   }
   rows.sort((a, b) => (a[0] < b[0] ? 1 : a[0] > b[0] ? -1 : String(a[3]).localeCompare(b[3]) || String(a[1]).localeCompare(b[1])));
-  writeTab(ATT_TAB, ["Date","Name","Email","Hotel","Check-in","Check-out","Status","Late (min)","Distance (m)","Override","Override by","Needs decision"], rows);
-  writeTab(HOTEL_TAB, ["Hotel","Town","Shift start","Grace (min)","Radius (m)","Active","Staff assigned"], hotels.map(h => [h.name, h.city || "", h.shiftStart, h.graceMin, h.radiusM, h.active === false ? "no" : "yes", employees.filter(e => e.hotelId === h.id && e.status === "approved").length]));
+  const hdr = ["Date","Name","Email","Hotel"]; for (let i = 1; i <= 4; i++) hdr.push("Shift " + i, "S" + i + " in", "S" + i + " out", "S" + i + " status", "S" + i + " late (min)", "S" + i + " spot");
+  writeTab(ATT_TAB, hdr.concat(["Day status","Old check-in","Old check-out","Day mark","Mark by","Needs decision"]), rows);
+  writeTab(HOTEL_TAB, ["Hotel","Town","Shifts","Spots","Radius (m)","Active","Staff assigned"], hotels.map(h => [h.name, h.city || "", hotelShifts(h).map(x => x.name + " " + x.start + "–" + x.end).join(" · "), Object.keys(h.spots || {}).map(k => h.spots[k].name).join(", "), h.radiusM, h.active === false ? "no" : "yes", employees.filter(e => e.hotelId === h.id && e.status === "approved").length]));
   SpreadsheetApp.getActive().toast("Attendance synced: " + rows.length + " rows", "Joy Boy", 5);
 }
 
 /* ── status rule (mirror of team/portal.js attStatus) ── */
 const LABEL = { present: "Present", "half-day": "Half day", absent: "Absent", sick: "Sick", vacation: "Vacation", excused: "Excused", off: "Day off", pending: "Not yet" };
+/* ── shifts (2026-09-08): mirrors hotelShifts / shiftStatus / dayStatus in team/portal.js ── */
+const DEFAULT_SHIFTS = { s1: { name: "Morning", start: "09:45", end: "12:30", graceMin: 5 }, s2: { name: "Afternoon", start: "14:45", end: "16:30", graceMin: 5 }, s3: { name: "Evening", start: "20:00", end: "23:00", graceMin: 5 } };
+function hotelShifts(h){
+  const src = h && h.shifts && Object.keys(h.shifts).length ? h.shifts : DEFAULT_SHIFTS, g = h && h.graceMin != null ? +h.graceMin : 5;
+  return ["s1","s2","s3","s4"].filter(k => src[k] && src[k].start).map(k => ({ key: k, name: src[k].name || k, start: src[k].start, end: src[k].end || "", graceMin: src[k].graceMin != null ? +src[k].graceMin : g }));
+}
+function shiftStatus(r, sh, date, today, nowMin){
+  const start = toMin(sh.start) == null ? 0 : toMin(sh.start), grace = sh.graceMin == null ? 5 : +sh.graceMin;
+  if (r && r.override) return { code: r.override, label: LABEL[r.override] || r.override, lateMin: r.checkInAt ? Math.max(0, toMin(hhmm(r.checkInAt)) - start) : null };
+  if (r && r.checkInAt){ const late = toMin(hhmm(r.checkInAt)) - start; return late <= grace ? { code: "present", label: LABEL.present, lateMin: Math.max(0, late) } : { code: "late", label: "Late (undecided)", lateMin: late, review: true }; }
+  if (date > today || (date === today && nowMin <= start + grace)) return { code: "pending", label: LABEL.pending, lateMin: null };
+  return { code: "absent", label: LABEL.absent, lateMin: null };
+}
+function dayStatus(dayRec, srecs, shifts, h, date, today){
+  const nowMin = toMin(hhmm(new Date()));
+  if (dayRec && dayRec.override) return { code: dayRec.override, label: LABEL[dayRec.override] || dayRec.override, shifts: [], review: false };
+  if (!srecs.length && dayRec && dayRec.checkInAt){ const st = status(dayRec, h, date, today); return { code: st.label === LABEL.present ? "present" : st.label === LABEL["half-day"] ? "half-day" : "absent", label: st.label, shifts: [], review: !!st.review, legacy: dayRec }; }
+  const sts = shifts.map(sh => { const r = srecs.find(x => x.shift === sh.key) || null; return { sh, r, st: shiftStatus(r, sh, date, today, nowMin) }; });
+  const done = sts.filter(x => ["present","late","excused"].indexOf(x.st.code) >= 0).length, pend = sts.filter(x => x.st.code === "pending").length, review = sts.some(x => x.st.review);
+  const code = !shifts.length ? "pending" : pend > 0 ? "pending" : done === shifts.length ? "present" : done > 0 ? "half-day" : "absent";
+  return { code, label: review ? "Late (undecided)" : code === "pending" && done ? done + "/" + shifts.length + " so far" : LABEL[code], shifts: sts, review };
+}
 function status(r, h, date, today){
   const start = toMin(h.shiftStart) == null ? 540 : toMin(h.shiftStart), grace = h.graceMin == null ? 10 : +h.graceMin;
   if (r && r.override) return { label: LABEL[r.override] || r.override, lateMin: r.checkInAt ? Math.max(0, toMin(hhmm(r.checkInAt)) - start) : null };
@@ -195,18 +221,25 @@ function sendDigest(){
   const name = e => e.preferredName || e.fullName || e.email;
   const pending = employees.filter(e => (e.status || "pending") === "pending");
   const active = employees.filter(e => e.status === "approved" && e.hotelId);
-  const late = [], absent = [], present = [];
-  active.forEach(e => { const h = hotels[e.hotelId] || {}, r = att.find(a => a.uid === e.uid); const st = status(r, h, today, today);
-    if (r && r.checkInAt && st.label === LABEL["half-day"] && !r.override) late.push(`${name(e)} — ${h.name || ""}, in at ${hhmm(r.checkInAt)} (${st.lateMin} min late)`);
-    else if (r && r.checkInAt) present.push(name(e));
-    else if (!r || !r.override){ const start = toMin(h.shiftStart) == null ? 540 : toMin(h.shiftStart), grace = h.graceMin == null ? 10 : +h.graceMin; if (nowMin > start + grace) absent.push(`${name(e)} — ${h.name || ""}`); } });
+  const late = [], absent = [], present = [], perShift = {};
+  active.forEach(e => { const h = hotels[e.hotelId] || {}, shifts = hotelShifts(h), dayRec = att.find(a => a.uid === e.uid && !a.shift) || null, srecs = att.filter(a => a.uid === e.uid && a.shift);
+    const ds = dayStatus(dayRec, srecs, shifts, h, today, today);
+    if (dayRec && dayRec.override) return;                                   // sick / vacation / off / marked by the office
+    if (ds.legacy){ if (ds.review) late.push(`${name(e)} — ${h.name || ""}, in at ${hhmm(ds.legacy.checkInAt)} (old day format)`); else present.push(name(e)); return; }
+    let any = false;
+    ds.shifts.forEach(y => { const k = y.sh.name; perShift[k] = perShift[k] || { started: 0, in: 0 };
+      const started = nowMin > toMin(y.sh.start) + (y.sh.graceMin == null ? 5 : +y.sh.graceMin);
+      if (started) perShift[k].started++;
+      if (y.r && y.r.checkInAt){ any = true; perShift[k].in++; if (y.st.review) late.push(`${name(e)} — ${h.name || ""}, ${k} in at ${hhmm(y.r.checkInAt)} (${y.st.lateMin} min late)`); }
+      else if (started && !y.r) absent.push(`${name(e)} — ${h.name || ""}, ${k}`); });
+    if (any) present.push(name(e)); });
   const lines = [];
   lines.push(`Joy Boy office digest — ${today} ${hhmm(new Date())} (Egypt time)`, "");
-  lines.push(`Present today: ${present.length} of ${active.length} assigned staff.`, "");
+  lines.push(`Checked in today: ${present.length} of ${active.length} assigned staff.`, ...Object.keys(perShift).filter(k => perShift[k].started).map(k => `  ${k}: ${perShift[k].in} of ${perShift[k].started} checked in`), "");
   if (pending.length) lines.push(`PENDING REGISTRATIONS (${pending.length}):`, ...pending.map(e => `  • ${name(e)} — ${e.email}`), "");
   if (late.length) lines.push(`LATE CHECK-INS — NEED A DECISION (${late.length}):`, ...late.map(x => "  • " + x), "");
-  if (reqs.length) lines.push(`REQUESTS FROM STAFF (${reqs.length}):`, ...reqs.map(r => `  • ${r.name || r.email} — ${r.date}: "${r.reason}"`), "");
-  if (absent.length) lines.push(`NOT CHECKED IN YET (${absent.length}):`, ...absent.map(x => "  • " + x), "");
+  if (reqs.length) lines.push(`REQUESTS FROM STAFF (${reqs.length}):`, ...reqs.map(r => `  • ${r.name || r.email} — ${r.date}${r.shiftName ? " " + r.shiftName : ""}: "${r.reason}"`), "");
+  if (absent.length) lines.push(`MISSED SHIFT CHECK-INS (${absent.length}):`, ...absent.map(x => "  • " + x), "");
   if (!pending.length && !late.length && !reqs.length && !absent.length) lines.push("Nothing needs a decision right now.", "");
   lines.push(`Decide here: ${ADMIN_URL}#att`, "", "This e-mail is generated by the attendance sheet script. Personal data — do not forward outside the office.");
   const todo = pending.length + late.length + reqs.length;
