@@ -152,3 +152,9 @@ also avoids the Instagram in-app browser and its blocked pop-ups.
 - **Records**: `attendance/{uid}_{date}_{s1..s4}` per shift (uid, email, name, hotelId, hotelName, date, shift, shiftName, spot, spotName, checkInAt, lat, lng, accuracy, distM, checkOutAt, override). Whole-day marks by the office (sick, vacation, off, grid import) stay in `attendance/{uid}_{date}`. Notes from staff are per shift: `requests/{uid}_{date}_{shift}`.
 - **Status**: per shift Present / Late · needs decision / Absent; the day is Present when every shift was attended, Half day when some, Absent when none; a day mark wins. Decisions per shift: Present / Excused / Absent. Same logic in `tools/sheets-sync.gs` (tab "Attendance (portal)" now has per-shift columns; re-paste the script).
 - **Rules**: `insideFence()` reads the plan for the day and checks the record against the planned spot (the record must carry the same `spot` key) or the hotel; the phone's GPS accuracy (max 100 m) is added to the radius. Re-publish `firestore.rules` after this change.
+
+### Daily programme (2026-09-08)
+
+- Admin → **Programme** tab: pick the day and hotel, add activities (start, until, activity, place = a spot or free text, who = staff chips or Everyone, note). Edit / Delete per row, **Copy yesterday**, **Share on WhatsApp** (plain text of the day).
+- Stored in the same document as the shift plan: `plans/{hotelId}_{date}.tasks` = `[{id, time, end, title, place, placeKey, uids, names, all, note}]` (+ `tasksBy`, `tasksAt`). `savePlan` and `saveTasks` both merge, so shifts and tasks never overwrite each other. No rules change needed (plans: read signed-in, write admin).
+- Staff card "Programme": today's activities with their own highlighted (yellow frame, "You"), the next one framed green, past ones dimmed, a "Whole team" toggle, and tomorrow's programme collapsed underneath as soon as the office enters it.
