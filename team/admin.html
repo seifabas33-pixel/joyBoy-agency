@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609071040">
-<script src="firebase-config.js?v=202609071040"></script>
+<link rel="stylesheet" href="portal.css?v=202609080715">
+<script src="firebase-config.js?v=202609080715"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 </head>
 <body>
@@ -69,7 +69,7 @@
           <label class="f"><span>Hotel name <b class="req">*</b></span><input class="in" id="h-name" placeholder="True Beach Resort"></label>
           <label class="f"><span>Town</span><input class="in" id="h-city" placeholder="Marsa Alam"></label>
           <label class="f full"><span>Location <b class="req">*</b> — paste a Google Maps link or "lat, lng"</span><input class="in" id="h-loc" placeholder="25.0676, 34.8934  (or a Maps link that contains @lat,lng)"><span class="hint" id="h-loc-hint">In Google Maps press and hold on the animation office or stage, copy the two numbers shown at the top and paste them here. Or tap the button while standing at the hotel.</span></label>
-          <div class="full"><button class="btn ghost small" id="h-here" type="button">Use my current location</button></div>
+          <div class="full" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn ghost small" id="h-here" type="button">Use my current location</button><button class="btn ghost small" id="h-test" type="button">How far am I from this pin?</button><span class="hint" id="h-test-hint">Stand where the staff check in (stage, meeting area) and tap: it shows the distance the server will see.</span></div>
           <label class="f"><span>Allowed radius (metres)</span><input class="in" type="number" id="h-radius" value="300" min="50" max="3000"><span class="hint" id="h-radius-hint">Resort grounds are big: 300–800 m is typical. Phones are accurate to about 10–30 m outdoors and 50–100 m indoors, so anything under 200 m will refuse honest people.</span></label>
           <label class="f"><span>Shift starts at</span><input class="in" type="time" id="h-start" value="09:00"></label>
           <label class="f"><span>Grace minutes</span><input class="in" type="number" id="h-grace" value="10" min="0" max="120"><span class="hint">Checking in later than start + grace counts as a half day.</span></label>
@@ -116,7 +116,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel } from "./portal.js?v=202609071040";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem } from "./portal.js?v=202609080715";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -195,7 +195,7 @@ document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click
 /* ── hotels ── */
 function paintHotels(){
   const count = id => all.filter(p => p.hotelId === id && p.status === "approved").length;
-  $("hotel-cards").innerHTML = hotels.map(h => `<div class="hotel ${h.active === false ? "inactive" : ""} ${hotelEdit === h.id ? "on" : ""}" data-id="${esc(h.id)}"><h3>${esc(h.name)}</h3><p>${esc(h.city || "")}${h.city ? " · " : ""}${h.radiusM} m · starts ${esc(h.shiftStart)} (+${h.graceMin} min)</p><span class="n">${count(h.id)} staff assigned${h.active === false ? " · closed" : ""}</span></div>`).join("") || `<p class="hint">No hotels yet. Add the first one below.</p>`;
+  $("hotel-cards").innerHTML = hotels.map(h => `<div class="hotel ${h.active === false ? "inactive" : ""} ${hotelEdit === h.id ? "on" : ""}" data-id="${esc(h.id)}"><h3>${esc(h.name)}</h3><p>${esc(h.city || "")}${h.city ? " · " : ""}${h.radiusM} m · starts ${esc(h.shiftStart)} (+${h.graceMin} min)</p><span class="n">${count(h.id)} staff assigned${h.active === false ? " · closed — check-in is switched off" : ""}</span>${fenceProblem(h) && h.active !== false ? `<span class="n" style="color:#FFB3A3">Location incomplete — open and save again</span>` : ""}</div>`).join("") || `<p class="hint">No hotels yet. Add the first one below.</p>`;
   $("hotel-cards").querySelectorAll(".hotel").forEach(el => el.onclick = () => editHotel(el.dataset.id));
   $("a-hotel").innerHTML = `<option value="">All hotels</option>` + hotels.map(h => `<option value="${esc(h.id)}">${esc(h.name)}</option>`).join("");
 }
@@ -223,6 +223,17 @@ $("adm-add").addEventListener("click", async () => {
 $("h-loc").addEventListener("input", () => { const v = $("h-loc").value.trim(), ll = parseLatLng(v); $("h-loc-hint").textContent = ll ? `Understood: ${ll.lat.toFixed(5)}, ${ll.lng.toFixed(5)}` : (/goo\.gl|maps\.app|[?&]cid=|\/place\//.test(v) ? "This is a place link without coordinates. In Google Maps press and hold on the spot until a pin drops, then tap the two numbers at the top (e.g. 25.0731, 34.8976) and paste them here." : v ? "Could not read coordinates from this text. In Google Maps, press and hold on the spot, then copy the numbers shown at the top." : "In Google Maps press and hold on the animation office or stage, copy the two numbers shown at the top and paste them here. Or tap the button while standing at the hotel."); });
 $("h-here").addEventListener("click", () => { if (!navigator.geolocation) return toast("No location access in this browser"); const b = $("h-here"); b.disabled = true; b.textContent = "Locating…"; navigator.geolocation.getCurrentPosition(p => { $("h-loc").value = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`; $("h-loc").dispatchEvent(new Event("input")); b.disabled = false; b.textContent = "Use my current location"; toast(`Location set (±${Math.round(p.coords.accuracy)} m)`); }, () => { b.disabled = false; b.textContent = "Use my current location"; toast("Could not get your location"); }, { enableHighAccuracy: true, timeout: 20000 }); });
 $("h-radius").addEventListener("input", () => { const v = +$("h-radius").value || 0; $("h-radius-hint").style.color = v < 200 ? "#FFB3A3" : ""; $("h-radius-hint").textContent = v < 200 ? `${v} m is smaller than a phone's usual GPS error at a resort — staff standing at the hotel will be refused. Use at least 300 m.` : "Resort grounds are big: 300–800 m is typical. Phones are accurate to about 10–30 m outdoors and 50–100 m indoors, so anything under 200 m will refuse honest people."; });
+$("h-test").addEventListener("click", () => {
+  const ll = parseLatLng($("h-loc").value); if (!ll) return toast("Paste the hotel location first");
+  if (!navigator.geolocation) return toast("No location access in this browser");
+  const b = $("h-test"); b.disabled = true; b.textContent = "Locating…";
+  navigator.geolocation.getCurrentPosition(p => {
+    const acc = Math.round(p.coords.accuracy || 0), radius = Math.min(3000, Math.max(50, +$("h-radius").value || 300)), h = { lat: ll.lat, lng: ll.lng, cosLat: Math.cos(ll.lat * Math.PI / 180) }, d = fenceDistM(p.coords.latitude, p.coords.longitude, h), ok = d <= radius + fenceTolM(acc);
+    $("h-test-hint").style.color = ok ? "#9FF5DF" : "#FFB3A3";
+    $("h-test-hint").textContent = `${d} m from the pin, GPS ±${acc} m → ${ok ? "check-in would be accepted" : "check-in would be REFUSED"} (radius ${radius} m${acc ? ` + up to ${Math.min(100, acc)} m GPS allowance` : ""}). ${ok ? "" : d > 2000 ? "The pin is probably in the wrong place: use “Use my current location” while standing at the hotel." : "Increase the radius or move the pin closer to where staff really stand."}`;
+    b.disabled = false; b.textContent = "How far am I from this pin?";
+  }, e => { toast(e.code === 1 ? "Location permission was refused for this site" : "Could not get your location"); b.disabled = false; b.textContent = "How far am I from this pin?"; }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+});
 $("h-save").addEventListener("click", async () => {
   const name = $("h-name").value.trim(), ll = parseLatLng($("h-loc").value), radiusM = Math.min(3000, Math.max(50, +$("h-radius").value || 300)), shiftStart = $("h-start").value || "09:00", graceMin = Math.max(0, +$("h-grace").value || 0);
   if (name.length < 2) return toast("Enter the hotel name"); if (!ll) return toast("Paste a Google Maps link or coordinates");

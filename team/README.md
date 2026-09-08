@@ -136,3 +136,10 @@ decision, and who has not checked in yet. Needs the `script.send_mail` scope in
 `team/manifest.webmanifest` + `team/icons/` make the portal installable
 ("Add to Home Screen"). It then opens full-screen in the system browser, which
 also avoids the Instagram in-app browser and its blocked pop-ups.
+
+### Check-in refused although the person is at the hotel (2026-09-08)
+
+- The staff page now checks the hotel entry before it tries (closed hotel, missing pin/radius) and, when the server still refuses, shows the numbers the server saw (metres from the pin, GPS accuracy, allowed radius) and pre-fills the note to the office with them.
+- Rules and page allow the phone's reported GPS accuracy on top of the radius, capped at 100 m, because a phone indoors (meeting room, backstage) is often 50–100 m off.
+- Admin → Hotels → open the hotel → **How far am I from this pin?** shows, from where the admin stands, the distance the server will compute and whether a check-in would pass. Use it standing where the staff check in.
+- If a hotel card says "closed" or "Location incomplete", staff assigned to it are refused; reopen or re-save the hotel.

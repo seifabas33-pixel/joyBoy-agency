@@ -17,8 +17,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609071040">
-<script src="firebase-config.js?v=202609071040"></script>
+<link rel="stylesheet" href="portal.css?v=202609080715">
+<script src="firebase-config.js?v=202609080715"></script>
 </head>
 <body>
 <div class="topbar"><div class="topbar-inner">
@@ -175,7 +175,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, distanceM, attStatus, ATT_LABEL, attLabel } from "./portal.js?v=202609071040";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, distanceM, fenceDistM, fenceTolM, fenceProblem, attStatus, ATT_LABEL, attLabel } from "./portal.js?v=202609080715";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -326,16 +326,24 @@ const geo = () => new Promise((res, rej) => { if (!navigator.geolocation) return
 $("btn-in").addEventListener("click", async () => {
   const b = $("btn-in"); b.disabled = true; b.textContent = "Locating…";
   try {
+    if (profile.status !== "approved") throw new Error("Your profile is not approved yet, so check-in is not open for you. Ask the office.");
+    const problem = fenceProblem(hotel); if (problem && !DEMO) throw new Error(problem);
     let lat = hotel.lat, lng = hotel.lng, accuracy = 0;
     try { const c = await geo(); lat = c.latitude; lng = c.longitude; accuracy = Math.round(c.accuracy || 0); } catch (ex) { if (!DEMO) throw ex; }
-    const distM = distanceM(lat, lng, hotel.lat, hotel.lng); lastGeo = { lat, lng, accuracy, distM };
-    if (distM > (hotel.radiusM || 300) && !DEMO) throw new Error(`You are about ${distM >= 1000 ? (distM / 1000).toFixed(1) + " km" : distM + " m"} from ${hotel.name}. Check-in works only at the hotel.`);
+    const distM = distanceM(lat, lng, hotel.lat, hotel.lng), fence = fenceDistM(lat, lng, hotel), radius = hotel.radiusM || 300; lastGeo = { lat, lng, accuracy, distM };
+    if (fence > radius + fenceTolM(accuracy) && !DEMO) throw new Error(`You are about ${fence >= 1000 ? (fence / 1000).toFixed(1) + " km" : fence + " m"} from the ${hotel.name} pin (your phone's GPS is accurate to about ${accuracy || "?"} m; allowed: ${radius} m). Check-in works only at the hotel — if you are at the hotel, step outside or near a window and try again, or send the office a note.`);
     b.textContent = "Saving…";
     todayRec = await be.checkIn({ uid: user.uid, email: user.email, name: profile.fullName || user.name || "", hotelId: hotel.id, hotelName: hotel.name, date: dayKey(), lat, lng, accuracy, distM });
     hist = [todayRec, ...hist.filter(r => r.date !== todayRec.date)];
     const st = attStatus(todayRec, hotel); toast(st.code === "present" ? "Checked in — on time. Have a great day!" : `Checked in — ${st.lateMin} min late. The office will confirm your day.`);
     paintAtt();
-  } catch (ex) { toast(/permission|denied/i.test(String(ex)) ? "Check-in refused: you are outside the hotel radius, or not assigned to this hotel. You can send the office a note below." : (ex.message || String(ex))); $("reqbox").dataset.open = "1"; show("reqbox", !todayRec && !todayReq); $("req-reason").focus(); }
+  } catch (ex) {
+    const g = lastGeo || {}, where = g.distM != null ? ` (phone: ${fenceDistM(g.lat, g.lng, hotel)} m from the pin, GPS ±${g.accuracy || "?"} m, allowed ${hotel.radiusM || 300} m, ${hhmm(new Date())})` : "";
+    toast(/permission|denied/i.test(String(ex)) ? `The server refused the check-in${where}. Send the office a note below — the numbers are filled in for them.` : (ex.message || String(ex)));
+    $("reqbox").dataset.open = "1"; show("reqbox", !todayRec && !todayReq);
+    if (!$("req-reason").value.trim() && g.distM != null) $("req-reason").value = `Check-in refused at ${hhmm(new Date())} — I am at the hotel (phone said ${fenceDistM(g.lat, g.lng, hotel)} m from the pin, GPS ±${g.accuracy || "?"} m). `;
+    $("req-reason").focus();
+  }
   finally { b.disabled = false; b.textContent = "Check in now"; }
 });
 $("req-send").addEventListener("click", async () => {
