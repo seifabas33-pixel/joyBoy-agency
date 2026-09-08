@@ -54,17 +54,20 @@ async function firebaseBackend(){
     getHotel: async id => { if (!id) return null; const s = await F.getDoc(F.doc(db, "hotels", id)); return s.exists() ? { id: s.id, ...s.data() } : null; },
     saveHotel: async (id, data) => { const ref = id ? F.doc(db, "hotels", id) : F.doc(F.collection(db, "hotels")); await F.setDoc(ref, { ...data, updatedAt: ts() }, { merge: true }); return ref.id; },
     deleteHotel: id => F.deleteDoc(F.doc(db, "hotels", id)),
-    // attendance: one document per person and day, id = uid_YYYY-MM-DD; the server stamps the time
-    checkIn: async rec => { const id = `${rec.uid}_${rec.date}`; await F.setDoc(F.doc(db, "attendance", id), { ...rec, checkInAt: ts() }, { merge: true }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); }, // merge: keeps an office mark (override) that already exists for the day
-    checkOut: async (uid, date) => { const id = `${uid}_${date}`; await F.updateDoc(F.doc(db, "attendance", id), { checkOutAt: ts() }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); },
+    // daily plan: which spot each shift checks in at — plans/{hotelId}_{date}
+    getPlan: async (hotelId, date) => { const s = await F.getDoc(F.doc(db, "plans", `${hotelId}_${date}`)); return s.exists() ? att(s) : null; },
+    savePlan: (hotelId, date, shifts, by) => F.setDoc(F.doc(db, "plans", `${hotelId}_${date}`), { hotelId, date, shifts, setBy: by, setAt: ts() }),
+    // attendance: one document per person, day AND shift, id = uid_YYYY-MM-DD_s1; day marks by the office live in uid_YYYY-MM-DD. The server stamps the time.
+    checkIn: async rec => { const id = `${rec.uid}_${rec.date}_${rec.shift}`; await F.setDoc(F.doc(db, "attendance", id), { ...rec, checkInAt: ts() }, { merge: true }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); }, // merge: keeps an office mark (override) that already exists for the shift
+    checkOut: async id => { await F.updateDoc(F.doc(db, "attendance", id), { checkOutAt: ts() }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); },
     myAttendance: async (uid, from) => { const s = await F.getDocs(F.query(F.collection(db, "attendance"), F.where("uid", "==", uid))); return s.docs.map(att).filter(r => !from || r.date >= from).sort((a, b) => b.date.localeCompare(a.date)); },
     attendanceOn: async date => { const s = await F.getDocs(F.query(F.collection(db, "attendance"), F.where("date", "==", date))); return s.docs.map(att); },
     attendanceRange: async (from, to) => { const s = await F.getDocs(F.query(F.collection(db, "attendance"), F.where("date", ">=", from), F.where("date", "<=", to))); return s.docs.map(att).sort((a, b) => a.date.localeCompare(b.date)); },
     setAttendance: (id, patch) => F.setDoc(F.doc(db, "attendance", id), { ...patch, reviewedAt: ts() }, { merge: true }),
     deleteAttendance: id => F.deleteDoc(F.doc(db, "attendance", id)),
     // requests: "I could not check in" — written from anywhere, decided by the office
-    sendRequest: async rec => { const id = `${rec.uid}_${rec.date}`; await F.setDoc(F.doc(db, "requests", id), { ...rec, status: "open", createdAt: ts() }); const s = await F.getDoc(F.doc(db, "requests", id)); return att(s); },
-    myRequest: async (uid, date) => { const s = await F.getDoc(F.doc(db, "requests", `${uid}_${date}`)); return s.exists() ? att(s) : null; },
+    sendRequest: async rec => { const id = `${rec.uid}_${rec.date}_${rec.shift}`; await F.setDoc(F.doc(db, "requests", id), { ...rec, status: "open", createdAt: ts() }); const s = await F.getDoc(F.doc(db, "requests", id)); return att(s); },
+    myRequests: async (uid, date) => { const s = await F.getDocs(F.query(F.collection(db, "requests"), F.where("uid", "==", uid), F.where("date", "==", date))); return s.docs.map(att); },
     requestsOn: async date => { const s = await F.getDocs(F.query(F.collection(db, "requests"), F.where("date", "==", date))); return s.docs.map(att); },
     openRequests: async () => { const s = await F.getDocs(F.query(F.collection(db, "requests"), F.where("status", "==", "open"))); return s.docs.map(att).sort((a, b) => b.date.localeCompare(a.date)); },
     decideRequest: (id, patch) => F.updateDoc(F.doc(db, "requests", id), { ...patch, decidedAt: ts() }),
@@ -89,7 +92,9 @@ function demoBackend(){
     { uid: "demo-2", email: "demo.animator2@gmail.com", status: "pending", fullName: "Demo Animator Two", preferredName: "Demo 2", gender: "Male", dob: "1995-11-02", nationality: "Italy", languages: ["Italian","English"], phone: "+39 300 000 0002", city: "Marsa Alam", skills: ["DJ","Fitness & aqua gym","Light show"], experienceYears: 7, payMethod: "Bank transfer", availableFrom: "2026-11-15", contractPref: "Monthly", tshirt: "L", createdAt: now(), updatedAt: now() },
     { uid: "demo-3", email: "demo.animator3@gmail.com", status: "pending", fullName: "Demo Animator Three", preferredName: "Demo 3", gender: "Male", dob: "2001-02-20", nationality: "Egypt", languages: ["Arabic","English","Russian"], phone: "+20 100 000 0003", city: "Cairo", skills: ["Fire show","Dancer","Sports"], experienceYears: 2, payMethod: "Mobile wallet", availableFrom: "2026-10-10", contractPref: "Events only", tshirt: "M", createdAt: now(), updatedAt: now() }];
     demo.forEach(d => set("emp-" + d.uid, d)); set("emps", demo.map(d => d.uid)); set("settings", { inviteCode: "JOYBOY" });
-    set("hotels", { "demo-hotel": { name: "Demo Beach Resort", city: "Marsa Alam", lat: 25.0676, lng: 34.8934, cosLat: Math.cos(25.0676 * Math.PI / 180), radiusM: 300, shiftStart: "09:00", graceMin: 10, active: true } });
+    set("hotels", { "demo-hotel": { name: "Demo Beach Resort", city: "Marsa Alam", lat: 25.0676, lng: 34.8934, cosLat: Math.cos(25.0676 * Math.PI / 180), radiusM: 300, shiftStart: "09:45", graceMin: 5, active: true,
+      shifts: { s1: { name: "Morning", start: "09:45", end: "12:30", graceMin: 5 }, s2: { name: "Afternoon", start: "14:45", end: "16:30", graceMin: 5 }, s3: { name: "Evening", start: "20:00", end: "23:00", graceMin: 5 } },
+      spots: { beach: { name: "Beach", lat: 25.0690, lng: 34.8950, cosLat: Math.cos(25.0690 * Math.PI / 180), radiusM: 150 }, theatre: { name: "Theatre", lat: 25.0670, lng: 34.8925, cosLat: Math.cos(25.0670 * Math.PI / 180), radiusM: 120 } } } });
     set("emp-demo-1", { ...get("emp-demo-1"), hotelId: "demo-hotel" }); set("att", {}); set("seeded", true); };
   seed();
   return {
@@ -114,15 +119,17 @@ function demoBackend(){
     getHotel: async id => { const h = (get("hotels") || {})[id]; return h ? { id, ...h } : null; },
     saveHotel: async (id, data) => { const hs = get("hotels") || {}; id = id || "h" + Date.now(); hs[id] = { ...(hs[id] || {}), ...data, updatedAt: now() }; set("hotels", hs); return id; },
     deleteHotel: async id => { const hs = get("hotels") || {}; delete hs[id]; set("hotels", hs); },
-    checkIn: async rec => { const a = get("att") || {}; const id = `${rec.uid}_${rec.date}`; if (a[id] && a[id].checkInAt) throw new Error("Already checked in today"); a[id] = { ...(a[id] || {}), ...rec, checkInAt: now() }; set("att", a); return { id, ...a[id] }; },
-    checkOut: async (uid, date) => { const a = get("att") || {}; const id = `${uid}_${date}`; if (!a[id]) throw new Error("No check-in today"); a[id].checkOutAt = now(); set("att", a); return { id, ...a[id] }; },
+    getPlan: async (hotelId, date) => { const p = (get("plans") || {})[`${hotelId}_${date}`]; return p ? { id: `${hotelId}_${date}`, ...p } : null; },
+    savePlan: async (hotelId, date, shifts, by) => { const ps = get("plans") || {}; ps[`${hotelId}_${date}`] = { hotelId, date, shifts, setBy: by, setAt: now() }; set("plans", ps); },
+    checkIn: async rec => { const a = get("att") || {}; const id = `${rec.uid}_${rec.date}_${rec.shift}`; if (a[id] && a[id].checkInAt) throw new Error("Already checked in for this shift"); a[id] = { ...(a[id] || {}), ...rec, checkInAt: now() }; set("att", a); return { id, ...a[id] }; },
+    checkOut: async id => { const a = get("att") || {}; if (!a[id]) throw new Error("No check-in for this shift"); a[id].checkOutAt = now(); set("att", a); return { id, ...a[id] }; },
     myAttendance: async (uid, from) => Object.entries(get("att") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.uid === uid && (!from || r.date >= from)).sort((a, b) => b.date.localeCompare(a.date)),
     attendanceOn: async date => Object.entries(get("att") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date === date),
     attendanceRange: async (from, to) => Object.entries(get("att") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date >= from && r.date <= to).sort((a, b) => a.date.localeCompare(b.date)),
     setAttendance: async (id, patch) => { const a = get("att") || {}; a[id] = { ...(a[id] || {}), ...patch, reviewedAt: now() }; set("att", a); },
     deleteAttendance: async id => { const a = get("att") || {}; delete a[id]; set("att", a); },
-    sendRequest: async rec => { const r = get("req") || {}; const id = `${rec.uid}_${rec.date}`; if (r[id]) throw new Error("A request for today was already sent"); r[id] = { ...rec, status: "open", createdAt: now() }; set("req", r); return { id, ...r[id] }; },
-    myRequest: async (uid, date) => { const r = (get("req") || {})[`${uid}_${date}`]; return r ? { id: `${uid}_${date}`, ...r } : null; },
+    sendRequest: async rec => { const r = get("req") || {}; const id = `${rec.uid}_${rec.date}_${rec.shift}`; if (r[id]) throw new Error("A request for this shift was already sent"); r[id] = { ...rec, status: "open", createdAt: now() }; set("req", r); return { id, ...r[id] }; },
+    myRequests: async (uid, date) => Object.entries(get("req") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.uid === uid && r.date === date),
     requestsOn: async date => Object.entries(get("req") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date === date),
     openRequests: async () => Object.entries(get("req") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.status === "open").sort((a, b) => b.date.localeCompare(a.date)),
     decideRequest: async (id, patch) => { const r = get("req") || {}; r[id] = { ...(r[id] || {}), ...patch, decidedAt: now() }; set("req", r); },
@@ -187,10 +194,58 @@ export function parseLatLng(text){
   if (dms){ const f = (d, m, sec, h) => (+d + (+m) / 60 + (+(sec || 0)) / 3600) * (/[SW]/i.test(h) ? -1 : 1); const lat = f(dms[1], dms[2], dms[3], dms[4]), lng = f(dms[5], dms[6], dms[7], dms[8]); if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return { lat: +lat.toFixed(6), lng: +lng.toFixed(6) }; }
   return null;
 }
-export const ATT_LABEL = { present: "Present", "half-day": "Half day", absent: "Absent", sick: "Sick", vacation: "Vacation", excused: "Excused", off: "Day off", pending: "Not yet" };
+export const ATT_LABEL = { present: "Present", "half-day": "Half day", absent: "Absent", sick: "Sick", vacation: "Vacation", excused: "Excused", off: "Day off", pending: "Not yet", late: "Late" };
+
+/* ─────────────── shifts, spots and the daily plan ─────────────── */
+/** The agency's standard day: three shifts with breaks between them. A hotel can change names/times in the editor. */
+export const DEFAULT_SHIFTS = { s1: { name: "Morning", start: "09:45", end: "12:30", graceMin: 5 }, s2: { name: "Afternoon", start: "14:45", end: "16:30", graceMin: 5 }, s3: { name: "Evening", start: "20:00", end: "23:00", graceMin: 5 } };
+export const SHIFT_KEYS = ["s1", "s2", "s3", "s4"];
+/** Ordered shifts of a hotel: [{key,name,start,end,graceMin}] — falls back to the standard three. */
+export function hotelShifts(hotel){
+  const src = hotel && hotel.shifts && Object.keys(hotel.shifts).length ? hotel.shifts : DEFAULT_SHIFTS, g = hotel && hotel.graceMin != null ? +hotel.graceMin : 5;
+  return SHIFT_KEYS.filter(k => src[k] && src[k].start).map(k => ({ key: k, name: src[k].name || k.toUpperCase(), start: src[k].start, end: src[k].end || "", graceMin: src[k].graceMin != null ? +src[k].graceMin : g }));
+}
+/** Named places inside the resort where a shift can check in: [{key,name,lat,lng,cosLat,radiusM}]. */
+export function hotelSpots(hotel){ const s = (hotel && hotel.spots) || {}; return Object.keys(s).sort((a, b) => String(s[a].name).localeCompare(String(s[b].name))).map(k => ({ key: k, ...s[k] })); }
+export const slug = s => String(s || "").toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30);
+/** Where a shift checks in on a given day: the planned spot, or null = anywhere inside the hotel radius. */
+export function plannedSpot(hotel, plan, shiftKey){ const k = plan && plan.shifts && plan.shifts[shiftKey] && plan.shifts[shiftKey].spot; const sp = k && hotel && hotel.spots && hotel.spots[k]; return sp ? { key: k, ...sp } : null; }
+/** Minutes before a shift starts that the check-in button opens, and after it ends that check-in/out is still possible. */
+export const SHIFT_OPEN_MIN = 90, SHIFT_CLOSE_MIN = 30;
+export const shiftEndMin = s => toMin(s.end) ?? (toMin(s.start) + 180);
+/** The shift the buttons are for right now: the one whose window is open, else the next one today, else the last. */
+export function currentShift(shifts, nowMin){
+  if (!shifts || !shifts.length) return null;
+  return shifts.find(s => nowMin >= toMin(s.start) - SHIFT_OPEN_MIN && nowMin <= shiftEndMin(s) + SHIFT_CLOSE_MIN) || shifts.find(s => nowMin < toMin(s.start)) || shifts[shifts.length - 1];
+}
+/** Status of one shift: present / late (needs decision) / absent / pending (not started yet). An office override wins. */
+export function shiftStatus(rec, shift, date, today = dayKey(), nowMin = toMin(hhmm(new Date()))){
+  const start = toMin(shift.start) ?? 0, grace = shift.graceMin != null ? +shift.graceMin : 5;
+  if (rec && rec.override) return { code: rec.override, lateMin: rec.checkInAt ? Math.max(0, toMin(hhmm(rec.checkInAt)) - start) : null, auto: false };
+  if (rec && rec.checkInAt){ const late = toMin(hhmm(rec.checkInAt)) - start; return late <= grace ? { code: "present", lateMin: Math.max(0, late), auto: true } : { code: "late", lateMin: late, auto: true, review: true }; }
+  if (date > today || (date === today && nowMin <= start + grace)) return { code: "pending", lateMin: null, auto: true };
+  return { code: "absent", lateMin: null, auto: true };
+}
+/**
+ * Status of a whole day from its shift records: every shift attended → Present, some → Half day, none → Absent,
+ * "pending" while shifts are still to come. A day mark by the office (sick, vacation, off, …) wins; a record from
+ * before shifts existed (day check-in) is judged by the old rule.
+ */
+export function dayStatus(dayRec, shiftRecs, shifts, hotel, date, today = dayKey()){
+  if (dayRec && dayRec.override) return { code: dayRec.override, auto: false, review: false, lateMin: null, done: 0, total: shifts.length, shifts: [] };
+  if ((!shiftRecs || !shiftRecs.length) && dayRec && dayRec.checkInAt) return { ...attStatus(dayRec, hotel, today), done: 1, total: 1, shifts: [] };
+  const sts = shifts.map(s => ({ shift: s, rec: (shiftRecs || []).find(r => r.shift === s.key) || null, st: shiftStatus((shiftRecs || []).find(r => r.shift === s.key) || null, s, date, today) }));
+  const done = sts.filter(x => ["present", "late", "excused"].includes(x.st.code)).length, pend = sts.filter(x => x.st.code === "pending").length, review = sts.some(x => x.st.review);
+  const code = !shifts.length ? "pending" : pend > 0 ? "pending" : done === shifts.length ? "present" : done > 0 ? "half-day" : "absent";
+  return { code, auto: true, review, lateMin: null, done, total: shifts.length, shifts: sts };
+}
+/** Badge text for a day: "2/3 so far" while the day is running. */
+export const dayLabel = st => st.review ? "Late · needs decision" : st.code === "pending" && st.done ? `${st.done}/${st.total} so far` : ATT_LABEL[st.code] || st.code;
 /** Badge text for a status: a late check-in that nobody has decided on yet reads "Late · needs decision". */
 export const attLabel = st => st.review ? "Late · needs decision" : ATT_LABEL[st.code];
 export const ATT_OVERRIDES = ["present", "half-day", "absent", "sick", "vacation", "excused", "off"];
+/** Decisions the office can take on one shift. */
+export const SHIFT_DECISIONS = ["present", "excused", "absent"];
 /**
  * Status of one day. Automatic rule: checked in by shift start + grace → present; later → half day; no check-in → absent
  * (or "pending" while the shift has not started yet today). An admin override wins.

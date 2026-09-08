@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609080728">
-<script src="firebase-config.js?v=202609080728"></script>
+<link rel="stylesheet" href="portal.css?v=202609081110">
+<script src="firebase-config.js?v=202609081110"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 </head>
 <body>
@@ -53,12 +53,13 @@
         <button class="btn small" id="a-csv" type="button">Export month CSV</button>
       </div>
       <div class="stats" id="a-stats"></div>
+      <div class="card plan" id="a-plan" hidden></div>
       <div class="decide" id="a-decide"></div>
       <div class="tablewrap"><table>
-        <thead><tr><th>Person</th><th>Hotel</th><th>Check-in</th><th>Check-out</th><th>Status</th><th>Late</th><th>Distance</th><th>Override</th></tr></thead>
+        <thead id="a-head"></thead>
         <tbody id="a-rows"></tbody>
       </table><div class="empty" id="a-empty" hidden>Nobody is assigned to a hotel yet. Assign staff from their profile (Roster → open a person → Hotel).</div></div>
-      <p class="hint" style="margin-top:10px">Automatic rule: checked in by shift start + grace → Present; later → <b>Late · needs decision</b> (counts as Half day until you decide); no check-in after that time → Absent. Staff who could not check in can send you a note; it appears above the table. Use Override for sick days, vacation, days off or corrections; the override wins in the export. Rows marked "manual" came from an override or from the Google Sheet import.</p>
+      <p class="hint" style="margin-top:10px">Every shift is judged on its own: checked in by the shift start + grace → Present; later → <b>Late · needs decision</b>; no check-in after that time → Absent. The day is <b>Present</b> when every shift was attended, <b>Half day</b> when some were, <b>Absent</b> when none. Staff who could not check in send you a note per shift; late shifts and notes appear above the table with Present / Excused / Absent buttons. Use <b>Day mark</b> for sick days, vacation, days off or a whole-day correction; it wins over the shifts in the export. In the plan card you choose, per day, where each shift checks in.</p>
     </div>
 
     <div id="v-hotels" hidden>
@@ -71,9 +72,15 @@
           <label class="f full"><span>Location <b class="req">*</b> — paste a Google Maps link or "lat, lng"</span><input class="in" id="h-loc" placeholder="25.0676, 34.8934  (or a Maps link that contains @lat,lng)"><span class="hint" id="h-loc-hint">In Google Maps press and hold on the animation office or stage, copy the two numbers shown at the top and paste them here. Or tap the button while standing at the hotel.</span></label>
           <div class="full" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn ghost small" id="h-here" type="button">Use my current location</button><button class="btn ghost small" id="h-test" type="button">How far am I from this pin?</button><span class="hint" id="h-test-hint">Stand where the staff check in (stage, meeting area) and tap: it shows the distance the server will see.</span></div>
           <label class="f"><span>Allowed radius (metres)</span><input class="in" type="number" id="h-radius" value="300" min="50" max="3000"><span class="hint" id="h-radius-hint">Resort grounds are big: 300–800 m is typical. Phones are accurate to about 10–30 m outdoors and 50–100 m indoors, so anything under 200 m will refuse honest people.</span></label>
-          <label class="f"><span>Shift starts at</span><input class="in" type="time" id="h-start" value="09:00"></label>
-          <label class="f"><span>Grace minutes</span><input class="in" type="number" id="h-grace" value="10" min="0" max="120"><span class="hint">Checking in later than start + grace counts as a half day.</span></label>
           <label class="f"><span>Active</span><select class="in" id="h-active"><option value="1">Yes — staff can check in</option><option value="0">No — season closed</option></select></label>
+          <div class="full"><h3 class="sub">Shifts</h3>
+            <div class="shiftgrid" id="h-shifts"></div>
+            <span class="hint">Staff check in and out for each shift separately. Clear a name to remove that shift. Grace = minutes after the start that still count as on time; later is "Late · needs decision".</span></div>
+          <div class="full"><h3 class="sub">Spots — places a shift can check in</h3>
+            <div class="spots" id="h-spots"></div>
+            <div class="spotadd"><input class="in" id="sp-name" placeholder="Spot name, e.g. Beach"><input class="in" id="sp-loc" placeholder="lat, lng or a Maps link with @lat,lng"><input class="in" id="sp-radius" type="number" value="150" min="50" max="1000" title="radius in metres"></div>
+            <div class="actions" style="margin-top:8px"><button class="btn ghost small" id="sp-here" type="button">Use my current location</button><button class="btn small" id="sp-add" type="button">Add spot</button></div>
+            <span class="hint">Stand at the spot and tap "Use my current location", or paste the pin from Google Maps. 100–200 m is a sensible radius for one area. Spots are stored when you press <b>Save hotel</b>. In the Attendance tab you choose, per day, which spot each shift uses.</span></div>
         </div>
         <div class="actions"><button class="btn small" id="h-save" type="button">Save hotel</button><button class="btn ghost small" id="h-new" type="button" hidden>New hotel</button><span style="flex:1"></span><button class="btn ghost small" id="h-del" type="button" hidden style="border-color:rgba(255,77,46,.6);color:#FFB3A3">Delete hotel…</button></div>
       </div>
@@ -116,7 +123,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem } from "./portal.js?v=202609080728";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS } from "./portal.js?v=202609081110";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -195,7 +202,7 @@ document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click
 /* ── hotels ── */
 function paintHotels(){
   const count = id => all.filter(p => p.hotelId === id && p.status === "approved").length;
-  $("hotel-cards").innerHTML = hotels.map(h => `<div class="hotel ${h.active === false ? "inactive" : ""} ${hotelEdit === h.id ? "on" : ""}" data-id="${esc(h.id)}"><h3>${esc(h.name)}</h3><p>${esc(h.city || "")}${h.city ? " · " : ""}${h.radiusM} m · starts ${esc(h.shiftStart)} (+${h.graceMin} min)</p><span class="n">${count(h.id)} staff assigned${h.active === false ? " · closed — check-in is switched off" : ""}</span>${fenceProblem(h) && h.active !== false ? `<span class="n" style="color:#FFB3A3">Location incomplete — open and save again</span>` : ""}</div>`).join("") || `<p class="hint">No hotels yet. Add the first one below.</p>`;
+  $("hotel-cards").innerHTML = hotels.map(h => `<div class="hotel ${h.active === false ? "inactive" : ""} ${hotelEdit === h.id ? "on" : ""}" data-id="${esc(h.id)}"><h3>${esc(h.name)}</h3><p>${esc(h.city || "")}${h.city ? " · " : ""}${h.radiusM} m · ${hotelShifts(h).map(x => esc(x.name) + " " + esc(x.start)).join(" · ")} · ${hotelSpots(h).length} spot${hotelSpots(h).length === 1 ? "" : "s"}</p><span class="n">${count(h.id)} staff assigned${h.active === false ? " · closed — check-in is switched off" : ""}</span>${fenceProblem(h) && h.active !== false ? `<span class="n" style="color:#FFB3A3">Location incomplete — open and save again</span>` : ""}</div>`).join("") || `<p class="hint">No hotels yet. Add the first one below.</p>`;
   $("hotel-cards").querySelectorAll(".hotel").forEach(el => el.onclick = () => editHotel(el.dataset.id));
   $("a-hotel").innerHTML = `<option value="">All hotels</option>` + hotels.map(h => `<option value="${esc(h.id)}">${esc(h.name)}</option>`).join("");
 }
@@ -203,7 +210,8 @@ function editHotel(id){
   const h = hotels.find(x => x.id === id); hotelEdit = h ? id : null;
   $("h-title").textContent = h ? "Edit " + h.name : "Add a hotel";
   $("h-name").value = h ? h.name : ""; $("h-city").value = h ? (h.city || "") : ""; $("h-loc").value = h ? `${h.lat}, ${h.lng}` : "";
-  $("h-radius").value = h ? h.radiusM : 300; $("h-start").value = h ? h.shiftStart : "09:00"; $("h-grace").value = h ? h.graceMin : 10; $("h-active").value = h && h.active === false ? "0" : "1";
+  $("h-radius").value = h ? h.radiusM : 300; $("h-active").value = h && h.active === false ? "0" : "1";
+  editSpots = h && h.spots ? JSON.parse(JSON.stringify(h.spots)) : {}; paintShiftGrid(hotelShifts(h || {})); paintSpots();
   show("h-new", !!h); show("h-del", !!h); paintHotels(); if (h) $("h-name").scrollIntoView({ behavior: "smooth", block: "center" });
 }
 $("h-new").addEventListener("click", () => editHotel(null));
@@ -223,6 +231,35 @@ $("adm-add").addEventListener("click", async () => {
 $("h-loc").addEventListener("input", () => { const v = $("h-loc").value.trim(), ll = parseLatLng(v); $("h-loc-hint").textContent = ll ? `Understood: ${ll.lat.toFixed(5)}, ${ll.lng.toFixed(5)}` : (/goo\.gl|maps\.app|[?&]cid=|\/place\//.test(v) ? "This is a place link without coordinates. In Google Maps press and hold on the spot until a pin drops, then tap the two numbers at the top (e.g. 25.0731, 34.8976) and paste them here." : v ? "Could not read coordinates from this text. In Google Maps, press and hold on the spot, then copy the numbers shown at the top." : "In Google Maps press and hold on the animation office or stage, copy the two numbers shown at the top and paste them here. Or tap the button while standing at the hotel."); });
 $("h-here").addEventListener("click", () => { if (!navigator.geolocation) return toast("No location access in this browser"); const b = $("h-here"); b.disabled = true; b.textContent = "Locating…"; navigator.geolocation.getCurrentPosition(p => { $("h-loc").value = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`; $("h-loc").dispatchEvent(new Event("input")); b.disabled = false; b.textContent = "Use my current location"; toast(`Location set (±${Math.round(p.coords.accuracy)} m)`); }, () => { b.disabled = false; b.textContent = "Use my current location"; toast("Could not get your location"); }, { enableHighAccuracy: true, timeout: 20000 }); });
 $("h-radius").addEventListener("input", () => { const v = +$("h-radius").value || 0; $("h-radius-hint").style.color = v < 200 ? "#FFB3A3" : ""; $("h-radius-hint").textContent = v < 200 ? `${v} m is smaller than a phone's usual GPS error at a resort — staff standing at the hotel will be refused. Use at least 300 m.` : "Resort grounds are big: 300–800 m is typical. Phones are accurate to about 10–30 m outdoors and 50–100 m indoors, so anything under 200 m will refuse honest people."; });
+let editSpots = {};
+function paintShiftGrid(list){
+  const by = Object.fromEntries(list.map(x => [x.key, x]));
+  $("h-shifts").innerHTML = `<span class="hd">Shift</span><span class="hd">Start</span><span class="hd">End</span><span class="hd">Grace</span>` + SHIFT_KEYS.map(k => { const x = by[k] || {}; return `<input class="in" data-sk="${k}" data-f="name" placeholder="${k === "s4" ? "(unused)" : "Name"}" value="${esc(x.name || "")}"><input class="in" type="time" data-sk="${k}" data-f="start" value="${esc(x.start || "")}"><input class="in" type="time" data-sk="${k}" data-f="end" value="${esc(x.end || "")}"><input class="in" type="number" min="0" max="120" data-sk="${k}" data-f="graceMin" value="${x.graceMin != null ? x.graceMin : 5}">`; }).join("");
+}
+function readShiftGrid(){
+  const out = {};
+  for (const k of SHIFT_KEYS){
+    const g = f => ($("h-shifts").querySelector(`[data-sk="${k}"][data-f="${f}"]`) || {}).value || "";
+    const name = g("name").trim(), start = g("start"), end = g("end"), graceMin = Math.max(0, Math.min(120, +g("graceMin") || 0));
+    if (!name && !start) continue;
+    if (!name || !start){ toast(`Shift ${k.slice(1)}: needs a name and a start time`); return null; }
+    if (end && toMin(end) <= toMin(start)){ toast(`${name}: the end must be after the start`); return null; }
+    out[k] = { name, start, end, graceMin };
+  }
+  return out;
+}
+function paintSpots(){
+  const list = hotelSpots({ spots: editSpots });
+  $("h-spots").innerHTML = list.length ? list.map(sp => `<div class="spot"><b>${esc(sp.name)}</b><small>${sp.lat.toFixed(5)}, ${sp.lng.toFixed(5)} · ${sp.radiusM} m</small><button class="btn ghost small x" type="button" data-rm="${esc(sp.key)}">Remove</button></div>`).join("") : `<p class="hint">No spots yet. Staff then check in anywhere inside the hotel radius.</p>`;
+  $("h-spots").querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { delete editSpots[b.dataset.rm]; paintSpots(); });
+}
+$("sp-add").addEventListener("click", () => {
+  const name = $("sp-name").value.trim(), ll = parseLatLng($("sp-loc").value), radiusM = Math.min(1000, Math.max(50, +$("sp-radius").value || 150));
+  if (name.length < 2) return toast("Give the spot a name"); if (!ll) return toast("Paste the spot's coordinates or use your location");
+  const key = slug(name) || "spot" + Date.now(); editSpots[key] = { name, lat: ll.lat, lng: ll.lng, cosLat: Math.cos(ll.lat * Math.PI / 180), radiusM };
+  $("sp-name").value = ""; $("sp-loc").value = ""; paintSpots(); toast(`${name} added — press Save hotel to store it`);
+});
+$("sp-here").addEventListener("click", () => { if (!navigator.geolocation) return toast("No location access in this browser"); const b = $("sp-here"); b.disabled = true; b.textContent = "Locating…"; navigator.geolocation.getCurrentPosition(p => { $("sp-loc").value = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`; b.disabled = false; b.textContent = "Use my current location"; toast(`Got it (±${Math.round(p.coords.accuracy || 0)} m)`); }, () => { toast("Could not get your location"); b.disabled = false; b.textContent = "Use my current location"; }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }); });
 $("h-test").addEventListener("click", () => {
   const ll = parseLatLng($("h-loc").value); if (!ll) return toast("Paste the hotel location first");
   if (!navigator.geolocation) return toast("No location access in this browser");
@@ -235,9 +272,11 @@ $("h-test").addEventListener("click", () => {
   }, e => { toast(e.code === 1 ? "Location permission was refused for this site" : "Could not get your location"); b.disabled = false; b.textContent = "How far am I from this pin?"; }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
 });
 $("h-save").addEventListener("click", async () => {
-  const name = $("h-name").value.trim(), ll = parseLatLng($("h-loc").value), radiusM = Math.min(3000, Math.max(50, +$("h-radius").value || 300)), shiftStart = $("h-start").value || "09:00", graceMin = Math.max(0, +$("h-grace").value || 0);
+  const name = $("h-name").value.trim(), ll = parseLatLng($("h-loc").value), radiusM = Math.min(3000, Math.max(50, +$("h-radius").value || 300));
   if (name.length < 2) return toast("Enter the hotel name"); if (!ll) return toast("Paste a Google Maps link or coordinates");
-  const data = { name, city: $("h-city").value.trim(), lat: ll.lat, lng: ll.lng, cosLat: Math.cos(ll.lat * Math.PI / 180), radiusM, shiftStart, graceMin, active: $("h-active").value === "1" };
+  const shifts = readShiftGrid(); if (!shifts) return; const first = Object.values(shifts)[0];
+  if (!first) return toast("Keep at least one shift");
+  const data = { name, city: $("h-city").value.trim(), lat: ll.lat, lng: ll.lng, cosLat: Math.cos(ll.lat * Math.PI / 180), radiusM, shifts, spots: editSpots, shiftStart: first.start, graceMin: first.graceMin, active: $("h-active").value === "1" };
   try { const id = await be.saveHotel(hotelEdit, data); hotels = await be.listHotels(); toast(hotelEdit ? "Hotel updated" : "Hotel added"); editHotel(null); render(); } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
 });
 $("h-del").addEventListener("click", async () => {
@@ -256,52 +295,96 @@ $("a-next").addEventListener("click", () => setDay(addDays(attDay, 1)));
 $("a-today").addEventListener("click", () => setDay(dayKey()));
 $("a-hotel").addEventListener("change", paintAtt);
 $("a-refresh").addEventListener("click", loadAtt);
-async function loadAtt(){ try { [attRecs, attReqs] = await Promise.all([be.attendanceOn(attDay), be.requestsOn(attDay).catch(() => [])]); } catch (ex) { attRecs = []; attReqs = []; toast("Could not load attendance: " + (ex.message || ex)); } paintAtt(); }
-async function decide(uid, code, req){
-  const x = attRows(attDay, attRecs).find(r => r.p.uid === uid) || {}, id = `${uid}_${attDay}`;
+let attPlans = {};
+async function loadAtt(){
+  try { [attRecs, attReqs] = await Promise.all([be.attendanceOn(attDay), be.requestsOn(attDay).catch(() => [])]); } catch (ex) { attRecs = []; attReqs = []; toast("Could not load attendance: " + (ex.message || ex)); }
+  attPlans = {}; await Promise.all(hotels.map(async h => { try { attPlans[h.id] = await be.getPlan(h.id, attDay); } catch { attPlans[h.id] = null; } }));
+  paintAtt();
+}
+/* decide one shift (late check-in or a note from staff) */
+async function decide(uid, shiftKey, code, req){
+  const x = attRows(attDay, attRecs).find(r => r.p.uid === uid) || {}, sh = (x.shifts || []).find(s => s.key === shiftKey) || { key: shiftKey, name: (req && req.shiftName) || shiftKey };
+  const id = `${uid}_${attDay}_${shiftKey}`;
   try {
-    await be.setAttendance(id, { uid, email: (x.p && x.p.email) || (req && req.email) || "", name: (x.p && x.p.fullName) || (req && req.name) || "", hotelId: x.hotelId || (req && req.hotelId) || "", hotelName: (x.hotel && x.hotel.name) || (req && req.hotelName) || "", date: attDay, override: code, overrideBy: user.email, source: req ? "request" : "decision" });
+    await be.setAttendance(id, { uid, email: (x.p && x.p.email) || (req && req.email) || "", name: (x.p && x.p.fullName) || (req && req.name) || "", hotelId: x.hotelId || (req && req.hotelId) || "", hotelName: (x.hotel && x.hotel.name) || (req && req.hotelName) || "", date: attDay, shift: shiftKey, shiftName: sh.name, override: code, overrideBy: user.email, source: req ? "request" : "decision" });
     if (req) await be.decideRequest(req.id, { status: "decided", decision: code, by: user.email });
-    toast("Decided: " + ATT_LABEL[code]); loadAtt();
+    toast(`${sh.name}: ${ATT_LABEL[code]}`); loadAtt();
   } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
+}
+/* decide a record from before shifts existed (whole-day check-in) */
+async function decideDay(uid, code){
+  const x = attRows(attDay, attRecs).find(r => r.p.uid === uid) || {}, id = `${uid}_${attDay}`;
+  try { await be.setAttendance(id, { uid, email: (x.p && x.p.email) || "", name: (x.p && x.p.fullName) || "", hotelId: x.hotelId || "", hotelName: (x.hotel && x.hotel.name) || "", date: attDay, override: code, overrideBy: user.email, source: "decision" }); toast("Decided: " + ATT_LABEL[code]); loadAtt(); }
+  catch (ex) { toast("Could not save: " + (ex.message || ex)); }
 }
 function attRows(day, recs){
   // every approved person with a hotel gets a row, plus anyone who has a record that day
   const staff = all.filter(p => p.status === "approved" && p.hotelId && day >= String(p.createdAt || "").slice(0, 10));
-  const rows = staff.map(p => ({ p, r: recs.find(r => r.uid === p.uid) || null, hotelId: p.hotelId }));
-  recs.forEach(r => { if (!rows.some(x => x.p.uid === r.uid)) rows.push({ p: all.find(p => p.uid === r.uid) || { uid: r.uid, fullName: r.name, email: r.email }, r, hotelId: r.hotelId }); });
-  return rows.map(x => ({ ...x, hotel: hotels.find(h => h.id === x.hotelId) || {}, st: attStatus(x.r || { date: day }, hotels.find(h => h.id === x.hotelId) || {}) }));
+  const rows = staff.map(p => ({ p, hotelId: p.hotelId }));
+  recs.forEach(r => { if (!rows.some(x => x.p.uid === r.uid)) rows.push({ p: all.find(p => p.uid === r.uid) || { uid: r.uid, fullName: r.name, email: r.email }, hotelId: r.hotelId }); });
+  return rows.map(x => { const hotel = hotels.find(h => h.id === x.hotelId) || {}, shifts = hotelShifts(hotel), dayRec = recs.find(r => r.uid === x.p.uid && !r.shift) || null, srecs = recs.filter(r => r.uid === x.p.uid && r.shift);
+    return { ...x, hotel, shifts, dayRec, srecs, day: dayStatus(dayRec, srecs, shifts, hotel, day, dayKey()) }; });
+}
+function paintPlan(rowsHotels){
+  const hs = rowsHotels.length ? rowsHotels : []; show("a-plan", hs.length > 0);
+  $("a-plan").innerHTML = `<h2>Where does each shift check in on ${attDay}?</h2><p class="hint" style="margin-top:4px">Pick the spot for each shift, then Save. Staff see it on their card and must be within that spot's radius. "Anywhere" = the whole hotel radius.</p>` + hs.map(h => { const plan = attPlans[h.id], spots = hotelSpots(h), shifts = hotelShifts(h);
+    return `<div class="phead"><b>${esc(h.name)}</b>${plan && plan.setBy ? `<small>set by ${esc(plan.setBy)}${plan.setAt ? " at " + hhmm(plan.setAt) : ""}</small>` : `<small>no plan yet — anywhere at the hotel</small>`}${spots.length ? "" : `<small style="color:#FFB3A3">no spots defined yet (Hotels &amp; office → open the hotel → Spots)</small>`}</div>`
+      + shifts.map(sh => `<div class="prow"><label>${esc(sh.name)} <small>${esc(sh.start)}–${esc(sh.end || "?")}</small></label><select class="in" data-plan="${esc(h.id)}" data-sk="${sh.key}"><option value="">Anywhere at the hotel</option>${spots.map(sp => `<option value="${esc(sp.key)}" ${plan && plan.shifts && plan.shifts[sh.key] && plan.shifts[sh.key].spot === sp.key ? "selected" : ""}>${esc(sp.name)} (${sp.radiusM} m)</option>`).join("")}</select></div>`).join("")
+      + `<div class="actions" style="margin-top:8px"><button class="btn small" type="button" data-plansave="${esc(h.id)}">Save plan</button><button class="btn ghost small" type="button" data-plancopy="${esc(h.id)}">Same as yesterday</button></div>`; }).join("");
+  $("a-plan").querySelectorAll("[data-plansave]").forEach(b => b.onclick = async () => {
+    const hid = b.dataset.plansave, shifts = {}; $("a-plan").querySelectorAll(`select[data-plan="${hid}"]`).forEach(sel => { shifts[sel.dataset.sk] = { spot: sel.value || "" }; });
+    b.disabled = true; try { await be.savePlan(hid, attDay, shifts, user.email); toast("Plan saved — staff see it on their card"); loadAtt(); } catch (ex) { toast("Could not save the plan: " + (ex.message || ex)); } finally { b.disabled = false; }
+  });
+  $("a-plan").querySelectorAll("[data-plancopy]").forEach(b => b.onclick = async () => {
+    const hid = b.dataset.plancopy; let y = null; try { y = await be.getPlan(hid, addDays(attDay, -1)); } catch {}
+    if (!y || !y.shifts) return toast("No plan was saved for yesterday");
+    $("a-plan").querySelectorAll(`select[data-plan="${hid}"]`).forEach(sel => { sel.value = (y.shifts[sel.dataset.sk] || {}).spot || ""; }); toast("Copied — press Save plan");
+  });
 }
 function paintAtt(){
   const hf = $("a-hotel").value; const rows = attRows(attDay, attRecs).filter(x => !hf || x.hotelId === hf).sort((a, b) => String(a.hotel.name || "").localeCompare(String(b.hotel.name || "")) || String(a.p.fullName || "").localeCompare(String(b.p.fullName || "")));
-  const n = c => rows.filter(x => x.st.code === c).length;
-  const openReqs = attReqs.filter(r => r.status === "open" && (!hf || r.hotelId === hf)), lateRows = rows.filter(x => x.st.review);
-  $("a-stats").innerHTML = [["Expected", rows.length], ["Present", n("present")], ["Half day", n("half-day")], ["Absent", n("absent")], ["Needs decision", openReqs.length + lateRows.length], ["Sick / vacation / off", n("sick") + n("vacation") + n("excused") + n("off")]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
-  const btns = (uid, rid) => `<span class="acts">${["present","half-day","absent"].map(c => `<button class="btn small ${c === "present" ? "ok" : c === "absent" ? "danger" : "ghost"}" data-dec="${c}" data-uid="${esc(uid)}" ${rid ? `data-req="${esc(rid)}"` : ""}>${ATT_LABEL[c]}</button>`).join("")}</span>`;
-  $("a-decide").innerHTML = lateRows.map(x => `<div class="d"><div><b>${esc(x.p.fullName || x.p.email)}</b><br><small>${esc(x.hotel.name || "")} · checked in ${hhmm(x.r.checkInAt)} · ${x.st.lateMin} min late · ${x.r.distM != null ? x.r.distM + " m from the hotel" : ""}</small></div><span class="why">Late check-in — decide the day.</span>${btns(x.p.uid)}</div>`).join("")
-    + openReqs.map(r => `<div class="d"><div><b>${esc(r.name || r.email)}</b><br><small>${esc(r.hotelName || hotelName(r.hotelId))} · sent ${hhmm(r.createdAt)}${r.distM != null ? ` · was ${r.distM >= 1000 ? (r.distM / 1000).toFixed(1) + " km" : r.distM + " m"} from the hotel (±${r.accuracy || "?"} m)` : ""}</small></div><span class="why">“${esc(r.reason || "")}”</span>${btns(r.uid, r.id)}</div>`).join("");
-  $("a-decide").querySelectorAll("[data-dec]").forEach(b => b.onclick = () => decide(b.dataset.uid, b.dataset.dec, b.dataset.req ? attReqs.find(r => r.id === b.dataset.req) : null));
+  paintPlan(hotels.filter(h => h.active !== false && (!hf || h.id === hf)));
+  const n = c => rows.filter(x => x.day.code === c).length;
+  const openReqs = attReqs.filter(r => r.status === "open" && (!hf || r.hotelId === hf));
+  const lateShifts = []; rows.forEach(x => (x.day.shifts || []).forEach(y => { if (y.st.review) lateShifts.push({ x, y }); }));
+  const lateDays = rows.filter(x => x.day.review && !(x.day.shifts || []).length);
+  $("a-stats").innerHTML = [["Expected", rows.length], ["Present", n("present")], ["Half day", n("half-day")], ["Absent", n("absent")], ["Needs decision", openReqs.length + lateShifts.length + lateDays.length], ["Sick / vacation / off", n("sick") + n("vacation") + n("excused") + n("off")]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+  const btns = (uid, sk, rid) => `<span class="acts">${SHIFT_DECISIONS.map(c => `<button class="btn small ${c === "present" ? "ok" : c === "absent" ? "danger" : "ghost"}" data-dec="${c}" data-uid="${esc(uid)}" data-sk="${esc(sk)}" ${rid ? `data-req="${esc(rid)}"` : ""}>${ATT_LABEL[c]}</button>`).join("")}</span>`;
+  const dbtns = uid => `<span class="acts">${["present","half-day","absent"].map(c => `<button class="btn small ${c === "present" ? "ok" : c === "absent" ? "danger" : "ghost"}" data-ddec="${c}" data-uid="${esc(uid)}">${ATT_LABEL[c]}</button>`).join("")}</span>`;
+  $("a-decide").innerHTML = lateShifts.map(({ x, y }) => `<div class="d"><div><b>${esc(x.p.fullName || x.p.email)}</b><br><small>${esc(x.hotel.name || "")} · ${esc(y.shift.name)} · checked in ${hhmm(y.rec.checkInAt)} · ${y.st.lateMin} min late${y.rec.spotName ? ` · at the ${esc(y.rec.spotName)}` : ""}${y.rec.distM != null ? ` · ${y.rec.distM} m from the pin` : ""}</small></div><span class="why">Late check-in — decide this shift.</span>${btns(x.p.uid, y.shift.key)}</div>`).join("")
+    + lateDays.map(x => `<div class="d"><div><b>${esc(x.p.fullName || x.p.email)}</b><br><small>${esc(x.hotel.name || "")} · checked in ${hhmm(x.dayRec.checkInAt)} (old day format)</small></div><span class="why">Late check-in — decide the day.</span>${dbtns(x.p.uid)}</div>`).join("")
+    + openReqs.map(r => `<div class="d"><div><b>${esc(r.name || r.email)}</b><br><small>${esc(r.hotelName || hotelName(r.hotelId))}${r.shiftName ? ` · ${esc(r.shiftName)}` : ""} · sent ${hhmm(r.createdAt)}${r.distM != null ? ` · was ${r.distM >= 1000 ? (r.distM / 1000).toFixed(1) + " km" : r.distM + " m"} from the pin (±${r.accuracy || "?"} m)` : ""}</small></div><span class="why">“${esc(r.reason || "")}”</span>${r.shift ? btns(r.uid, r.shift, r.id) : dbtns(r.uid)}</div>`).join("");
+  $("a-decide").querySelectorAll("[data-dec]").forEach(b => b.onclick = () => decide(b.dataset.uid, b.dataset.sk, b.dataset.dec, b.dataset.req ? attReqs.find(r => r.id === b.dataset.req) : null));
+  $("a-decide").querySelectorAll("[data-ddec]").forEach(b => b.onclick = () => decideDay(b.dataset.uid, b.dataset.ddec));
+  // table: one column per shift (names from the first hotel shown), then the day
+  const maxS = Math.max(0, ...rows.map(x => x.shifts.length)), names = (rows[0] ? rows[0].shifts : []).map(x => x.name), same = rows.every(x => x.shifts.map(y => y.name).join("|") === names.join("|"));
+  $("a-head").innerHTML = `<tr><th>Person</th><th>Hotel</th>${Array.from({ length: maxS }, (_, i) => `<th>${same && names[i] ? esc(names[i]) : "Shift " + (i + 1)}</th>`).join("")}<th>Day</th><th>Day mark</th></tr>`;
+  const cell = y => !y ? "<td>—</td>" : `<td class="cell-shift">${y.rec && y.rec.checkInAt ? `${hhmm(y.rec.checkInAt)}${y.rec.checkOutAt ? " → " + hhmm(y.rec.checkOutAt) : ""}` : "—"}<br><span class="status att-${y.st.review ? "review" : y.st.code}">${y.st.review ? "Late" : ATT_LABEL[y.st.code]}</span>${y.st.auto ? "" : " <small class='hint'>manual</small>"}${y.rec && (y.rec.spotName || y.rec.distM != null) ? `<small>${esc(y.rec.spotName || "")}${y.rec.distM != null ? ` ${y.rec.distM} m` : ""}</small>` : ""}</td>`;
   $("a-rows").innerHTML = rows.map(x => `<tr data-uid="${esc(x.p.uid)}" style="cursor:default">
     <td><div class="who"><img src="${esc(x.p.photoThumb || "../media/img/logo.jpg")}" alt=""><div><b>${esc(x.p.fullName || x.p.email || "—")}</b><small>${esc(x.p.email || "")}</small></div></div></td>
-    <td>${esc(x.hotel.name || hotelName(x.hotelId))}</td><td>${x.r && x.r.checkInAt ? hhmm(x.r.checkInAt) : "—"}</td><td>${x.r && x.r.checkOutAt ? hhmm(x.r.checkOutAt) : "—"}</td>
-    <td><span class="status att-${x.st.review ? "review" : x.st.code}">${attLabel(x.st)}</span>${x.st.auto ? "" : " <small class='hint'>manual</small>"}</td><td>${x.st.lateMin ? x.st.lateMin + " min" : "—"}</td><td>${x.r && x.r.distM != null ? x.r.distM + " m" : "—"}</td>
-    <td><select class="in tiny" data-ov="${esc(x.p.uid)}"><option value="">auto</option>${ATT_OVERRIDES.map(c => `<option value="${c}" ${x.r && x.r.override === c ? "selected" : ""}>${ATT_LABEL[c]}</option>`).join("")}</select></td></tr>`).join("");
+    <td>${esc(x.hotel.name || hotelName(x.hotelId))}</td>${Array.from({ length: maxS }, (_, i) => cell((x.day.shifts || [])[i]))}${!(x.day.shifts || []).length && x.dayRec && x.dayRec.checkInAt ? "" : ""}
+    <td><span class="status att-${x.day.review ? "review" : x.day.code}">${dayLabel(x.day)}</span>${x.day.auto ? "" : " <small class='hint'>manual</small>"}${!(x.day.shifts || []).length && x.dayRec && x.dayRec.checkInAt ? `<br><small class="hint">in ${hhmm(x.dayRec.checkInAt)}${x.dayRec.checkOutAt ? " → " + hhmm(x.dayRec.checkOutAt) : ""} (old day format)</small>` : ""}</td>
+    <td><select class="in tiny" data-ov="${esc(x.p.uid)}"><option value="">auto</option>${ATT_OVERRIDES.map(c => `<option value="${c}" ${x.dayRec && x.dayRec.override === c ? "selected" : ""}>${ATT_LABEL[c]}</option>`).join("")}</select></td></tr>`).join("");
   show("a-empty", rows.length === 0);
   $("a-rows").querySelectorAll("[data-ov]").forEach(sel => sel.onchange = async () => {
     const uid = sel.dataset.ov, x = rows.find(r => r.p.uid === uid), id = `${uid}_${attDay}`, ov = sel.value || null;
     try {
       await be.setAttendance(id, { uid, email: x.p.email || "", name: x.p.fullName || "", hotelId: x.hotelId, hotelName: x.hotel.name || "", date: attDay, override: ov, overrideBy: user.email });
-      toast(ov ? "Marked " + ATT_LABEL[ov] : "Back to automatic"); loadAtt();
+      toast(ov ? "Day marked " + ATT_LABEL[ov] : "Back to automatic"); loadAtt();
     } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
   });
 }
 $("a-csv").addEventListener("click", async () => {
   const from = attDay.slice(0, 8) + "01", to = addDays(addDays(from, 32).slice(0, 8) + "01", -1), today = dayKey();
   let recs = []; try { recs = await be.attendanceRange(from, to); } catch (ex) { return toast("Could not load the month: " + (ex.message || ex)); }
-  const cols = ["date","name","email","hotel","checkIn","checkOut","status","lateMin","distanceM","override","overrideBy"], lines = [cols.join(",")];
+  const maxS = Math.max(1, ...hotels.map(h => hotelShifts(h).length));
+  const cols = ["date","name","email","hotel"].concat(...Array.from({ length: maxS }, (_, i) => [`shift${i + 1}`, `shift${i + 1}_in`, `shift${i + 1}_out`, `shift${i + 1}_status`, `shift${i + 1}_late_min`]), ["day_status","day_mark","mark_by"]), lines = [cols.join(",")];
   const cell = v => { let t = String(v ?? ""); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
-  for (let d = from; d <= to && d <= today; d = addDays(d, 1)) for (const x of attRows(d, recs.filter(r => r.date === d))) lines.push([d, x.p.fullName || x.p.email, x.p.email, x.hotel.name || hotelName(x.hotelId), x.r && x.r.checkInAt ? hhmm(x.r.checkInAt) : "", x.r && x.r.checkOutAt ? hhmm(x.r.checkOutAt) : "", ATT_LABEL[x.st.code], x.st.lateMin ?? "", x.r && x.r.distM != null ? x.r.distM : "", x.r && x.r.override ? x.r.override : "", x.r && x.r.overrideBy ? x.r.overrideBy : ""].map(cell).join(","));
-  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" })); a.download = `joyboy-attendance-${from.slice(0, 7)}.csv`; a.click(); URL.revokeObjectURL(a.href);
+  for (let d = from; d <= to && d <= today; d = addDays(d, 1)) for (const x of attRows(d, recs.filter(r => r.date === d))){
+    const sc = Array.from({ length: maxS }, (_, i) => { const y = (x.day.shifts || [])[i]; return y ? [y.shift.name, y.rec && y.rec.checkInAt ? hhmm(y.rec.checkInAt) : "", y.rec && y.rec.checkOutAt ? hhmm(y.rec.checkOutAt) : "", y.st.review ? "Late (undecided)" : ATT_LABEL[y.st.code], y.st.lateMin ?? ""] : ["", "", "", "", ""]; }).flat();
+    lines.push([d, x.p.fullName || x.p.email, x.p.email, x.hotel.name || hotelName(x.hotelId), ...sc, x.day.review ? "Late (undecided)" : ATT_LABEL[x.day.code] || x.day.code, x.dayRec && x.dayRec.override ? x.dayRec.override : "", x.dayRec && x.dayRec.override && x.dayRec.overrideBy ? x.dayRec.overrideBy : ""].map(cell).join(","));
+  }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" })); a.download = `joyboy-attendance-${from.slice(0, 7)}.csv`; a.click(); URL.revokeObjectURL(a.href);
 });
 
 $("btn-csv").addEventListener("click", () => {
