@@ -113,10 +113,16 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'hotelId', 'hotelName', 'date', 'checkInAt', 'lat', 'lng', 'accuracy', 'distM'])
         && approvedAt(request.auth.uid, request.resource.data.hotelId)
         && insideFence(request.resource.data));
-      allow update: if isAdmin() || (isOwner(resource.data.uid)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checkOutAt'])
-        && !('checkOutAt' in resource.data)
-        && request.resource.data.checkOutAt == request.time);
+      // Owner may (a) check out once, or (b) add their real check-in on a day the office already marked (manual mark / grid import) — once, inside the fence.
+      allow update: if isAdmin() || (isOwner(resource.data.uid) && (
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checkOutAt'])
+          && !('checkOutAt' in resource.data)
+          && request.resource.data.checkOutAt == request.time)
+        || (!('checkInAt' in resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checkInAt', 'lat', 'lng', 'accuracy', 'distM', 'email', 'name', 'hotelName'])
+          && request.resource.data.checkInAt == request.time
+          && approvedAt(request.auth.uid, request.resource.data.hotelId)
+          && insideFence(request.resource.data))));
       allow delete: if isAdmin();
     }
 

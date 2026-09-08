@@ -17,8 +17,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609080715">
-<script src="firebase-config.js?v=202609080715"></script>
+<link rel="stylesheet" href="portal.css?v=202609080728">
+<script src="firebase-config.js?v=202609080728"></script>
 </head>
 <body>
 <div class="topbar"><div class="topbar-inner">
@@ -175,7 +175,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, distanceM, fenceDistM, fenceTolM, fenceProblem, attStatus, ATT_LABEL, attLabel } from "./portal.js?v=202609080715";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, distanceM, fenceDistM, fenceTolM, fenceProblem, attStatus, ATT_LABEL, attLabel } from "./portal.js?v=202609080728";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -315,8 +315,8 @@ function paintAtt(){
   const reqLine = todayReq ? (todayReq.status === "open" ? `<p class="att-line req-note">Your request was sent to the office at ${hhmm(todayReq.createdAt)} — waiting for their decision.</p>` : `<p class="att-line req-note">The office decided: <b>${ATT_LABEL[todayReq.decision] || todayReq.decision}</b>.</p>`) : "";
   $("att-body").innerHTML = todayRec && todayRec.checkInAt
     ? `<span class="status att-${st.review ? "review" : st.code}">${attLabel(st)}</span><p class="att-line">Checked in at <b>${hhmm(todayRec.checkInAt)}</b>${late}${todayRec.checkOutAt ? ` · out at <b>${hhmm(todayRec.checkOutAt)}</b>` : ""}${st.review ? " · the office will confirm your day" : ""}</p>${reqLine}`
-    : `<span class="status att-${todayReq && todayReq.status === "open" ? "review" : st.code}">${todayReq && todayReq.status === "open" ? "Request sent · waiting" : st.code === "pending" ? "Not checked in" : ATT_LABEL[st.code]}</span><p class="att-line">Shift starts at <b>${esc(hotel.shiftStart || "09:00")}</b>. Check in from the hotel when you arrive.</p>${reqLine}`;
-  show("btn-in", !todayRec); show("btn-out", !!todayRec && !todayRec.checkOutAt);
+    : `<span class="status att-${todayReq && todayReq.status === "open" ? "review" : st.code}">${todayReq && todayReq.status === "open" ? "Request sent · waiting" : st.code === "pending" ? "Not checked in" : ATT_LABEL[st.code]}</span><p class="att-line">${todayRec && todayRec.override ? `The office marked your day as <b>${ATT_LABEL[todayRec.override] || todayRec.override}</b>. You can still check in to record your arrival time.` : `Shift starts at <b>${esc(hotel.shiftStart || "09:00")}</b>. Check in from the hotel when you arrive.`}</p>${reqLine}`;
+  show("btn-in", !todayRec || !todayRec.checkInAt); show("btn-out", !!todayRec && !todayRec.checkOutAt);
   show("reqbox", !todayRec && !todayReq && $("reqbox").dataset.open === "1");
   $("att-hint").textContent = `Check-in only works at ${hotel.name} (within ${hotel.radiusM || 300} m) and uses your phone's location once. Arriving after ${esc(hotel.shiftStart || "09:00")} plus ${hotel.graceMin ?? 10} minutes is marked late and the office decides the day. If check-in fails, send the office a note from here.`;
   const days = []; for (let i = 1; i <= 14; i++) days.push(addDays(today, -i));

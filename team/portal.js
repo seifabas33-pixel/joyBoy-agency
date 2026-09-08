@@ -55,7 +55,7 @@ async function firebaseBackend(){
     saveHotel: async (id, data) => { const ref = id ? F.doc(db, "hotels", id) : F.doc(F.collection(db, "hotels")); await F.setDoc(ref, { ...data, updatedAt: ts() }, { merge: true }); return ref.id; },
     deleteHotel: id => F.deleteDoc(F.doc(db, "hotels", id)),
     // attendance: one document per person and day, id = uid_YYYY-MM-DD; the server stamps the time
-    checkIn: async rec => { const id = `${rec.uid}_${rec.date}`; await F.setDoc(F.doc(db, "attendance", id), { ...rec, checkInAt: ts() }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); },
+    checkIn: async rec => { const id = `${rec.uid}_${rec.date}`; await F.setDoc(F.doc(db, "attendance", id), { ...rec, checkInAt: ts() }, { merge: true }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); }, // merge: keeps an office mark (override) that already exists for the day
     checkOut: async (uid, date) => { const id = `${uid}_${date}`; await F.updateDoc(F.doc(db, "attendance", id), { checkOutAt: ts() }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); },
     myAttendance: async (uid, from) => { const s = await F.getDocs(F.query(F.collection(db, "attendance"), F.where("uid", "==", uid))); return s.docs.map(att).filter(r => !from || r.date >= from).sort((a, b) => b.date.localeCompare(a.date)); },
     attendanceOn: async date => { const s = await F.getDocs(F.query(F.collection(db, "attendance"), F.where("date", "==", date))); return s.docs.map(att); },
@@ -114,7 +114,7 @@ function demoBackend(){
     getHotel: async id => { const h = (get("hotels") || {})[id]; return h ? { id, ...h } : null; },
     saveHotel: async (id, data) => { const hs = get("hotels") || {}; id = id || "h" + Date.now(); hs[id] = { ...(hs[id] || {}), ...data, updatedAt: now() }; set("hotels", hs); return id; },
     deleteHotel: async id => { const hs = get("hotels") || {}; delete hs[id]; set("hotels", hs); },
-    checkIn: async rec => { const a = get("att") || {}; const id = `${rec.uid}_${rec.date}`; if (a[id]) throw new Error("Already checked in today"); a[id] = { ...rec, checkInAt: now() }; set("att", a); return { id, ...a[id] }; },
+    checkIn: async rec => { const a = get("att") || {}; const id = `${rec.uid}_${rec.date}`; if (a[id] && a[id].checkInAt) throw new Error("Already checked in today"); a[id] = { ...(a[id] || {}), ...rec, checkInAt: now() }; set("att", a); return { id, ...a[id] }; },
     checkOut: async (uid, date) => { const a = get("att") || {}; const id = `${uid}_${date}`; if (!a[id]) throw new Error("No check-in today"); a[id].checkOutAt = now(); set("att", a); return { id, ...a[id] }; },
     myAttendance: async (uid, from) => Object.entries(get("att") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.uid === uid && (!from || r.date >= from)).sort((a, b) => b.date.localeCompare(a.date)),
     attendanceOn: async date => Object.entries(get("att") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date === date),
