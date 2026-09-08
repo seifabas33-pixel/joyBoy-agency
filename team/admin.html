@@ -15,9 +15,11 @@
 <link rel="icon" type="image/png" sizes="64x64" href="../media/img/favicon-64.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609081110">
-<script src="firebase-config.js?v=202609081110"></script>
+<link rel="stylesheet" href="portal.css?v=202609081131">
+<script src="firebase-config.js?v=202609081131"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 </head>
 <body>
@@ -123,7 +125,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS } from "./portal.js?v=202609081110";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS } from "./portal.js?v=202609081131";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -297,8 +299,10 @@ $("a-hotel").addEventListener("change", paintAtt);
 $("a-refresh").addEventListener("click", loadAtt);
 let attPlans = {};
 async function loadAtt(){
-  try { [attRecs, attReqs] = await Promise.all([be.attendanceOn(attDay), be.requestsOn(attDay).catch(() => [])]); } catch (ex) { attRecs = []; attReqs = []; toast("Could not load attendance: " + (ex.message || ex)); }
-  attPlans = {}; await Promise.all(hotels.map(async h => { try { attPlans[h.id] = await be.getPlan(h.id, attDay); } catch { attPlans[h.id] = null; } }));
+  $("a-head").innerHTML = `<tr><th>Loading ${attDay}…</th></tr>`; $("a-rows").innerHTML = "";
+  const plans = {};
+  try { [attRecs, attReqs] = await Promise.all([be.attendanceOn(attDay), be.requestsOn(attDay).catch(() => []), ...hotels.map(h => be.getPlan(h.id, attDay).then(p => { plans[h.id] = p; }).catch(() => { plans[h.id] = null; }))]); } catch (ex) { attRecs = []; attReqs = []; toast("Could not load attendance: " + (ex.message || ex)); }
+  attPlans = plans;
   paintAtt();
 }
 /* decide one shift (late check-in or a note from staff) */
@@ -342,8 +346,11 @@ function paintPlan(rowsHotels){
   });
 }
 function paintAtt(){
+  try { paintAttInner(); } catch (ex) { console.error(ex); $("a-head").innerHTML = `<tr><th>Could not draw the attendance view: ${esc(ex.message || String(ex))}</th></tr>`; toast("Attendance view error: " + (ex.message || ex)); }
+}
+function paintAttInner(){
   const hf = $("a-hotel").value; const rows = attRows(attDay, attRecs).filter(x => !hf || x.hotelId === hf).sort((a, b) => String(a.hotel.name || "").localeCompare(String(b.hotel.name || "")) || String(a.p.fullName || "").localeCompare(String(b.p.fullName || "")));
-  paintPlan(hotels.filter(h => h.active !== false && (!hf || h.id === hf)));
+  try { paintPlan(hotels.filter(h => h.active !== false && (!hf || h.id === hf))); } catch (ex) { console.error(ex); $("a-plan").innerHTML = `<p class="hint">Could not draw the plan card: ${esc(ex.message || String(ex))}</p>`; }
   const n = c => rows.filter(x => x.day.code === c).length;
   const openReqs = attReqs.filter(r => r.status === "open" && (!hf || r.hotelId === hf));
   const lateShifts = []; rows.forEach(x => (x.day.shifts || []).forEach(y => { if (y.st.review) lateShifts.push({ x, y }); }));
