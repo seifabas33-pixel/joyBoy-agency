@@ -274,6 +274,9 @@ export function dayStatus(dayRec, shiftRecs, shifts, hotel, date, today = dayKey
 }
 /* ── pay & sales (2026-09-08). Figures live only in Firestore behind admin rules; nothing here is ever public. ── */
 export const CURRENCY = "EGP";
+export const CURRENCIES = ["EGP", "USD", "EUR"];
+/** Net pay as text: one amount when salary and commission share a currency, otherwise both side by side. */
+export const netText = c => c.mixed ? `${money(c.baseNet, c.currency)} + ${money(c.commission, c.commissionCurrency)}` : money(c.net, c.currency);
 export const money = (n, cur = CURRENCY) => (n == null || isNaN(n) ? "—" : `${Math.round(+n).toLocaleString("en-EG")} ${cur}`);
 export const monthKey = (d = dayKey()) => String(d).slice(0, 7);
 export const daysInMonth = m => { const [y, mo] = String(m).split("-").map(Number); return new Date(Date.UTC(y, mo, 0)).getUTCDate(); };
@@ -293,14 +296,16 @@ export const PAY_DEDUCT = { absent: 1, "half-day": 0.5 };
  * One month's pay. pay = {payType:"month"|"day", salary}; days = {present, "half-day", absent, sick, vacation, excused, off, pending};
  * commission = sum over the month's sales; adjustments = [{type:"bonus"|"advance"|"deduction", amount, note}].
  */
-export function payrollCompute(pay, days, commission, adjustments, month){
+export function payrollCompute(pay, days, commission, adjustments, month, commissionCurrency = CURRENCY){
   const salary = +(pay && pay.salary) || 0, type = (pay && pay.payType) || "month", dim = daysInMonth(month), d = k => +(days && days[k]) || 0;
+  const currency = (pay && pay.currency) || CURRENCY, mixed = (+commission || 0) > 0 && currency !== commissionCurrency;
   const daily = type === "day" ? salary : salary / dim;
   const worked = d("present") + 0.5 * d("half-day");
   const deducted = type === "day" ? 0 : Math.round(daily * (d("absent") * PAY_DEDUCT.absent + d("half-day") * PAY_DEDUCT["half-day"]));
   const base = type === "day" ? Math.round(daily * worked) : Math.max(0, salary - deducted);
   const adj = (adjustments || []).reduce((s, a) => s + (a.type === "bonus" ? +a.amount || 0 : -(+a.amount || 0)), 0);
-  return { salary, payType: type, daily: Math.round(daily), worked, deducted, base, commission: Math.round(+commission || 0), adjustments: Math.round(adj), net: Math.round(base + (+commission || 0) + adj) };
+  const baseNet = Math.round(base + adj);                                        // salary part, in the salary's currency
+  return { salary, payType: type, currency, commissionCurrency, mixed, daily: Math.round(daily), worked, deducted, base, commission: Math.round(+commission || 0), adjustments: Math.round(adj), baseNet, net: mixed ? baseNet : Math.round(baseNet + (+commission || 0)) };
 }
 export const ADJ_LABEL = { bonus: "Bonus", advance: "Advance", deduction: "Deduction" };
 

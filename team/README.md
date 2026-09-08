@@ -161,7 +161,7 @@ also avoids the Instagram in-app browser and its blocked pop-ups.
 
 ### Pay & sales (2026-09-08)
 
-- **Salary**: Roster → open a person → *Salary* (monthly salary or daily rate, EGP) → `employees/{uid}/private/pay` (admin-only).
+- **Salary**: Roster → open a person → *Salary* (monthly salary or daily rate, in EGP, USD or EUR; commission stays in the sales currency and is shown next to the salary net when the currencies differ) → `employees/{uid}/private/pay` (admin-only).
 - **Items & commission**: Pay & sales → *Items & commission* → `settings/sales.items` `[{key,name,unit,price,commissionPct,commissionUnit}]` (readable by signed-in staff so their card can show commission). Defaults: Lottery, T-shirts, Disco tour, 10 %.
 - **Sales**: Pay & sales → *Sales*: day + hotel, person, item, quantity, amount collected (auto = qty × price, editable), note → `sales/{uid}_{date}_{item}` with the commission stored. One line per person, item and day; saving again replaces it. Month summary per person × item below the day list.
 - **Payroll**: Pay & sales → *Payroll*: month; per person the salary, days Present / half / absent (from attendance, `dayStatus` per day; sick/vacation/excused/off are paid), base (monthly: salary − absent × salary/days-in-month − half × ½; daily: rate × days worked), commission, adjustments (+ bonus / − advance / − deduction, with note), net. **Mark paid** writes `payroll/{uid}_{YYYY-MM}` with `status: "paid"` and frozen numbers; the person then sees the payslip on their card (rules: own + paid only). Reopen sets it back to draft. CSV export.
