@@ -18,8 +18,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609082247">
-<script src="firebase-config.js?v=202609082247"></script>
+<link rel="stylesheet" href="portal.css?v=202609082302">
+<script src="firebase-config.js?v=202609082302"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 </head>
 <body>
@@ -205,7 +205,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY } from "./portal.js?v=202609082247";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText } from "./portal.js?v=202609082302";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -256,7 +256,7 @@ async function openDrawer(p){
     ${(p.languages || []).length ? `<p class="eyebrow" style="margin-top:14px">Languages</p><div class="tags">${p.languages.map(s => `<i class="v">${esc(s)}</i>`).join("")}</div>` : ""}
     <p class="eyebrow" style="margin-top:18px">Identity document</p><div id="docwrap"><p class="hint">${p.idScanPath ? "Loading…" : "No document photo uploaded yet."}</p></div>
     <p class="eyebrow" style="margin-top:18px">Salary (only admins see this)</p>
-    <div class="grid" style="margin-top:8px"><label class="f"><span>Pay type</span><select class="in" id="pay-type"><option value="month">Monthly salary</option><option value="day">Daily rate</option></select></label><label class="f"><span>Amount (${CURRENCY})</span><input class="in" type="number" id="pay-salary" min="0" step="1" inputmode="numeric" placeholder="Loading…" disabled></label></div>
+    <div class="grid" style="margin-top:8px"><label class="f"><span>Pay type</span><select class="in" id="pay-type"><option value="month">Monthly salary</option><option value="day">Daily rate</option></select></label><label class="f"><span>Currency</span><select class="in" id="pay-cur">${CURRENCIES.map(c => `<option>${c}</option>`).join("")}</select></label><label class="f"><span>Amount</span><input class="in" type="number" id="pay-salary" min="0" step="1" inputmode="numeric" placeholder="Loading…" disabled></label></div>
     <div class="actions"><button class="btn small" id="save-pay" type="button">Save salary</button><span class="hint" id="pay-hint"></span></div>
     <p class="eyebrow" style="margin-top:18px">Office notes (only admins see this)</p>
     <textarea class="in" id="notes" style="margin-top:8px" placeholder="Loading…" disabled></textarea>
@@ -269,8 +269,8 @@ async function openDrawer(p){
   $("d-hotel").onchange = async () => { const id = $("d-hotel").value; try { await be.adminUpdate(p.uid, { hotelId: id || null, reviewedBy: user.email }); p.hotelId = id || null; toast(id ? "Assigned to " + hotelName(id) : "Assignment removed"); render(); } catch (ex) { toast("Could not assign: " + (ex.message || ex)); } };
   $("save-notes").onclick = async () => { try { await saveNotes(); toast("Notes saved"); } catch (ex) { toast("Could not save notes: " + (ex.message || ex)); } };
   $("del").onclick = async () => { if (prompt(`Type DELETE to permanently remove ${p.fullName || p.email} and their photos. This cannot be undone.`) !== "DELETE") return; try { await be.deleteEmployee(p.uid); all = all.filter(x => x.uid !== p.uid); closeDrawer(); render(); toast("Profile deleted"); } catch (ex) { toast("Could not delete: " + (ex.message || ex)); } };
-  $("save-pay").onclick = async () => { const salary = +$("pay-salary").value || 0; try { await be.setPay(p.uid, { payType: $("pay-type").value, salary, currency: CURRENCY }, user.email); toast("Salary saved"); $("pay-hint").textContent = `Saved: ${money(salary)} ${$("pay-type").value === "day" ? "per day" : "per month"}`; } catch (ex) { toast("Could not save the salary: " + (ex.message || ex)); } };
-  be.getPay(p.uid).then(pay => { if (cur !== p) return; $("pay-salary").disabled = false; $("pay-salary").placeholder = "0"; if (pay){ $("pay-type").value = pay.payType || "month"; $("pay-salary").value = pay.salary || ""; $("pay-hint").textContent = pay.updatedAt ? `Last set ${fmtDate(pay.updatedAt)}${pay.by ? " by " + pay.by : ""}` : ""; } else $("pay-hint").textContent = "No salary set yet."; }).catch(() => { if (cur === p) $("pay-hint").textContent = "Could not load the salary."; });
+  $("save-pay").onclick = async () => { const salary = +$("pay-salary").value || 0, currency = $("pay-cur").value; try { await be.setPay(p.uid, { payType: $("pay-type").value, salary, currency }, user.email); toast("Salary saved"); $("pay-hint").textContent = `Saved: ${money(salary, currency)} ${$("pay-type").value === "day" ? "per day" : "per month"}`; } catch (ex) { toast("Could not save the salary: " + (ex.message || ex)); } };
+  be.getPay(p.uid).then(pay => { if (cur !== p) return; $("pay-salary").disabled = false; $("pay-salary").placeholder = "0"; if (pay){ $("pay-type").value = pay.payType || "month"; $("pay-cur").value = CURRENCIES.includes(pay.currency) ? pay.currency : CURRENCY; $("pay-salary").value = pay.salary || ""; $("pay-hint").textContent = pay.updatedAt ? `Last set ${fmtDate(pay.updatedAt)}${pay.by ? " by " + pay.by : ""}` : ""; } else $("pay-hint").textContent = "No salary set yet."; }).catch(() => { if (cur === p) $("pay-hint").textContent = "Could not load the salary."; });
   try { savedNotes = await be.getNotes(p.uid); } catch { savedNotes = ""; }
   if (cur !== p) return;
   $("notes").value = savedNotes; $("notes").disabled = false; $("notes").placeholder = "Interview impressions, hotel assignment, contract dates…";
@@ -640,43 +640,44 @@ function payrollRows(){
   return all.filter(p => p.status === "approved" && p.hotelId && (!hf || p.hotelId === hf)).sort((a, b) => String(a.fullName).localeCompare(String(b.fullName))).map(p => {
     const hotel = hotels.find(h => h.id === p.hotelId) || {}, doc = prDocs.find(d => d.uid === p.uid) || null, paid = doc && doc.status === "paid";
     const pay = prPays[p.uid], days = paid ? doc.days : dayCounts(p.uid, hotel, prRecs), commission = paid ? doc.commission : prSales.filter(s => s.uid === p.uid).reduce((s, r) => s + (+r.commission || 0), 0), adjustments = (doc && doc.adjustments) || [];
-    const calc = paid ? { salary: doc.salary, payType: doc.payType, base: doc.base, commission: doc.commission, adjustments: doc.adjustmentsTotal, net: doc.net, deducted: doc.deducted, worked: doc.worked } : payrollCompute(pay, days, commission, adjustments, prMonth);
+    const calc = paid ? { salary: doc.salary, payType: doc.payType, currency: doc.currency || CURRENCY, commissionCurrency: doc.commissionCurrency || CURRENCY, mixed: !!doc.mixed, base: doc.base, commission: doc.commission, adjustments: doc.adjustmentsTotal, baseNet: doc.baseNet != null ? doc.baseNet : doc.net, net: doc.net, deducted: doc.deducted, worked: doc.worked } : payrollCompute(pay, days, commission, adjustments, prMonth, salesCfg.currency || CURRENCY);
     return { p, hotel, pay, doc, paid, days, adjustments, calc };
   });
 }
 function paintPayroll(){
-  const rows = payrollRows(), tot = rows.reduce((s, r) => s + r.calc.net, 0), paidN = rows.filter(r => r.paid).length, noSal = rows.filter(r => !r.pay || !r.pay.salary).length;
-  $("pr-stats").innerHTML = [["Staff", rows.length], ["Total net", money(tot)], ["Marked paid", `${paidN} / ${rows.length}`], ["No salary set", noSal]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+  const rows = payrollRows(), paidN = rows.filter(r => r.paid).length, noSal = rows.filter(r => !r.pay || !r.pay.salary).length;
+  const totals = {}; rows.forEach(r => { totals[r.calc.currency] = (totals[r.calc.currency] || 0) + r.calc.baseNet; if (r.calc.commission) totals[r.calc.commissionCurrency] = (totals[r.calc.commissionCurrency] || 0) + r.calc.commission; });
+  $("pr-stats").innerHTML = [["Staff", rows.length], ["Total net", Object.keys(totals).map(c => money(totals[c], c)).join(" + ") || "—"], ["Marked paid", `${paidN} / ${rows.length}`], ["No salary set", noSal]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
   $("pr-rows").innerHTML = rows.map(r => `<tr data-uid="${esc(r.p.uid)}">
     <td><div class="who"><img src="${esc(r.p.photoThumb || "../media/img/logo.jpg")}" alt=""><div><b>${esc(r.p.fullName || r.p.email)}</b><small>${esc(r.hotel.name || "")}</small></div></div></td>
-    <td>${r.pay && r.pay.salary ? `${money(r.calc.salary)}<br><small class="hint">${r.calc.payType === "day" ? "per day" : "per month"}</small>` : `<span style="color:#FFB3A3">not set</span>`}</td>
+    <td>${r.pay && r.pay.salary ? `${money(r.calc.salary, r.calc.currency)}<br><small class="hint">${r.calc.payType === "day" ? "per day" : "per month"}</small>` : `<span style="color:#FFB3A3">not set</span>`}</td>
     <td class="tm">${r.days.present} / ${r.days["half-day"]} / ${r.days.absent}${(r.days.sick + r.days.vacation + r.days.excused + r.days.off) ? `<br><small class="hint">+${r.days.sick + r.days.vacation + r.days.excused + r.days.off} paid leave</small>` : ""}</td>
-    <td>${money(r.calc.base)}${r.calc.deducted ? `<br><small class="hint">−${money(r.calc.deducted)} absences</small>` : ""}</td>
-    <td>${money(r.calc.commission)}</td>
-    <td>${r.adjustments.length ? r.adjustments.map((a, i) => `<div class="adj">${a.type === "bonus" ? "+" : "−"}${money(a.amount)} <small class="hint">${esc(ADJ_LABEL[a.type] || a.type)}${a.note ? " · " + esc(a.note) : ""}</small>${r.paid ? "" : ` <button class="lnk" type="button" data-adjrm="${esc(r.p.uid)}:${i}">×</button>`}</div>`).join("") : "—"}${r.paid ? "" : `<br><button class="btn ghost small" type="button" data-adj="${esc(r.p.uid)}">+ Bonus / advance</button>`}</td>
-    <td><b>${money(r.calc.net)}</b></td>
+    <td>${money(r.calc.base, r.calc.currency)}${r.calc.deducted ? `<br><small class="hint">−${money(r.calc.deducted, r.calc.currency)} absences</small>` : ""}</td>
+    <td>${money(r.calc.commission, r.calc.commissionCurrency)}</td>
+    <td>${r.adjustments.length ? r.adjustments.map((a, i) => `<div class="adj">${a.type === "bonus" ? "+" : "−"}${money(a.amount, r.calc.currency)} <small class="hint">${esc(ADJ_LABEL[a.type] || a.type)}${a.note ? " · " + esc(a.note) : ""}</small>${r.paid ? "" : ` <button class="lnk" type="button" data-adjrm="${esc(r.p.uid)}:${i}">×</button>`}</div>`).join("") : "—"}${r.paid ? "" : `<br><button class="btn ghost small" type="button" data-adj="${esc(r.p.uid)}">+ Bonus / advance</button>`}</td>
+    <td><b>${netText(r.calc)}</b></td>
     <td>${r.paid ? `<span class="status att-present">Paid</span><br><small class="hint">${fmtDate(r.doc.paidAt)}</small>` : `<span class="status att-pending">Draft</span>`}</td>
     <td><span class="rowacts">${r.paid ? `<button class="btn ghost small" type="button" data-unpay="${esc(r.p.uid)}">Reopen</button>` : `<button class="btn ok small" type="button" data-pay="${esc(r.p.uid)}" ${r.pay && r.pay.salary ? "" : "disabled title='Set the salary first'"}>Mark paid</button>`}</span></td></tr>`).join("");
   show("pr-empty", rows.length === 0);
   $("pr-rows").querySelectorAll("[data-adj]").forEach(b => b.onclick = async () => {
     const r = rows.find(x => x.p.uid === b.dataset.adj); const type = prompt("Type: bonus, advance or deduction", "bonus"); if (!type) return; const t = type.trim().toLowerCase(); if (!ADJ_LABEL[t]) return toast("Type bonus, advance or deduction");
-    const amount = +prompt(`${ADJ_LABEL[t]} amount in ${CURRENCY}`, ""); if (!amount || amount <= 0) return; const note = prompt("Note (optional)", "") || "";
+    const amount = +prompt(`${ADJ_LABEL[t]} amount in ${r.calc.currency}`, ""); if (!amount || amount <= 0) return; const note = prompt("Note (optional)", "") || "";
     await savePayrollDoc(r, { adjustments: [...r.adjustments, { type: t, amount, note, by: user.email, at: new Date().toISOString() }] });
   });
   $("pr-rows").querySelectorAll("[data-adjrm]").forEach(b => b.onclick = async () => { const [uid, i] = b.dataset.adjrm.split(":"); const r = rows.find(x => x.p.uid === uid); const adjustments = r.adjustments.slice(); adjustments.splice(+i, 1); await savePayrollDoc(r, { adjustments }); });
-  $("pr-rows").querySelectorAll("[data-pay]").forEach(b => b.onclick = async () => { const r = rows.find(x => x.p.uid === b.dataset.pay); if (!confirm(`Mark ${r.p.fullName} as paid for ${prMonth}: ${money(r.calc.net)}? The payslip becomes visible to them.`)) return; await savePayrollDoc(r, { status: "paid", paidAt: new Date().toISOString(), paidBy: user.email }); });
+  $("pr-rows").querySelectorAll("[data-pay]").forEach(b => b.onclick = async () => { const r = rows.find(x => x.p.uid === b.dataset.pay); if (!confirm(`Mark ${r.p.fullName} as paid for ${prMonth}: ${netText(r.calc)}? The payslip becomes visible to them.`)) return; await savePayrollDoc(r, { status: "paid", paidAt: new Date().toISOString(), paidBy: user.email }); });
   $("pr-rows").querySelectorAll("[data-unpay]").forEach(b => b.onclick = async () => { const r = rows.find(x => x.p.uid === b.dataset.unpay); if (!confirm(`Reopen ${r.p.fullName}'s ${prMonth} payslip? It disappears from their card until you mark it paid again.`)) return; await savePayrollDoc(r, { status: "draft", paidAt: null, paidBy: null }); });
 }
 async function savePayrollDoc(r, patch){
   const adjustments = patch.adjustments || r.adjustments, days = r.paid && patch.status !== "draft" ? r.days : dayCounts(r.p.uid, r.hotel, prRecs), commission = prSales.filter(s => s.uid === r.p.uid).reduce((s, x) => s + (+x.commission || 0), 0);
-  const calc = payrollCompute(r.pay, days, commission, adjustments, prMonth);
-  const doc = { uid: r.p.uid, name: r.p.fullName || r.p.email, email: r.p.email || "", hotelId: r.p.hotelId, hotelName: r.hotel.name || "", month: prMonth, currency: CURRENCY, salary: calc.salary, payType: calc.payType, days, worked: calc.worked, deducted: calc.deducted, base: calc.base, commission: calc.commission, adjustments, adjustmentsTotal: calc.adjustments, net: calc.net, status: r.doc && r.doc.status === "paid" ? "paid" : "draft", by: user.email, ...patch };
+  const calc = payrollCompute(r.pay, days, commission, adjustments, prMonth, salesCfg.currency || CURRENCY);
+  const doc = { uid: r.p.uid, name: r.p.fullName || r.p.email, email: r.p.email || "", hotelId: r.p.hotelId, hotelName: r.hotel.name || "", month: prMonth, currency: calc.currency, commissionCurrency: calc.commissionCurrency, mixed: calc.mixed, salary: calc.salary, payType: calc.payType, days, worked: calc.worked, deducted: calc.deducted, base: calc.base, commission: calc.commission, adjustments, adjustmentsTotal: calc.adjustments, baseNet: calc.baseNet, net: calc.net, status: r.doc && r.doc.status === "paid" ? "paid" : "draft", by: user.email, ...patch };
   try { await be.setPayroll(`${r.p.uid}_${prMonth}`, doc); toast(patch.status === "paid" ? "Marked paid — payslip published" : "Saved"); loadPayroll(); } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
 }
 $("pr-csv").addEventListener("click", () => {
-  const rows = payrollRows(), cols = ["month","name","email","hotel","payType","salary","present","halfDays","absent","paidLeave","base","deducted","commission","adjustments","net","status","paidAt"];
+  const rows = payrollRows(), cols = ["month","name","email","hotel","payType","currency","salary","present","halfDays","absent","paidLeave","base","deducted","adjustments","salaryNet","commissionCurrency","commission","status","paidAt"];
   const cell = v => { let t = String(v ?? ""); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
-  const lines = [cols.join(",")].concat(rows.map(r => [prMonth, r.p.fullName || r.p.email, r.p.email, r.hotel.name || "", r.calc.payType, r.calc.salary, r.days.present, r.days["half-day"], r.days.absent, r.days.sick + r.days.vacation + r.days.excused + r.days.off, r.calc.base, r.calc.deducted || 0, r.calc.commission, r.calc.adjustments, r.calc.net, r.paid ? "paid" : "draft", r.paid ? r.doc.paidAt : ""].map(cell).join(",")));
+  const lines = [cols.join(",")].concat(rows.map(r => [prMonth, r.p.fullName || r.p.email, r.p.email, r.hotel.name || "", r.calc.payType, r.calc.currency, r.calc.salary, r.days.present, r.days["half-day"], r.days.absent, r.days.sick + r.days.vacation + r.days.excused + r.days.off, r.calc.base, r.calc.deducted || 0, r.calc.adjustments, r.calc.baseNet, r.calc.commissionCurrency, r.calc.commission, r.paid ? "paid" : "draft", r.paid ? r.doc.paidAt : ""].map(cell).join(",")));
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" })); a.download = `joyboy-payroll-${prMonth}.csv`; a.click(); URL.revokeObjectURL(a.href);
 });
 
