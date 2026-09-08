@@ -18,8 +18,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609081218">
-<script src="firebase-config.js?v=202609081218"></script>
+<link rel="stylesheet" href="portal.css?v=202609082247">
+<script src="firebase-config.js?v=202609082247"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 </head>
 <body>
@@ -44,7 +44,59 @@
 
   <section id="s-admin" hidden>
     <div class="hero" style="padding-top:18px"><span class="eyebrow" id="view-eyebrow">Roster</span><h1 style="font-size:clamp(30px,5vw,48px)" id="view-title">Team <em>registrations</em></h1></div>
-    <div class="tabs" role="tablist"><button class="on" data-view="roster" role="tab">Roster</button><button data-view="att" role="tab">Attendance</button><button data-view="prog" role="tab">Programme</button><button data-view="hotels" role="tab">Hotels &amp; office</button></div>
+    <div class="tabs" role="tablist"><button class="on" data-view="roster" role="tab">Roster</button><button data-view="att" role="tab">Attendance</button><button data-view="prog" role="tab">Programme</button><button data-view="pay" role="tab">Pay &amp; sales</button><button data-view="hotels" role="tab">Hotels &amp; office</button></div>
+
+    <div id="v-pay" hidden>
+      <div class="paytabs"><button class="on" data-pv="sales" type="button">Sales</button><button data-pv="payroll" type="button">Payroll</button><button data-pv="items" type="button">Items &amp; commission</button></div>
+
+      <div id="pv-sales">
+        <div class="toolbar">
+          <input class="in" type="date" id="s-date"><button class="btn ghost small" id="s-prev" type="button" aria-label="Previous day">‹</button><button class="btn ghost small" id="s-next" type="button" aria-label="Next day">›</button><button class="btn ghost small" id="s-today" type="button">Today</button>
+          <select class="in" id="s-hotel"></select>
+        </div>
+        <div class="card">
+          <h2 style="font-size:20px;font-weight:800" id="s-formtitle">Record a sale</h2>
+          <div class="grid" style="margin-top:12px">
+            <label class="f"><span>Who sold it <b class="req">*</b></span><select class="in" id="s-who"></select></label>
+            <label class="f"><span>Item <b class="req">*</b></span><select class="in" id="s-item"></select></label>
+            <label class="f"><span>Quantity</span><input class="in" type="number" id="s-qty" min="0" step="1" inputmode="numeric" placeholder="0"></label>
+            <label class="f"><span>Amount collected (<span class="cur">EGP</span>) <b class="req">*</b></span><input class="in" type="number" id="s-amount" min="0" step="1" inputmode="numeric" placeholder="0"><span class="hint" id="s-comm"></span></label>
+            <label class="f full"><span>Note</span><input class="in" id="s-note" maxlength="140" placeholder="e.g. 12 tickets at the pool, cash handed to Moaz"></label>
+          </div>
+          <div class="actions"><button class="btn small" id="s-save" type="button">Save sale</button><span class="hint">One line per person, item and day — saving again replaces that line.</span></div>
+        </div>
+        <div class="tablewrap" style="margin-top:14px"><table>
+          <thead><tr><th>Person</th><th>Item</th><th>Qty</th><th>Amount</th><th>Commission</th><th>Note</th><th></th></tr></thead>
+          <tbody id="s-rows"></tbody>
+        </table><div class="empty" id="s-empty" hidden>No sales recorded for this day yet.</div></div>
+        <h3 class="sub" style="margin-top:18px">This month so far</h3>
+        <div class="tablewrap" style="margin-top:8px"><table><thead id="s-mhead"></thead><tbody id="s-mrows"></tbody></table></div>
+      </div>
+
+      <div id="pv-payroll" hidden>
+        <div class="toolbar">
+          <input class="in" type="month" id="pr-month"><select class="in" id="pr-hotel"><option value="">All hotels</option></select>
+          <span style="flex:1"></span>
+          <button class="btn ghost small" id="pr-refresh" type="button">Refresh</button>
+          <button class="btn small" id="pr-csv" type="button">Export CSV</button>
+        </div>
+        <div class="stats" id="pr-stats"></div>
+        <div class="tablewrap"><table>
+          <thead><tr><th>Person</th><th>Salary</th><th>Days P / ½ / A</th><th>Base</th><th>Commission</th><th>Adjustments</th><th>Net</th><th>Status</th><th></th></tr></thead>
+          <tbody id="pr-rows"></tbody>
+        </table><div class="empty" id="pr-empty" hidden>No approved staff with a hotel.</div></div>
+        <p class="hint" style="margin-top:10px">Base pay: monthly salary minus absent days (salary ÷ days in month) and half of that for half days; a daily rate is paid per day worked (half days count half). Sick, vacation, excused and off days are paid — add a deduction if not. Commission comes from the Sales tab. <b>Mark paid</b> freezes the numbers and publishes the payslip to the person; until then they see nothing. Set salaries in the roster: open a person → Salary.</p>
+      </div>
+
+      <div id="pv-items" hidden>
+        <div class="card">
+          <h2 style="font-size:20px;font-weight:800">Items &amp; commission</h2>
+          <p class="hint" style="margin-top:6px">What staff can sell. Default price fills the amount automatically (quantity × price, editable). Commission = % of the amount collected + a fixed sum per unit; both may be zero.</p>
+          <div class="itemgrid" id="i-rows" style="margin-top:12px"></div>
+          <div class="actions"><button class="btn ghost small" id="i-add" type="button">Add item</button><span style="flex:1"></span><button class="btn small" id="i-save" type="button">Save items</button></div>
+        </div>
+      </div>
+    </div>
 
     <div id="v-prog" hidden>
       <div class="toolbar">
@@ -153,7 +205,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText } from "./portal.js?v=202609081218";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY } from "./portal.js?v=202609082247";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -203,6 +255,9 @@ async function openDrawer(p){
     ${(p.skills || []).length ? `<p class="eyebrow" style="margin-top:18px">Skills</p><div class="tags">${p.skills.map(s => `<i>${esc(s)}</i>`).join("")}</div>` : ""}
     ${(p.languages || []).length ? `<p class="eyebrow" style="margin-top:14px">Languages</p><div class="tags">${p.languages.map(s => `<i class="v">${esc(s)}</i>`).join("")}</div>` : ""}
     <p class="eyebrow" style="margin-top:18px">Identity document</p><div id="docwrap"><p class="hint">${p.idScanPath ? "Loading…" : "No document photo uploaded yet."}</p></div>
+    <p class="eyebrow" style="margin-top:18px">Salary (only admins see this)</p>
+    <div class="grid" style="margin-top:8px"><label class="f"><span>Pay type</span><select class="in" id="pay-type"><option value="month">Monthly salary</option><option value="day">Daily rate</option></select></label><label class="f"><span>Amount (${CURRENCY})</span><input class="in" type="number" id="pay-salary" min="0" step="1" inputmode="numeric" placeholder="Loading…" disabled></label></div>
+    <div class="actions"><button class="btn small" id="save-pay" type="button">Save salary</button><span class="hint" id="pay-hint"></span></div>
     <p class="eyebrow" style="margin-top:18px">Office notes (only admins see this)</p>
     <textarea class="in" id="notes" style="margin-top:8px" placeholder="Loading…" disabled></textarea>
     <div class="actions"><button class="btn small" id="save-notes">Save notes</button><span style="flex:1"></span><button class="btn ghost small" id="del" style="border-color:rgba(255,77,46,.6);color:#FFB3A3">Delete profile…</button></div>`;
@@ -214,6 +269,8 @@ async function openDrawer(p){
   $("d-hotel").onchange = async () => { const id = $("d-hotel").value; try { await be.adminUpdate(p.uid, { hotelId: id || null, reviewedBy: user.email }); p.hotelId = id || null; toast(id ? "Assigned to " + hotelName(id) : "Assignment removed"); render(); } catch (ex) { toast("Could not assign: " + (ex.message || ex)); } };
   $("save-notes").onclick = async () => { try { await saveNotes(); toast("Notes saved"); } catch (ex) { toast("Could not save notes: " + (ex.message || ex)); } };
   $("del").onclick = async () => { if (prompt(`Type DELETE to permanently remove ${p.fullName || p.email} and their photos. This cannot be undone.`) !== "DELETE") return; try { await be.deleteEmployee(p.uid); all = all.filter(x => x.uid !== p.uid); closeDrawer(); render(); toast("Profile deleted"); } catch (ex) { toast("Could not delete: " + (ex.message || ex)); } };
+  $("save-pay").onclick = async () => { const salary = +$("pay-salary").value || 0; try { await be.setPay(p.uid, { payType: $("pay-type").value, salary, currency: CURRENCY }, user.email); toast("Salary saved"); $("pay-hint").textContent = `Saved: ${money(salary)} ${$("pay-type").value === "day" ? "per day" : "per month"}`; } catch (ex) { toast("Could not save the salary: " + (ex.message || ex)); } };
+  be.getPay(p.uid).then(pay => { if (cur !== p) return; $("pay-salary").disabled = false; $("pay-salary").placeholder = "0"; if (pay){ $("pay-type").value = pay.payType || "month"; $("pay-salary").value = pay.salary || ""; $("pay-hint").textContent = pay.updatedAt ? `Last set ${fmtDate(pay.updatedAt)}${pay.by ? " by " + pay.by : ""}` : ""; } else $("pay-hint").textContent = "No salary set yet."; }).catch(() => { if (cur === p) $("pay-hint").textContent = "Could not load the salary."; });
   try { savedNotes = await be.getNotes(p.uid); } catch { savedNotes = ""; }
   if (cur !== p) return;
   $("notes").value = savedNotes; $("notes").disabled = false; $("notes").placeholder = "Interview impressions, hotel assignment, contract dates…";
@@ -225,8 +282,8 @@ $("drawer-bg").addEventListener("click", closeDrawer);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
 
 /* ── views ── */
-const VIEWS = { roster: ["Roster", "Team <em>registrations</em>"], att: ["Attendance", "Who is <em>on the floor</em>"], prog: ["Programme", "What <em>happens</em> today"], hotels: ["Hotels & office", "Where the <em>teams</em> work"] };
-function setView(v){ document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === v)); ["roster","att","prog","hotels"].forEach(k => show("v-" + k, k === v)); $("view-eyebrow").textContent = VIEWS[v][0]; $("view-title").innerHTML = VIEWS[v][1]; if (v === "att") loadAtt(); if (v === "prog") loadProg(); if (v === "hotels"){ paintHotels(); paintAdmins(); } location.hash = v; }
+const VIEWS = { roster: ["Roster", "Team <em>registrations</em>"], att: ["Attendance", "Who is <em>on the floor</em>"], prog: ["Programme", "What <em>happens</em> today"], pay: ["Pay & sales", "Salaries, <em>sales</em> and payslips"], hotels: ["Hotels & office", "Where the <em>teams</em> work"] };
+function setView(v){ document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === v)); ["roster","att","prog","pay","hotels"].forEach(k => show("v-" + k, k === v)); $("view-eyebrow").textContent = VIEWS[v][0]; $("view-title").innerHTML = VIEWS[v][1]; if (v === "att") loadAtt(); if (v === "prog") loadProg(); if (v === "pay") loadPay(); if (v === "hotels"){ paintHotels(); paintAdmins(); } location.hash = v; }
 document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
 
 /* ── hotels ── */
@@ -494,6 +551,133 @@ $("p-share").addEventListener("click", async () => {
   const h = progHotel(); if (!h) return; const text = programmeText(h, progDay, progPlan && progPlan.tasks);
   try { if (navigator.share) { await navigator.share({ text }); return; } } catch (ex) { if (ex && ex.name === "AbortError") return; }
   window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank", "noopener");
+});
+
+/* ── pay & sales ── */
+let salesDay = dayKey(), salesCfg = {}, daySales = [], monthSales = [], prMonth = monthKey(), prPays = {}, prRecs = [], prSales = [], prDocs = [], editItems = null;
+$("s-date").value = salesDay; $("pr-month").value = prMonth;
+document.querySelectorAll(".paytabs button").forEach(b => b.addEventListener("click", () => { document.querySelectorAll(".paytabs button").forEach(x => x.classList.toggle("on", x === b)); ["sales","payroll","items"].forEach(k => show("pv-" + k, k === b.dataset.pv)); if (b.dataset.pv === "payroll") loadPayroll(); if (b.dataset.pv === "items") paintItems(); }));
+const items = () => salesItems(salesCfg), itemOf = k => items().find(i => i.key === k) || null;
+async function loadPay(){
+  try { salesCfg = await be.getSalesSettings(); } catch { salesCfg = {}; }
+  const act = hotels.filter(h => h.active !== false), keep = $("s-hotel").value;
+  $("s-hotel").innerHTML = act.map(h => `<option value="${esc(h.id)}">${esc(h.name)}</option>`).join("") || `<option value="">No active hotel</option>`; if (act.some(h => h.id === keep)) $("s-hotel").value = keep;
+  $("pr-hotel").innerHTML = `<option value="">All hotels</option>` + hotels.map(h => `<option value="${esc(h.id)}">${esc(h.name)}</option>`).join("");
+  await loadSales();
+  if (!$("pv-payroll").hidden) loadPayroll(); if (!$("pv-items").hidden) paintItems();
+}
+const setSalesDay = d => { salesDay = d; $("s-date").value = d; loadSales(); };
+$("s-date").addEventListener("change", () => { if ($("s-date").value) setSalesDay($("s-date").value); });
+$("s-prev").addEventListener("click", () => setSalesDay(addDays(salesDay, -1)));
+$("s-next").addEventListener("click", () => setSalesDay(addDays(salesDay, 1)));
+$("s-today").addEventListener("click", () => setSalesDay(dayKey()));
+$("s-hotel").addEventListener("change", paintSales);
+async function loadSales(){
+  const [from, to] = monthRange(monthKey(salesDay));
+  try { [daySales, monthSales] = await Promise.all([be.salesOn(salesDay), be.salesRange(from, to)]); } catch (ex) { daySales = []; monthSales = []; toast("Could not load sales: " + (ex.message || ex)); }
+  paintSales();
+}
+function paintSales(){
+  const hid = $("s-hotel").value, staff = all.filter(p => p.status === "approved" && p.hotelId === hid).sort((a, b) => String(a.fullName).localeCompare(String(b.fullName)));
+  const who = $("s-who").value; $("s-who").innerHTML = staff.map(p => `<option value="${esc(p.uid)}">${esc(p.fullName || p.email)}</option>`).join("") || `<option value="">No approved staff at this hotel</option>`; if (staff.some(p => p.uid === who)) $("s-who").value = who;
+  const it = $("s-item").value; $("s-item").innerHTML = items().map(i => `<option value="${esc(i.key)}">${esc(i.name)}${i.price ? ` · ${money(i.price)}/${esc(i.unit || "unit")}` : ""}</option>`).join(""); if (items().some(i => i.key === it)) $("s-item").value = it;
+  document.querySelectorAll(".cur").forEach(e => e.textContent = salesCfg.currency || CURRENCY);
+  const rows = daySales.filter(r => !hid || r.hotelId === hid).sort((a, b) => String(a.name).localeCompare(String(b.name)) || String(a.item).localeCompare(String(b.item)));
+  $("s-rows").innerHTML = rows.map(r => `<tr><td><b>${esc(r.name || r.email)}</b></td><td>${esc(r.itemName || r.item)}</td><td>${r.qty ?? "—"}</td><td>${money(r.amount)}</td><td>${money(r.commission)}</td><td><small class="hint">${esc(r.note || "")}</small></td><td><span class="rowacts"><button class="btn ghost small" type="button" data-sedit="${esc(r.id)}">Edit</button><button class="btn ghost small" type="button" data-sdel="${esc(r.id)}" style="border-color:rgba(255,77,46,.6);color:#FFB3A3">Delete</button></span></td></tr>`).join("");
+  show("s-empty", rows.length === 0);
+  $("s-rows").querySelectorAll("[data-sedit]").forEach(b => b.onclick = () => { const r = daySales.find(x => x.id === b.dataset.sedit); if (!r) return; $("s-who").value = r.uid; $("s-item").value = r.item; $("s-qty").value = r.qty ?? ""; $("s-amount").value = r.amount ?? ""; $("s-note").value = r.note || ""; previewComm(); $("s-formtitle").textContent = `Edit: ${r.name} · ${r.itemName}`; $("s-who").scrollIntoView({ behavior: "smooth", block: "center" }); });
+  $("s-rows").querySelectorAll("[data-sdel]").forEach(b => b.onclick = async () => { const r = daySales.find(x => x.id === b.dataset.sdel); if (!r || !confirm(`Delete ${r.name}'s ${r.itemName} line for ${salesDay}?`)) return; try { await be.deleteSale(r.id); toast("Deleted"); loadSales(); } catch (ex) { toast("Could not delete: " + (ex.message || ex)); } });
+  // month summary per person × item
+  const ms = monthSales.filter(r => !hid || r.hotelId === hid), people = [...new Set(ms.map(r => r.uid))].map(u => ({ uid: u, name: (ms.find(r => r.uid === u) || {}).name || u })).sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  $("s-mhead").innerHTML = `<tr><th>Person</th>${items().map(i => `<th>${esc(i.name)}</th>`).join("")}<th>Total</th><th>Commission</th></tr>`;
+  $("s-mrows").innerHTML = people.map(pp => { const mine = ms.filter(r => r.uid === pp.uid), tot = mine.reduce((s, r) => s + (+r.amount || 0), 0), com = mine.reduce((s, r) => s + (+r.commission || 0), 0);
+    return `<tr><td><b>${esc(pp.name)}</b></td>${items().map(i => { const x = mine.filter(r => r.item === i.key), q = x.reduce((s, r) => s + (+r.qty || 0), 0), a = x.reduce((s, r) => s + (+r.amount || 0), 0); return `<td>${x.length ? `${q ? q + " · " : ""}${money(a)}` : "—"}</td>`; }).join("")}<td><b>${money(tot)}</b></td><td>${money(com)}</td></tr>`; }).join("") || `<tr><td colspan="${items().length + 3}" class="hint">No sales this month yet.</td></tr>`;
+}
+function previewComm(){ const i = itemOf($("s-item").value), q = +$("s-qty").value || 0, a = +$("s-amount").value || 0; $("s-comm").textContent = i ? `Commission: ${money(commissionOf(i, q, a))}${i.commissionPct ? ` (${i.commissionPct}%${i.commissionUnit ? ` + ${money(i.commissionUnit)}/unit` : ""})` : i.commissionUnit ? ` (${money(i.commissionUnit)}/unit)` : ""}` : ""; }
+$("s-qty").addEventListener("input", () => { const i = itemOf($("s-item").value); if (i && i.price && !$("s-amount").dataset.touched) $("s-amount").value = Math.round((+$("s-qty").value || 0) * i.price); previewComm(); });
+$("s-amount").addEventListener("input", () => { $("s-amount").dataset.touched = "1"; previewComm(); });
+$("s-item").addEventListener("change", () => { delete $("s-amount").dataset.touched; const i = itemOf($("s-item").value); if (i && i.price) $("s-amount").value = Math.round((+$("s-qty").value || 0) * i.price); previewComm(); });
+$("s-save").addEventListener("click", async () => {
+  const uid = $("s-who").value, i = itemOf($("s-item").value), p = all.find(x => x.uid === uid); if (!uid || !p) return toast("Choose who sold it"); if (!i) return toast("Choose the item");
+  const qty = +$("s-qty").value || 0, amount = +$("s-amount").value || 0; if (!amount && !qty) return toast("Enter the amount collected");
+  const id = `${uid}_${salesDay}_${i.key}`;
+  try { await be.setSale(id, { uid, name: p.fullName || p.email, email: p.email || "", hotelId: p.hotelId || $("s-hotel").value, date: salesDay, item: i.key, itemName: i.name, qty, amount, currency: salesCfg.currency || CURRENCY, commission: commissionOf(i, qty, amount), note: $("s-note").value.trim(), by: user.email }); toast(`Saved: ${p.fullName} · ${i.name} · ${money(amount)}`); ["s-qty","s-amount","s-note"].forEach(k => $(k).value = ""); delete $("s-amount").dataset.touched; $("s-comm").textContent = ""; $("s-formtitle").textContent = "Record a sale"; loadSales(); }
+  catch (ex) { toast("Could not save: " + (ex.message || ex)); }
+});
+/* items editor */
+function paintItems(){
+  if (!editItems) editItems = JSON.parse(JSON.stringify(items()));
+  $("i-rows").innerHTML = `<span class="hd">Item</span><span class="hd">Unit</span><span class="hd">Price</span><span class="hd">Comm. %</span><span class="hd">Comm./unit</span><span></span>` + editItems.map((i, n) => `<input class="in" data-i="${n}" data-f="name" value="${esc(i.name)}" placeholder="Name"><input class="in" data-i="${n}" data-f="unit" value="${esc(i.unit || "")}" placeholder="unit"><input class="in" type="number" min="0" data-i="${n}" data-f="price" value="${i.price || ""}" placeholder="0"><input class="in" type="number" min="0" max="100" step="0.5" data-i="${n}" data-f="commissionPct" value="${i.commissionPct || ""}" placeholder="0"><input class="in" type="number" min="0" data-i="${n}" data-f="commissionUnit" value="${i.commissionUnit || ""}" placeholder="0"><button class="btn ghost small" type="button" data-irm="${n}" title="Remove">×</button>`).join("");
+  $("i-rows").querySelectorAll("input").forEach(el => el.oninput = () => { const it = editItems[+el.dataset.i]; it[el.dataset.f] = el.type === "number" ? (+el.value || 0) : el.value; });
+  $("i-rows").querySelectorAll("[data-irm]").forEach(b => b.onclick = () => { editItems.splice(+b.dataset.irm, 1); paintItems(); });
+}
+$("i-add").addEventListener("click", () => { editItems.push({ key: "", name: "", unit: "", price: 0, commissionPct: 0, commissionUnit: 0 }); paintItems(); });
+$("i-save").addEventListener("click", async () => {
+  const clean = editItems.filter(i => (i.name || "").trim()).map(i => ({ ...i, name: i.name.trim(), key: i.key || slug(i.name) || "item" + Date.now() }));
+  if (!clean.length) return toast("Keep at least one item"); if (new Set(clean.map(i => i.key)).size !== clean.length) return toast("Two items have the same name");
+  try { await be.setSalesSettings({ items: clean, currency: CURRENCY }); salesCfg = { ...salesCfg, items: clean }; editItems = null; toast("Items saved"); paintItems(); paintSales(); } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
+});
+/* payroll */
+$("pr-month").addEventListener("change", () => { if ($("pr-month").value){ prMonth = $("pr-month").value; loadPayroll(); } });
+$("pr-hotel").addEventListener("change", paintPayroll);
+$("pr-refresh").addEventListener("click", loadPayroll);
+function dayCounts(uid, hotel, recs){
+  const [from, to] = monthRange(prMonth), today = dayKey(), shifts = hotelShifts(hotel), c = { present: 0, "half-day": 0, absent: 0, sick: 0, vacation: 0, excused: 0, off: 0, pending: 0 };
+  const p = all.find(x => x.uid === uid) || {}, start = String(p.createdAt || "").slice(0, 10);
+  for (let d = from; d <= to && d <= today; d = addDays(d, 1)){ const dr = recs.find(r => r.uid === uid && r.date === d && !r.shift) || null, sr = recs.filter(r => r.uid === uid && r.date === d && r.shift); if (start && d < start && !dr && !sr.length) continue; /* before registration and no imported record: not a working day */ const st = dayStatus(dr, sr, shifts, hotel, d, today); c[st.code] = (c[st.code] || 0) + 1; }
+  return c;
+}
+async function loadPayroll(){
+  const [from, to] = monthRange(prMonth), staff = all.filter(p => p.status === "approved" && p.hotelId);
+  $("pr-rows").innerHTML = `<tr><td colspan="9" class="hint">Loading ${prMonth}…</td></tr>`;
+  try {
+    const pays = {}; [prRecs, prSales, prDocs] = await Promise.all([be.attendanceRange(from, to), be.salesRange(from, to), be.payrollMonth(prMonth), ...staff.map(p => be.getPay(p.uid).then(x => { pays[p.uid] = x; }).catch(() => { pays[p.uid] = null; }))]); prPays = pays;
+  } catch (ex) { prRecs = []; prSales = []; prDocs = []; toast("Could not load payroll data: " + (ex.message || ex)); }
+  paintPayroll();
+}
+function payrollRows(){
+  const hf = $("pr-hotel").value;
+  return all.filter(p => p.status === "approved" && p.hotelId && (!hf || p.hotelId === hf)).sort((a, b) => String(a.fullName).localeCompare(String(b.fullName))).map(p => {
+    const hotel = hotels.find(h => h.id === p.hotelId) || {}, doc = prDocs.find(d => d.uid === p.uid) || null, paid = doc && doc.status === "paid";
+    const pay = prPays[p.uid], days = paid ? doc.days : dayCounts(p.uid, hotel, prRecs), commission = paid ? doc.commission : prSales.filter(s => s.uid === p.uid).reduce((s, r) => s + (+r.commission || 0), 0), adjustments = (doc && doc.adjustments) || [];
+    const calc = paid ? { salary: doc.salary, payType: doc.payType, base: doc.base, commission: doc.commission, adjustments: doc.adjustmentsTotal, net: doc.net, deducted: doc.deducted, worked: doc.worked } : payrollCompute(pay, days, commission, adjustments, prMonth);
+    return { p, hotel, pay, doc, paid, days, adjustments, calc };
+  });
+}
+function paintPayroll(){
+  const rows = payrollRows(), tot = rows.reduce((s, r) => s + r.calc.net, 0), paidN = rows.filter(r => r.paid).length, noSal = rows.filter(r => !r.pay || !r.pay.salary).length;
+  $("pr-stats").innerHTML = [["Staff", rows.length], ["Total net", money(tot)], ["Marked paid", `${paidN} / ${rows.length}`], ["No salary set", noSal]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+  $("pr-rows").innerHTML = rows.map(r => `<tr data-uid="${esc(r.p.uid)}">
+    <td><div class="who"><img src="${esc(r.p.photoThumb || "../media/img/logo.jpg")}" alt=""><div><b>${esc(r.p.fullName || r.p.email)}</b><small>${esc(r.hotel.name || "")}</small></div></div></td>
+    <td>${r.pay && r.pay.salary ? `${money(r.calc.salary)}<br><small class="hint">${r.calc.payType === "day" ? "per day" : "per month"}</small>` : `<span style="color:#FFB3A3">not set</span>`}</td>
+    <td class="tm">${r.days.present} / ${r.days["half-day"]} / ${r.days.absent}${(r.days.sick + r.days.vacation + r.days.excused + r.days.off) ? `<br><small class="hint">+${r.days.sick + r.days.vacation + r.days.excused + r.days.off} paid leave</small>` : ""}</td>
+    <td>${money(r.calc.base)}${r.calc.deducted ? `<br><small class="hint">−${money(r.calc.deducted)} absences</small>` : ""}</td>
+    <td>${money(r.calc.commission)}</td>
+    <td>${r.adjustments.length ? r.adjustments.map((a, i) => `<div class="adj">${a.type === "bonus" ? "+" : "−"}${money(a.amount)} <small class="hint">${esc(ADJ_LABEL[a.type] || a.type)}${a.note ? " · " + esc(a.note) : ""}</small>${r.paid ? "" : ` <button class="lnk" type="button" data-adjrm="${esc(r.p.uid)}:${i}">×</button>`}</div>`).join("") : "—"}${r.paid ? "" : `<br><button class="btn ghost small" type="button" data-adj="${esc(r.p.uid)}">+ Bonus / advance</button>`}</td>
+    <td><b>${money(r.calc.net)}</b></td>
+    <td>${r.paid ? `<span class="status att-present">Paid</span><br><small class="hint">${fmtDate(r.doc.paidAt)}</small>` : `<span class="status att-pending">Draft</span>`}</td>
+    <td><span class="rowacts">${r.paid ? `<button class="btn ghost small" type="button" data-unpay="${esc(r.p.uid)}">Reopen</button>` : `<button class="btn ok small" type="button" data-pay="${esc(r.p.uid)}" ${r.pay && r.pay.salary ? "" : "disabled title='Set the salary first'"}>Mark paid</button>`}</span></td></tr>`).join("");
+  show("pr-empty", rows.length === 0);
+  $("pr-rows").querySelectorAll("[data-adj]").forEach(b => b.onclick = async () => {
+    const r = rows.find(x => x.p.uid === b.dataset.adj); const type = prompt("Type: bonus, advance or deduction", "bonus"); if (!type) return; const t = type.trim().toLowerCase(); if (!ADJ_LABEL[t]) return toast("Type bonus, advance or deduction");
+    const amount = +prompt(`${ADJ_LABEL[t]} amount in ${CURRENCY}`, ""); if (!amount || amount <= 0) return; const note = prompt("Note (optional)", "") || "";
+    await savePayrollDoc(r, { adjustments: [...r.adjustments, { type: t, amount, note, by: user.email, at: new Date().toISOString() }] });
+  });
+  $("pr-rows").querySelectorAll("[data-adjrm]").forEach(b => b.onclick = async () => { const [uid, i] = b.dataset.adjrm.split(":"); const r = rows.find(x => x.p.uid === uid); const adjustments = r.adjustments.slice(); adjustments.splice(+i, 1); await savePayrollDoc(r, { adjustments }); });
+  $("pr-rows").querySelectorAll("[data-pay]").forEach(b => b.onclick = async () => { const r = rows.find(x => x.p.uid === b.dataset.pay); if (!confirm(`Mark ${r.p.fullName} as paid for ${prMonth}: ${money(r.calc.net)}? The payslip becomes visible to them.`)) return; await savePayrollDoc(r, { status: "paid", paidAt: new Date().toISOString(), paidBy: user.email }); });
+  $("pr-rows").querySelectorAll("[data-unpay]").forEach(b => b.onclick = async () => { const r = rows.find(x => x.p.uid === b.dataset.unpay); if (!confirm(`Reopen ${r.p.fullName}'s ${prMonth} payslip? It disappears from their card until you mark it paid again.`)) return; await savePayrollDoc(r, { status: "draft", paidAt: null, paidBy: null }); });
+}
+async function savePayrollDoc(r, patch){
+  const adjustments = patch.adjustments || r.adjustments, days = r.paid && patch.status !== "draft" ? r.days : dayCounts(r.p.uid, r.hotel, prRecs), commission = prSales.filter(s => s.uid === r.p.uid).reduce((s, x) => s + (+x.commission || 0), 0);
+  const calc = payrollCompute(r.pay, days, commission, adjustments, prMonth);
+  const doc = { uid: r.p.uid, name: r.p.fullName || r.p.email, email: r.p.email || "", hotelId: r.p.hotelId, hotelName: r.hotel.name || "", month: prMonth, currency: CURRENCY, salary: calc.salary, payType: calc.payType, days, worked: calc.worked, deducted: calc.deducted, base: calc.base, commission: calc.commission, adjustments, adjustmentsTotal: calc.adjustments, net: calc.net, status: r.doc && r.doc.status === "paid" ? "paid" : "draft", by: user.email, ...patch };
+  try { await be.setPayroll(`${r.p.uid}_${prMonth}`, doc); toast(patch.status === "paid" ? "Marked paid — payslip published" : "Saved"); loadPayroll(); } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
+}
+$("pr-csv").addEventListener("click", () => {
+  const rows = payrollRows(), cols = ["month","name","email","hotel","payType","salary","present","halfDays","absent","paidLeave","base","deducted","commission","adjustments","net","status","paidAt"];
+  const cell = v => { let t = String(v ?? ""); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
+  const lines = [cols.join(",")].concat(rows.map(r => [prMonth, r.p.fullName || r.p.email, r.p.email, r.hotel.name || "", r.calc.payType, r.calc.salary, r.days.present, r.days["half-day"], r.days.absent, r.days.sick + r.days.vacation + r.days.excused + r.days.off, r.calc.base, r.calc.deducted || 0, r.calc.commission, r.calc.adjustments, r.calc.net, r.paid ? "paid" : "draft", r.paid ? r.doc.paidAt : ""].map(cell).join(",")));
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" })); a.download = `joyboy-payroll-${prMonth}.csv`; a.click(); URL.revokeObjectURL(a.href);
 });
 
 $("btn-csv").addEventListener("click", () => {

@@ -51,6 +51,20 @@ async function firebaseBackend(){
     deleteEmployee: async uid => { for (const f of ["avatar.jpg", "id.jpg"]) { try { await F.deleteDoc(F.doc(db, "employees", uid, "files", f)); } catch {} } try { await F.deleteDoc(F.doc(db, "employees", uid, "private", "notes")); } catch {} await F.deleteDoc(F.doc(db, "employees", uid)); },
     getSettings: async () => { const s = await F.getDoc(F.doc(db, "settings", "registration")); return s.exists() ? s.data() : {}; },
     setSettings: patch => F.setDoc(F.doc(db, "settings", "registration"), patch, { merge: true }),
+    // pay: salary per person (admin-only, employees/{uid}/private/pay), sales items (settings/sales, readable by staff), sales and payroll records
+    getPay: async uid => { const s = await F.getDoc(F.doc(db, "employees", uid, "private", "pay")); return s.exists() ? plain(s) : null; },
+    setPay: (uid, data, by) => F.setDoc(F.doc(db, "employees", uid, "private", "pay"), { ...data, by, updatedAt: ts() }, { merge: true }),
+    getSalesSettings: async () => { const s = await F.getDoc(F.doc(db, "settings", "sales")); return s.exists() ? s.data() : {}; },
+    setSalesSettings: patch => F.setDoc(F.doc(db, "settings", "sales"), patch, { merge: true }),
+    salesOn: async date => { const s = await F.getDocs(F.query(F.collection(db, "sales"), F.where("date", "==", date))); return s.docs.map(att); },
+    salesRange: async (from, to) => { const s = await F.getDocs(F.query(F.collection(db, "sales"), F.where("date", ">=", from), F.where("date", "<=", to))); return s.docs.map(att); },
+    mySales: async (uid, from) => { const s = await F.getDocs(F.query(F.collection(db, "sales"), F.where("uid", "==", uid))); return s.docs.map(att).filter(r => !from || r.date >= from); },
+    setSale: (id, data) => F.setDoc(F.doc(db, "sales", id), { ...data, at: ts() }, { merge: true }),
+    deleteSale: id => F.deleteDoc(F.doc(db, "sales", id)),
+    payrollMonth: async month => { const s = await F.getDocs(F.query(F.collection(db, "payroll"), F.where("month", "==", month))); return s.docs.map(att); },
+    myPayroll: async uid => { const s = await F.getDocs(F.query(F.collection(db, "payroll"), F.where("uid", "==", uid), F.where("status", "==", "paid"))); return s.docs.map(att).sort((a, b) => b.month.localeCompare(a.month)); },
+    setPayroll: (id, data) => F.setDoc(F.doc(db, "payroll", id), { ...data, updatedAt: ts() }, { merge: true }),
+    deletePayroll: id => F.deleteDoc(F.doc(db, "payroll", id)),
     // hotels (any signed-in user reads; admins write)
     listHotels: async () => { const s = await F.getDocs(F.collection(db, "hotels")); return s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.name).localeCompare(String(b.name))); },
     getHotel: async id => { if (!id) return null; const s = await F.getDoc(F.doc(db, "hotels", id)); return s.exists() ? { id: s.id, ...s.data() } : null; },
@@ -119,6 +133,19 @@ function demoBackend(){
     deleteEmployee: async uid => { ["emp-" + uid, "notes-" + uid, "img-" + uid + "-avatar.jpg", "img-" + uid + "-id.jpg"].forEach(k => localStorage.removeItem(K + k)); set("emps", (get("emps") || []).filter(x => x !== uid)); },
     getSettings: async () => get("settings") || {},
     setSettings: async patch => set("settings", { ...(get("settings") || {}), ...patch }),
+    getPay: async uid => get("pay-" + uid) || null,
+    setPay: async (uid, data, by) => set("pay-" + uid, { ...(get("pay-" + uid) || {}), ...data, by, updatedAt: now() }),
+    getSalesSettings: async () => get("salescfg") || {},
+    setSalesSettings: async patch => set("salescfg", { ...(get("salescfg") || {}), ...patch }),
+    salesOn: async date => Object.entries(get("sales") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date === date),
+    salesRange: async (from, to) => Object.entries(get("sales") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date >= from && r.date <= to),
+    mySales: async (uid, from) => Object.entries(get("sales") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.uid === uid && (!from || r.date >= from)),
+    setSale: async (id, data) => { const s = get("sales") || {}; s[id] = { ...(s[id] || {}), ...data, at: now() }; set("sales", s); },
+    deleteSale: async id => { const s = get("sales") || {}; delete s[id]; set("sales", s); },
+    payrollMonth: async month => Object.entries(get("payroll") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.month === month),
+    myPayroll: async uid => Object.entries(get("payroll") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.uid === uid && r.status === "paid").sort((a, b) => b.month.localeCompare(a.month)),
+    setPayroll: async (id, data) => { const s = get("payroll") || {}; s[id] = { ...(s[id] || {}), ...data, updatedAt: now() }; set("payroll", s); },
+    deletePayroll: async id => { const s = get("payroll") || {}; delete s[id]; set("payroll", s); },
     listHotels: async () => Object.entries(get("hotels") || {}).map(([id, h]) => ({ id, ...h })).sort((a, b) => String(a.name).localeCompare(String(b.name))),
     getHotel: async id => { const h = (get("hotels") || {})[id]; return h ? { id, ...h } : null; },
     saveHotel: async (id, data) => { const hs = get("hotels") || {}; id = id || "h" + Date.now(); hs[id] = { ...(hs[id] || {}), ...data, updatedAt: now() }; set("hotels", hs); return id; },
@@ -245,6 +272,38 @@ export function dayStatus(dayRec, shiftRecs, shifts, hotel, date, today = dayKey
   const code = !shifts.length ? "pending" : pend > 0 ? "pending" : done === shifts.length ? "present" : done > 0 ? "half-day" : "absent";
   return { code, auto: true, review, lateMin: null, done, total: shifts.length, shifts: sts };
 }
+/* ── pay & sales (2026-09-08). Figures live only in Firestore behind admin rules; nothing here is ever public. ── */
+export const CURRENCY = "EGP";
+export const money = (n, cur = CURRENCY) => (n == null || isNaN(n) ? "—" : `${Math.round(+n).toLocaleString("en-EG")} ${cur}`);
+export const monthKey = (d = dayKey()) => String(d).slice(0, 7);
+export const daysInMonth = m => { const [y, mo] = String(m).split("-").map(Number); return new Date(Date.UTC(y, mo, 0)).getUTCDate(); };
+export const monthRange = m => [m + "-01", m + "-" + String(daysInMonth(m)).padStart(2, "0")];
+/** Things staff sell; the office edits names, prices and commission on the Pay & sales tab. */
+export const DEFAULT_SALES_ITEMS = [
+  { key: "lottery", name: "Lottery", unit: "tickets", price: 0, commissionPct: 10, commissionUnit: 0 },
+  { key: "tshirt", name: "T-shirts", unit: "pieces", price: 0, commissionPct: 10, commissionUnit: 0 },
+  { key: "disco", name: "Disco tour", unit: "guests", price: 0, commissionPct: 10, commissionUnit: 0 }
+];
+export const salesItems = cfg => (cfg && Array.isArray(cfg.items) && cfg.items.length ? cfg.items : DEFAULT_SALES_ITEMS);
+/** Commission for one sale: a percentage of the amount plus a fixed sum per unit, whichever the item defines (both may apply). */
+export const commissionOf = (item, qty, amount) => Math.round(((+amount || 0) * (+(item && item.commissionPct) || 0) / 100 + (+qty || 0) * (+(item && item.commissionUnit) || 0)) * 100) / 100;
+/** Which day statuses cost money: absent = full day, half-day = half. Sick, vacation, excused and off are paid; the office adjusts by hand if not. */
+export const PAY_DEDUCT = { absent: 1, "half-day": 0.5 };
+/**
+ * One month's pay. pay = {payType:"month"|"day", salary}; days = {present, "half-day", absent, sick, vacation, excused, off, pending};
+ * commission = sum over the month's sales; adjustments = [{type:"bonus"|"advance"|"deduction", amount, note}].
+ */
+export function payrollCompute(pay, days, commission, adjustments, month){
+  const salary = +(pay && pay.salary) || 0, type = (pay && pay.payType) || "month", dim = daysInMonth(month), d = k => +(days && days[k]) || 0;
+  const daily = type === "day" ? salary : salary / dim;
+  const worked = d("present") + 0.5 * d("half-day");
+  const deducted = type === "day" ? 0 : Math.round(daily * (d("absent") * PAY_DEDUCT.absent + d("half-day") * PAY_DEDUCT["half-day"]));
+  const base = type === "day" ? Math.round(daily * worked) : Math.max(0, salary - deducted);
+  const adj = (adjustments || []).reduce((s, a) => s + (a.type === "bonus" ? +a.amount || 0 : -(+a.amount || 0)), 0);
+  return { salary, payType: type, daily: Math.round(daily), worked, deducted, base, commission: Math.round(+commission || 0), adjustments: Math.round(adj), net: Math.round(base + (+commission || 0) + adj) };
+}
+export const ADJ_LABEL = { bonus: "Bonus", advance: "Advance", deduction: "Deduction" };
+
 /* ── the day's programme: [{id,time,end,title,place,placeKey,uids,names,all,note}] sorted by time ── */
 export const taskId = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3);
 export const sortTasks = tasks => (tasks || []).slice().sort((a, b) => String(a.time).localeCompare(String(b.time)) || String(a.title).localeCompare(String(b.title)));
