@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609082302">
-<script src="firebase-config.js?v=202609082302"></script>
+<link rel="stylesheet" href="portal.css?v=202609090729">
+<script src="firebase-config.js?v=202609090729"></script>
 </head>
 <body>
 <div class="topbar"><div class="topbar-inner">
@@ -149,6 +149,7 @@
       <p class="eyebrow">Today · <span id="att-hotel"></span> · <span id="att-date"></span></p>
       <div class="att-now" id="att-body"></div>
       <div class="shifts" id="att-shifts"></div>
+      <div class="week" id="att-week"></div>
       <div class="actions" style="margin:14px 0 6px"><button class="btn" id="btn-in" type="button">Check in now</button><button class="btn ghost" id="btn-out" type="button" hidden>Check out</button></div>
       <div class="reqbox" id="reqbox" hidden>
         <p class="att-line"><b>Could not check in?</b> Tell the office what happened and they decide this shift.</p>
@@ -191,7 +192,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL } from "./portal.js?v=202609082302";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort } from "./portal.js?v=202609090729";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -313,7 +314,7 @@ function renderProfile(){
   loadAttendance();
 }
 /* ── attendance (approved staff assigned to a hotel) ── */
-let hotel = null, shifts = [], plan = null, planTmrw = null, dayRec = null, recs = [], hist = [], reqs = [], cur = null, lastGeo = null;
+let hotel = null, shifts = [], allShifts = [], plan = null, planTmrw = null, weekPlans = [], dayRec = null, recs = [], hist = [], reqs = [], cur = null, lastGeo = null;
 const nowMin = () => toMin(hhmm(new Date()));
 const recOf = k => recs.find(r => r.shift === k) || null, reqOf = k => reqs.find(r => r.shift === k) || null;
 async function loadAttendance(){
@@ -321,9 +322,10 @@ async function loadAttendance(){
   if (!p || p.status !== "approved" || !p.hotelId) return;
   try { hotel = await be.getHotel(p.hotelId); } catch (ex) { console.warn(ex); }
   if (!hotel) return;
-  shifts = hotelShifts(hotel);
+  allShifts = hotelShifts(hotel);
   const today = dayKey();
-  [hist, plan, reqs, planTmrw] = await Promise.all([be.myAttendance(user.uid, addDays(today, -14)).catch(ex => { console.warn(ex); return []; }), be.getPlan(hotel.id, today).catch(() => null), be.myRequests(user.uid, today).catch(() => []), be.getPlan(hotel.id, addDays(today, 1)).catch(() => null)]);
+  [hist, plan, reqs, planTmrw, weekPlans] = await Promise.all([be.myAttendance(user.uid, addDays(today, -14)).catch(ex => { console.warn(ex); return []; }), be.getPlan(hotel.id, today).catch(() => null), be.myRequests(user.uid, today).catch(() => []), be.getPlan(hotel.id, addDays(today, 1)).catch(() => null), be.plansRange(today, addDays(today, 6)).then(ps => ps.filter(p => p.hotelId === hotel.id)).catch(() => [])]);
+  shifts = scheduledShifts(allShifts, plan, user.uid);
   dayRec = hist.find(r => r.date === today && !r.shift) || null; recs = hist.filter(r => r.date === today && r.shift);
   $("att-hotel").textContent = hotel.name; $("att-date").textContent = today; show("att", true); paintAtt(); paintProg();
   loadPay();
@@ -332,7 +334,9 @@ const whereText = k => { const sp = plannedSpot(hotel, plan, k); return sp ? `at
 function paintAtt(){
   const today = dayKey(), now = nowMin(); cur = currentShift(shifts, now);
   const day = dayStatus(dayRec, recs, shifts, hotel, today, today);
-  $("att-body").innerHTML = `<span class="status att-${day.review ? "review" : day.code}">${dayLabel(day)}</span><p class="att-line">${dayRec && dayRec.override ? `The office marked your day as <b>${ATT_LABEL[dayRec.override] || dayRec.override}</b>. You can still check in to record your shifts.` : shifts.length ? `${shifts.length} shifts today. Check in at the start of each one, from the place shown, and check out when it ends.` : "No shifts are set for your hotel yet — ask the office."}</p>`;
+  const off = !shifts.length && isOffDay(plan, user.uid), tmOff = isOffDay(planTmrw, user.uid), tmShifts = scheduledShifts(allShifts, planTmrw, user.uid);
+  $("att-body").innerHTML = `<span class="status att-${day.review ? "review" : day.code}">${dayLabel(day)}</span><p class="att-line">${dayRec && dayRec.override ? `The office marked your day as <b>${ATT_LABEL[dayRec.override] || dayRec.override}</b>. You can still check in to record your shifts.` : off ? "Today is your <b>day off</b>. Enjoy it — no check-in needed." : shifts.length ? `${shifts.length === allShifts.length ? shifts.length + " shifts today" : "Your shifts today: <b>" + shifts.map(s => esc(s.name)).join(", ") + "</b>"}. Check in at the start of each one, from the place shown, and check out when it ends.` : "No shifts are set for your hotel yet — ask the office."}${planTmrw && (planTmrw.roster || planTmrw.shifts) ? `<br><small class="hint">Tomorrow: ${tmOff ? "<b>day off</b>" : esc(tmShifts.map(s => s.name).join(", ") || "—")}</small>` : ""}</p>`;
+  $("att-week").innerHTML = weekPlans.some(p => p.roster) ? `<span class="hint">This week</span>` + Array.from({ length: 7 }, (_, i) => { const d = addDays(today, i), p = weekPlans.find(x => x.date === d), sh = scheduledShifts(allShifts, p, user.uid), isOff = isOffDay(p, user.uid); return `<span class="wd ${isOff ? "off" : ""} ${i === 0 ? "now" : ""}"><b>${dayLabelShort(d)}</b><i>${isOff ? "off" : esc(sh.map(s => s.name[0]).join(" "))}</i></span>`; }).join("") : "";
   $("att-shifts").innerHTML = shifts.map(sh => {
     const r = recOf(sh.key), q = reqOf(sh.key), st = shiftStatus(r, sh, today, today, now), isCur = cur && cur.key === sh.key;
     const times = r && r.checkInAt ? `in ${hhmm(r.checkInAt)}${r.checkOutAt ? ` · out ${hhmm(r.checkOutAt)}` : ""}${st.lateMin ? ` · ${st.lateMin} min late` : ""}${st.review ? " · office decides" : ""}` : q ? (q.status === "open" ? `note sent ${hhmm(q.createdAt)} · waiting for the office` : `office decided: ${ATT_LABEL[q.decision] || q.decision}`) : "";

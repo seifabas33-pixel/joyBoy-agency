@@ -18,8 +18,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609082302">
-<script src="firebase-config.js?v=202609082302"></script>
+<link rel="stylesheet" href="portal.css?v=202609090729">
+<script src="firebase-config.js?v=202609090729"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 </head>
 <body>
@@ -44,7 +44,7 @@
 
   <section id="s-admin" hidden>
     <div class="hero" style="padding-top:18px"><span class="eyebrow" id="view-eyebrow">Roster</span><h1 style="font-size:clamp(30px,5vw,48px)" id="view-title">Team <em>registrations</em></h1></div>
-    <div class="tabs" role="tablist"><button class="on" data-view="roster" role="tab">Roster</button><button data-view="att" role="tab">Attendance</button><button data-view="prog" role="tab">Programme</button><button data-view="pay" role="tab">Pay &amp; sales</button><button data-view="hotels" role="tab">Hotels &amp; office</button></div>
+    <div class="tabs" role="tablist"><button class="on" data-view="roster" role="tab">Roster</button><button data-view="att" role="tab">Attendance</button><button data-view="sched" role="tab">Schedule</button><button data-view="prog" role="tab">Programme</button><button data-view="pay" role="tab">Pay &amp; sales</button><button data-view="hotels" role="tab">Hotels &amp; office</button></div>
 
     <div id="v-pay" hidden>
       <div class="paytabs"><button class="on" data-pv="sales" type="button">Sales</button><button data-pv="payroll" type="button">Payroll</button><button data-pv="items" type="button">Items &amp; commission</button></div>
@@ -96,6 +96,19 @@
           <div class="actions"><button class="btn ghost small" id="i-add" type="button">Add item</button><span style="flex:1"></span><button class="btn small" id="i-save" type="button">Save items</button></div>
         </div>
       </div>
+    </div>
+
+    <div id="v-sched" hidden>
+      <div class="toolbar">
+        <button class="btn ghost small" id="w-prev" type="button" aria-label="Previous week">‹</button><b id="w-label" style="font-size:15px"></b><button class="btn ghost small" id="w-next" type="button" aria-label="Next week">›</button><button class="btn ghost small" id="w-this" type="button">This week</button>
+        <select class="in" id="w-hotel"></select>
+        <span style="flex:1"></span>
+        <button class="btn ghost small" id="w-copy" type="button">Copy last week</button>
+        <button class="btn ghost small" id="w-reset" type="button">Everyone, all shifts</button>
+        <button class="btn small" id="w-save" type="button" disabled>Save week</button>
+      </div>
+      <div class="tablewrap"><table class="sched"><thead id="w-head"></thead><tbody id="w-rows"></tbody></table><div class="empty" id="w-empty" hidden>No approved staff assigned to this hotel.</div></div>
+      <p class="hint" style="margin-top:10px">Tap a shift letter to switch it on or off for that person and day, or tap <b>off</b> for a day off. Nothing marked means the person works every shift (today's behaviour). Staff see only their own shifts and "Tomorrow: day off" on their card; attendance, decisions, the digest and payroll only expect scheduled shifts. A day off is paid on a monthly salary and simply not worked on a daily rate. Press <b>Save week</b> when you are done — changed rows are marked yellow until saved.</p>
     </div>
 
     <div id="v-prog" hidden>
@@ -205,7 +218,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText } from "./portal.js?v=202609082302";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort } from "./portal.js?v=202609090729";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -282,8 +295,8 @@ $("drawer-bg").addEventListener("click", closeDrawer);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
 
 /* ── views ── */
-const VIEWS = { roster: ["Roster", "Team <em>registrations</em>"], att: ["Attendance", "Who is <em>on the floor</em>"], prog: ["Programme", "What <em>happens</em> today"], pay: ["Pay & sales", "Salaries, <em>sales</em> and payslips"], hotels: ["Hotels & office", "Where the <em>teams</em> work"] };
-function setView(v){ document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === v)); ["roster","att","prog","pay","hotels"].forEach(k => show("v-" + k, k === v)); $("view-eyebrow").textContent = VIEWS[v][0]; $("view-title").innerHTML = VIEWS[v][1]; if (v === "att") loadAtt(); if (v === "prog") loadProg(); if (v === "pay") loadPay(); if (v === "hotels"){ paintHotels(); paintAdmins(); } location.hash = v; }
+const VIEWS = { roster: ["Roster", "Team <em>registrations</em>"], att: ["Attendance", "Who is <em>on the floor</em>"], sched: ["Schedule", "Who works <em>when</em>"], prog: ["Programme", "What <em>happens</em> today"], pay: ["Pay & sales", "Salaries, <em>sales</em> and payslips"], hotels: ["Hotels & office", "Where the <em>teams</em> work"] };
+function setView(v){ document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === v)); ["roster","att","sched","prog","pay","hotels"].forEach(k => show("v-" + k, k === v)); $("view-eyebrow").textContent = VIEWS[v][0]; $("view-title").innerHTML = VIEWS[v][1]; if (v === "att") loadAtt(); if (v === "sched") loadWeek(); if (v === "prog") loadProg(); if (v === "pay") loadPay(); if (v === "hotels"){ paintHotels(); paintAdmins(); } location.hash = v; }
 document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
 
 /* ── hotels ── */
@@ -392,7 +405,7 @@ async function loadAtt(){
 }
 /* decide one shift (late check-in or a note from staff) */
 async function decide(uid, shiftKey, code, req){
-  const x = attRows(attDay, attRecs).find(r => r.p.uid === uid) || {}, sh = (x.shifts || []).find(s => s.key === shiftKey) || { key: shiftKey, name: (req && req.shiftName) || shiftKey };
+  const x = attRows(attDay, attRecs).find(r => r.p.uid === uid) || {}, sh = (x.allShifts || []).find(s => s.key === shiftKey) || { key: shiftKey, name: (req && req.shiftName) || shiftKey };
   const id = `${uid}_${attDay}_${shiftKey}`;
   try {
     await be.setAttendance(id, { uid, email: (x.p && x.p.email) || (req && req.email) || "", name: (x.p && x.p.fullName) || (req && req.name) || "", hotelId: x.hotelId || (req && req.hotelId) || "", hotelName: (x.hotel && x.hotel.name) || (req && req.hotelName) || "", date: attDay, shift: shiftKey, shiftName: sh.name, override: code, overrideBy: user.email, source: req ? "request" : "decision" });
@@ -406,13 +419,15 @@ async function decideDay(uid, code){
   try { await be.setAttendance(id, { uid, email: (x.p && x.p.email) || "", name: (x.p && x.p.fullName) || "", hotelId: x.hotelId || "", hotelName: (x.hotel && x.hotel.name) || "", date: attDay, override: code, overrideBy: user.email, source: "decision" }); toast("Decided: " + ATT_LABEL[code]); loadAtt(); }
   catch (ex) { toast("Could not save: " + (ex.message || ex)); }
 }
+/* the plan (spots + roster) for a hotel and day: today's tab cache first, then the payroll month cache */
+function plansFor(hotelId, day){ if (day === attDay && attPlans[hotelId] !== undefined) return attPlans[hotelId]; return (prPlans || []).find(p => p.hotelId === hotelId && p.date === day) || null; }
 function attRows(day, recs){
   // every approved person with a hotel gets a row, plus anyone who has a record that day
   const staff = all.filter(p => p.status === "approved" && p.hotelId && day >= String(p.createdAt || "").slice(0, 10));
   const rows = staff.map(p => ({ p, hotelId: p.hotelId }));
   recs.forEach(r => { if (!rows.some(x => x.p.uid === r.uid)) rows.push({ p: all.find(p => p.uid === r.uid) || { uid: r.uid, fullName: r.name, email: r.email }, hotelId: r.hotelId }); });
-  return rows.map(x => { const hotel = hotels.find(h => h.id === x.hotelId) || {}, shifts = hotelShifts(hotel), dayRec = recs.find(r => r.uid === x.p.uid && !r.shift) || null, srecs = recs.filter(r => r.uid === x.p.uid && r.shift);
-    return { ...x, hotel, shifts, dayRec, srecs, day: dayStatus(dayRec, srecs, shifts, hotel, day, dayKey()) }; });
+  return rows.map(x => { const hotel = hotels.find(h => h.id === x.hotelId) || {}, allShifts = hotelShifts(hotel), shifts = scheduledShifts(allShifts, plansFor(x.hotelId, day), x.p.uid), dayRec = recs.find(r => r.uid === x.p.uid && !r.shift) || null, srecs = recs.filter(r => r.uid === x.p.uid && r.shift);
+    return { ...x, hotel, allShifts, shifts, dayRec, srecs, day: dayStatus(dayRec, srecs, shifts, hotel, day, dayKey()) }; });
 }
 function paintPlan(rowsHotels){
   const hs = rowsHotels.length ? rowsHotels : []; show("a-plan", hs.length > 0);
@@ -440,7 +455,7 @@ function paintAttInner(){
   const openReqs = attReqs.filter(r => r.status === "open" && (!hf || r.hotelId === hf));
   const lateShifts = []; rows.forEach(x => (x.day.shifts || []).forEach(y => { if (y.st.review) lateShifts.push({ x, y }); }));
   const lateDays = rows.filter(x => x.day.review && !(x.day.shifts || []).length);
-  $("a-stats").innerHTML = [["Expected", rows.length], ["Present", n("present")], ["Half day", n("half-day")], ["Absent", n("absent")], ["Needs decision", openReqs.length + lateShifts.length + lateDays.length], ["Sick / vacation / off", n("sick") + n("vacation") + n("excused") + n("off")]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+  $("a-stats").innerHTML = [["Expected", rows.filter(x => x.shifts.length || (x.dayRec && x.dayRec.override)).length], ["Off today", rows.filter(x => !x.shifts.length && !(x.dayRec && x.dayRec.override)).length], ["Present", n("present")], ["Half day", n("half-day")], ["Absent", n("absent")], ["Needs decision", openReqs.length + lateShifts.length + lateDays.length], ["Sick / vacation / off", n("sick") + n("vacation") + n("excused") + n("off")]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
   const btns = (uid, sk, rid) => `<span class="acts">${SHIFT_DECISIONS.map(c => `<button class="btn small ${c === "present" ? "ok" : c === "absent" ? "danger" : "ghost"}" data-dec="${c}" data-uid="${esc(uid)}" data-sk="${esc(sk)}" ${rid ? `data-req="${esc(rid)}"` : ""}>${ATT_LABEL[c]}</button>`).join("")}</span>`;
   const dbtns = uid => `<span class="acts">${["present","half-day","absent"].map(c => `<button class="btn small ${c === "present" ? "ok" : c === "absent" ? "danger" : "ghost"}" data-ddec="${c}" data-uid="${esc(uid)}">${ATT_LABEL[c]}</button>`).join("")}</span>`;
   $("a-decide").innerHTML = lateShifts.map(({ x, y }) => `<div class="d"><div><b>${esc(x.p.fullName || x.p.email)}</b><br><small>${esc(x.hotel.name || "")} · ${esc(y.shift.name)} · checked in ${hhmm(y.rec.checkInAt)} · ${y.st.lateMin} min late${y.rec.spotName ? ` · at the ${esc(y.rec.spotName)}` : ""}${y.rec.distM != null ? ` · ${y.rec.distM} m from the pin` : ""}</small></div><span class="why">Late check-in — decide this shift.</span>${btns(x.p.uid, y.shift.key)}</div>`).join("")
@@ -449,12 +464,12 @@ function paintAttInner(){
   $("a-decide").querySelectorAll("[data-dec]").forEach(b => b.onclick = () => decide(b.dataset.uid, b.dataset.sk, b.dataset.dec, b.dataset.req ? attReqs.find(r => r.id === b.dataset.req) : null));
   $("a-decide").querySelectorAll("[data-ddec]").forEach(b => b.onclick = () => decideDay(b.dataset.uid, b.dataset.ddec));
   // table: one column per shift (names from the first hotel shown), then the day
-  const maxS = Math.max(0, ...rows.map(x => x.shifts.length)), names = (rows[0] ? rows[0].shifts : []).map(x => x.name), same = rows.every(x => x.shifts.map(y => y.name).join("|") === names.join("|"));
+  const maxS = Math.max(0, ...rows.map(x => x.allShifts.length)), names = (rows[0] ? rows[0].allShifts : []).map(x => x.name), same = rows.every(x => x.allShifts.map(y => y.name).join("|") === names.join("|"));
   $("a-head").innerHTML = `<tr><th>Person</th><th>Hotel</th>${Array.from({ length: maxS }, (_, i) => `<th>${same && names[i] ? esc(names[i]) : "Shift " + (i + 1)}</th>`).join("")}<th>Day</th><th>Day mark</th></tr>`;
-  const cell = y => !y ? "<td>—</td>" : `<td class="cell-shift">${y.rec && y.rec.checkInAt ? `${hhmm(y.rec.checkInAt)}${y.rec.checkOutAt ? " → " + hhmm(y.rec.checkOutAt) : ""}` : "—"}<br><span class="status att-${y.st.review ? "review" : y.st.code}">${y.st.review ? "Late" : ATT_LABEL[y.st.code]}</span>${y.st.auto ? "" : " <small class='hint'>manual</small>"}${y.rec && (y.rec.spotName || y.rec.distM != null) ? `<small>${esc(y.rec.spotName || "")}${y.rec.distM != null ? ` ${y.rec.distM} m` : ""}</small>` : ""}</td>`;
+  const cell = (y, sh) => !y ? (sh ? `<td class="cell-shift dim">off</td>` : "<td>—</td>") : `<td class="cell-shift">${y.rec && y.rec.checkInAt ? `${hhmm(y.rec.checkInAt)}${y.rec.checkOutAt ? " → " + hhmm(y.rec.checkOutAt) : ""}` : "—"}<br><span class="status att-${y.st.review ? "review" : y.st.code}">${y.st.review ? "Late" : ATT_LABEL[y.st.code]}</span>${y.st.auto ? "" : " <small class='hint'>manual</small>"}${y.rec && (y.rec.spotName || y.rec.distM != null) ? `<small>${esc(y.rec.spotName || "")}${y.rec.distM != null ? ` ${y.rec.distM} m` : ""}</small>` : ""}</td>`;
   $("a-rows").innerHTML = rows.map(x => `<tr data-uid="${esc(x.p.uid)}" style="cursor:default">
     <td><div class="who"><img src="${esc(x.p.photoThumb || "../media/img/logo.jpg")}" alt=""><div><b>${esc(x.p.fullName || x.p.email || "—")}</b><small>${esc(x.p.email || "")}</small></div></div></td>
-    <td>${esc(x.hotel.name || hotelName(x.hotelId))}</td>${Array.from({ length: maxS }, (_, i) => cell((x.day.shifts || [])[i]))}${!(x.day.shifts || []).length && x.dayRec && x.dayRec.checkInAt ? "" : ""}
+    <td>${esc(x.hotel.name || hotelName(x.hotelId))}</td>${Array.from({ length: maxS }, (_, i) => { const sh = x.allShifts[i]; return cell(sh ? (x.day.shifts || []).find(y => y.shift.key === sh.key) : null, sh); }).join("")}
     <td><span class="status att-${x.day.review ? "review" : x.day.code}">${dayLabel(x.day)}</span>${x.day.auto ? "" : " <small class='hint'>manual</small>"}${x.dayRec && x.dayRec.checkInAt ? `<br><small class="hint">in ${hhmm(x.dayRec.checkInAt)}${x.dayRec.checkOutAt ? " → " + hhmm(x.dayRec.checkOutAt) : ""} (old day format)</small>` : ""}</td>
     <td><select class="in tiny" data-ov="${esc(x.p.uid)}"><option value="">auto</option>${ATT_OVERRIDES.map(c => `<option value="${c}" ${x.dayRec && x.dayRec.override === c ? "selected" : ""}>${ATT_LABEL[c]}</option>`).join("")}</select></td></tr>`).join("");
   show("a-empty", rows.length === 0);
@@ -554,7 +569,7 @@ $("p-share").addEventListener("click", async () => {
 });
 
 /* ── pay & sales ── */
-let salesDay = dayKey(), salesCfg = {}, daySales = [], monthSales = [], prMonth = monthKey(), prPays = {}, prRecs = [], prSales = [], prDocs = [], editItems = null;
+let salesDay = dayKey(), salesCfg = {}, daySales = [], monthSales = [], prMonth = monthKey(), prPays = {}, prRecs = [], prSales = [], prDocs = [], prPlans = [], editItems = null;
 $("s-date").value = salesDay; $("pr-month").value = prMonth;
 document.querySelectorAll(".paytabs button").forEach(b => b.addEventListener("click", () => { document.querySelectorAll(".paytabs button").forEach(x => x.classList.toggle("on", x === b)); ["sales","payroll","items"].forEach(k => show("pv-" + k, k === b.dataset.pv)); if (b.dataset.pv === "payroll") loadPayroll(); if (b.dataset.pv === "items") paintItems(); }));
 const items = () => salesItems(salesCfg), itemOf = k => items().find(i => i.key === k) || null;
@@ -622,16 +637,16 @@ $("pr-month").addEventListener("change", () => { if ($("pr-month").value){ prMon
 $("pr-hotel").addEventListener("change", paintPayroll);
 $("pr-refresh").addEventListener("click", loadPayroll);
 function dayCounts(uid, hotel, recs){
-  const [from, to] = monthRange(prMonth), today = dayKey(), shifts = hotelShifts(hotel), c = { present: 0, "half-day": 0, absent: 0, sick: 0, vacation: 0, excused: 0, off: 0, pending: 0 };
+  const [from, to] = monthRange(prMonth), today = dayKey(), allShifts = hotelShifts(hotel), c = { present: 0, "half-day": 0, absent: 0, sick: 0, vacation: 0, excused: 0, off: 0, pending: 0 };
   const p = all.find(x => x.uid === uid) || {}, start = String(p.createdAt || "").slice(0, 10);
-  for (let d = from; d <= to && d <= today; d = addDays(d, 1)){ const dr = recs.find(r => r.uid === uid && r.date === d && !r.shift) || null, sr = recs.filter(r => r.uid === uid && r.date === d && r.shift); if (start && d < start && !dr && !sr.length) continue; /* before registration and no imported record: not a working day */ const st = dayStatus(dr, sr, shifts, hotel, d, today); c[st.code] = (c[st.code] || 0) + 1; }
+  for (let d = from; d <= to && d <= today; d = addDays(d, 1)){ const dr = recs.find(r => r.uid === uid && r.date === d && !r.shift) || null, sr = recs.filter(r => r.uid === uid && r.date === d && r.shift); if (start && d < start && !dr && !sr.length) continue; /* before registration and no imported record: not a working day */ const st = dayStatus(dr, sr, scheduledShifts(allShifts, prPlans.find(p => p.hotelId === hotel.id && p.date === d) || null, uid), hotel, d, today); c[st.code] = (c[st.code] || 0) + 1; }
   return c;
 }
 async function loadPayroll(){
   const [from, to] = monthRange(prMonth), staff = all.filter(p => p.status === "approved" && p.hotelId);
   $("pr-rows").innerHTML = `<tr><td colspan="9" class="hint">Loading ${prMonth}…</td></tr>`;
   try {
-    const pays = {}; [prRecs, prSales, prDocs] = await Promise.all([be.attendanceRange(from, to), be.salesRange(from, to), be.payrollMonth(prMonth), ...staff.map(p => be.getPay(p.uid).then(x => { pays[p.uid] = x; }).catch(() => { pays[p.uid] = null; }))]); prPays = pays;
+    const pays = {}; [prRecs, prSales, prDocs, prPlans] = await Promise.all([be.attendanceRange(from, to), be.salesRange(from, to), be.payrollMonth(prMonth), be.plansRange(from, to).catch(() => []), ...staff.map(p => be.getPay(p.uid).then(x => { pays[p.uid] = x; }).catch(() => { pays[p.uid] = null; }))]); prPays = pays;
   } catch (ex) { prRecs = []; prSales = []; prDocs = []; toast("Could not load payroll data: " + (ex.message || ex)); }
   paintPayroll();
 }
@@ -680,6 +695,53 @@ $("pr-csv").addEventListener("click", () => {
   const lines = [cols.join(",")].concat(rows.map(r => [prMonth, r.p.fullName || r.p.email, r.p.email, r.hotel.name || "", r.calc.payType, r.calc.currency, r.calc.salary, r.days.present, r.days["half-day"], r.days.absent, r.days.sick + r.days.vacation + r.days.excused + r.days.off, r.calc.base, r.calc.deducted || 0, r.calc.adjustments, r.calc.baseNet, r.calc.commissionCurrency, r.calc.commission, r.paid ? "paid" : "draft", r.paid ? r.doc.paidAt : ""].map(cell).join(",")));
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" })); a.download = `joyboy-payroll-${prMonth}.csv`; a.click(); URL.revokeObjectURL(a.href);
 });
+
+/* ── schedule: who works which shifts, per week and hotel ── */
+let wStart = weekStart(dayKey()), wPlans = {}, wRoster = {}, wDirty = new Set();
+const wDays = () => Array.from({ length: 7 }, (_, i) => addDays(wStart, i));
+const wHotel = () => hotels.find(h => h.id === $("w-hotel").value) || null;
+async function loadWeek(){
+  const keep = $("w-hotel").value, act = hotels.filter(h => h.active !== false);
+  $("w-hotel").innerHTML = act.map(h => `<option value="${esc(h.id)}">${esc(h.name)}</option>`).join("") || `<option value="">No active hotel</option>`; if (act.some(h => h.id === keep)) $("w-hotel").value = keep;
+  const h = wHotel(); wPlans = {}; wRoster = {}; wDirty.clear(); $("w-save").disabled = true;
+  $("w-label").textContent = `${dayLabelShort(wStart)} – ${dayLabelShort(addDays(wStart, 6))} · ${wStart.slice(0, 7)}`;
+  if (h){ try { (await be.plansRange(wStart, addDays(wStart, 6))).filter(p => p.hotelId === h.id).forEach(p => { wPlans[p.date] = p; }); } catch (ex) { toast("Could not load the week: " + (ex.message || ex)); } }
+  wDays().forEach(d => { wRoster[d] = JSON.parse(JSON.stringify((wPlans[d] && wPlans[d].roster) || {})); });
+  paintWeek();
+}
+function paintWeek(){
+  const h = wHotel(); if (!h){ $("w-head").innerHTML = ""; $("w-rows").innerHTML = ""; return; }
+  const shifts = hotelShifts(h), staff = all.filter(p => p.status === "approved" && p.hotelId === h.id).sort((a, b) => String(a.fullName).localeCompare(String(b.fullName))), today = dayKey();
+  $("w-head").innerHTML = `<tr><th>Person</th>${wDays().map(d => `<th class="${d === today ? "now" : ""}">${dayLabelShort(d)}${d === today ? "<br><small class='hint'>today</small>" : ""}</th>`).join("")}</tr>`;
+  const cellFor = (uid, d) => { const e = wRoster[d][uid], sch = scheduledShifts(shifts, { roster: wRoster[d] }, uid), isOff = !!(e && (e.off || (Array.isArray(e.shifts) && !e.shifts.length)));
+    return `<td class="day"><div class="sc">${shifts.map(s => `<button type="button" class="${sch.some(x => x.key === s.key) ? "on" : ""}" data-w="${esc(uid)}|${d}|${s.key}" title="${esc(s.name)} ${esc(s.start)}">${esc(s.name.slice(0, 1))}</button>`).join("")}<button type="button" class="off ${isOff ? "on" : ""}" data-w="${esc(uid)}|${d}|off">off</button></div></td>`; };
+  $("w-rows").innerHTML = staff.map(p => `<tr data-uid="${esc(p.uid)}" class="${[...wDirty].some(k => k.startsWith(p.uid + "|")) ? "dirty" : ""}"><td><div class="who"><img src="${esc(p.photoThumb || "../media/img/logo.jpg")}" alt=""><div><b>${esc((p.preferredName || p.fullName || p.email).split(" ")[0])}</b><small>${esc(p.fullName || "")}</small></div></div></td>${wDays().map(d => cellFor(p.uid, d)).join("")}</tr>`).join("");
+  show("w-empty", staff.length === 0);
+  $("w-rows").querySelectorAll("[data-w]").forEach(b => b.onclick = () => {
+    const [uid, d, key] = b.dataset.w.split("|"), cur = scheduledShifts(shifts, { roster: wRoster[d] }, uid).map(s => s.key);
+    let next;
+    if (key === "off") next = cur.length ? [] : shifts.map(s => s.key);
+    else next = cur.includes(key) ? cur.filter(k => k !== key) : [...cur, key];
+    if (next.length === shifts.length) delete wRoster[d][uid]; else wRoster[d][uid] = next.length ? { shifts: shifts.map(s => s.key).filter(k => next.includes(k)) } : { off: true, shifts: [] };
+    wDirty.add(uid + "|" + d); $("w-save").disabled = false; paintWeek();
+  });
+}
+$("w-prev").addEventListener("click", () => { wStart = addDays(wStart, -7); loadWeek(); });
+$("w-next").addEventListener("click", () => { wStart = addDays(wStart, 7); loadWeek(); });
+$("w-this").addEventListener("click", () => { wStart = weekStart(dayKey()); loadWeek(); });
+$("w-hotel").addEventListener("change", loadWeek);
+$("w-save").addEventListener("click", async () => {
+  const h = wHotel(); if (!h) return; const days = [...new Set([...wDirty].map(k => k.split("|")[1]))]; $("w-save").disabled = true;
+  try { await Promise.all(days.map(d => be.saveRoster(h.id, d, wRoster[d], user.email))); toast(`Schedule saved for ${days.length} day${days.length === 1 ? "" : "s"} — staff see it now`); loadWeek(); }
+  catch (ex) { toast("Could not save: " + (ex.message || ex)); $("w-save").disabled = false; }
+});
+$("w-copy").addEventListener("click", async () => {
+  const h = wHotel(); if (!h) return; let prev = []; try { prev = (await be.plansRange(addDays(wStart, -7), addDays(wStart, -1))).filter(p => p.hotelId === h.id && p.roster); } catch {}
+  if (!prev.length) return toast("Last week has no schedule to copy");
+  wDays().forEach((d, i) => { const src = prev.find(p => p.date === addDays(wStart, i - 7)); if (src){ wRoster[d] = JSON.parse(JSON.stringify(src.roster || {})); wDirty.add("*|" + d); Object.keys(wRoster[d]).forEach(u => wDirty.add(u + "|" + d)); } });
+  $("w-save").disabled = false; paintWeek(); toast("Copied — press Save week");
+});
+$("w-reset").addEventListener("click", () => { if (!confirm("Clear this week's schedule so everyone works every shift?")) return; wDays().forEach(d => { if (Object.keys(wRoster[d]).length){ Object.keys(wRoster[d]).forEach(u => wDirty.add(u + "|" + d)); wDirty.add("*|" + d); } wRoster[d] = {}; }); $("w-save").disabled = wDirty.size === 0; paintWeek(); });
 
 $("btn-csv").addEventListener("click", () => {
   const cols = ["fullName","preferredName","email","phone","gender","dob","nationality","city","languages","skills","instruments","experienceYears","payMethod","bankName","accountName","iban","instapay","walletProvider","walletNumber","idType","idNumber","idExpiry","availableFrom","contractPref","relocate","tshirt","emergencyName","emergencyPhone","status","createdAt"];

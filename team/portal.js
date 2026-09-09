@@ -73,6 +73,9 @@ async function firebaseBackend(){
     // daily plan: which spot each shift checks in at — plans/{hotelId}_{date}
     getPlan: async (hotelId, date) => { const s = await F.getDoc(F.doc(db, "plans", `${hotelId}_${date}`)); return s.exists() ? att(s) : null; },
     savePlan: (hotelId, date, shifts, by) => F.setDoc(F.doc(db, "plans", `${hotelId}_${date}`), { hotelId, date, shifts, setBy: by, setAt: ts() }, { merge: true }),
+    plansRange: async (from, to) => { const s = await F.getDocs(F.query(F.collection(db, "plans"), F.where("date", ">=", from), F.where("date", "<=", to))); return s.docs.map(att); },
+    // who works which shifts that day (schedule): roster = { uid: { off: bool, shifts: ["s1", …] } }; no entry = all shifts
+    saveRoster: (hotelId, date, roster, by) => F.setDoc(F.doc(db, "plans", `${hotelId}_${date}`), { hotelId, date, roster, rosterBy: by, rosterAt: ts() }, { merge: true }),
     // the day's programme (activities with time, place and people) lives in the same plan document
     saveTasks: (hotelId, date, tasks, by) => F.setDoc(F.doc(db, "plans", `${hotelId}_${date}`), { hotelId, date, tasks, tasksBy: by, tasksAt: ts() }, { merge: true }),
     // attendance: one document per person, day AND shift, id = uid_YYYY-MM-DD_s1; day marks by the office live in uid_YYYY-MM-DD. The server stamps the time.
@@ -152,6 +155,8 @@ function demoBackend(){
     deleteHotel: async id => { const hs = get("hotels") || {}; delete hs[id]; set("hotels", hs); },
     getPlan: async (hotelId, date) => { const p = (get("plans") || {})[`${hotelId}_${date}`]; return p ? { id: `${hotelId}_${date}`, ...p } : null; },
     savePlan: async (hotelId, date, shifts, by) => { const ps = get("plans") || {}; ps[`${hotelId}_${date}`] = { ...(ps[`${hotelId}_${date}`] || {}), hotelId, date, shifts, setBy: by, setAt: now() }; set("plans", ps); },
+    plansRange: async (from, to) => Object.entries(get("plans") || {}).map(([id, p]) => ({ id, ...p })).filter(p => p.date >= from && p.date <= to),
+    saveRoster: async (hotelId, date, roster, by) => { const ps = get("plans") || {}; ps[`${hotelId}_${date}`] = { ...(ps[`${hotelId}_${date}`] || {}), hotelId, date, roster, rosterBy: by, rosterAt: now() }; set("plans", ps); },
     saveTasks: async (hotelId, date, tasks, by) => { const ps = get("plans") || {}; ps[`${hotelId}_${date}`] = { ...(ps[`${hotelId}_${date}`] || {}), hotelId, date, tasks, tasksBy: by, tasksAt: now() }; set("plans", ps); },
     checkIn: async rec => { const a = get("att") || {}; const id = `${rec.uid}_${rec.date}_${rec.shift}`; if (a[id] && a[id].checkInAt) throw new Error("Already checked in for this shift"); a[id] = { ...(a[id] || {}), ...rec, checkInAt: now() }; set("att", a); return { id, ...a[id] }; },
     checkOut: async id => { const a = get("att") || {}; if (!a[id]) throw new Error("No check-in for this shift"); a[id].checkOutAt = now(); set("att", a); return { id, ...a[id] }; },
@@ -242,6 +247,14 @@ export function hotelSpots(hotel){ const s = (hotel && hotel.spots) || {}; retur
 export const slug = s => String(s || "").toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30);
 /** Where a shift checks in on a given day: the planned spot, or null = anywhere inside the hotel radius. */
 export function plannedSpot(hotel, plan, shiftKey){ const k = plan && plan.shifts && plan.shifts[shiftKey] && plan.shifts[shiftKey].spot; const sp = k && hotel && hotel.spots && hotel.spots[k]; return sp ? { key: k, ...sp } : null; }
+/* ── schedule: which shifts a person works on a day. plan.roster[uid] = {off, shifts:[keys]}; no entry = every shift (the default). ── */
+export const rosterEntry = (plan, uid) => (plan && plan.roster && plan.roster[uid]) || null;
+export function scheduledShifts(shifts, plan, uid){ const e = rosterEntry(plan, uid); if (!e) return shifts; if (e.off) return []; const keys = Array.isArray(e.shifts) ? e.shifts : []; return shifts.filter(s => keys.includes(s.key)); }
+export const isOffDay = (plan, uid) => { const e = rosterEntry(plan, uid); return !!(e && (e.off || (Array.isArray(e.shifts) && !e.shifts.length))); };
+/** Monday of the week containing the date. */
+export function weekStart(key){ const d = new Date(key + "T12:00:00Z"), dow = (d.getUTCDay() + 6) % 7; return addDays(key, -dow); }
+export const DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+export const dayLabelShort = key => { const d = new Date(key + "T12:00:00Z"); return `${DOW[(d.getUTCDay() + 6) % 7]} ${key.slice(8)}`; };
 /** Minutes before a shift starts that the check-in button opens, and after it ends that check-in/out is still possible. */
 export const SHIFT_OPEN_MIN = 90, SHIFT_CLOSE_MIN = 30;
 export const shiftEndMin = s => toMin(s.end) ?? (toMin(s.start) + 180);
@@ -269,7 +282,8 @@ export function dayStatus(dayRec, shiftRecs, shifts, hotel, date, today = dayKey
   const done = sts.filter(x => ["present", "late", "excused"].includes(x.st.code)).length, pend = sts.filter(x => x.st.code === "pending").length, review = sts.some(x => x.st.review);
   if (dayRec && dayRec.override) return { code: dayRec.override, auto: false, review: false, lateMin: null, done, total: shifts.length, shifts: sts };
   if (!sts.some(x => x.rec) && dayRec && dayRec.checkInAt) return { ...attStatus(dayRec, hotel, today), done: 1, total: 1, shifts: [] }; // record from before shifts existed
-  const code = !shifts.length ? "pending" : pend > 0 ? "pending" : done === shifts.length ? "present" : done > 0 ? "half-day" : "absent";
+  if (!shifts.length) return { code: "off", auto: true, review: false, lateMin: null, done: 0, total: 0, shifts: [] };                     // nothing scheduled = day off
+  const code = pend > 0 ? "pending" : done === shifts.length ? "present" : done > 0 ? "half-day" : "absent";
   return { code, auto: true, review, lateMin: null, done, total: shifts.length, shifts: sts };
 }
 /* ── pay & sales (2026-09-08). Figures live only in Firestore behind admin rules; nothing here is ever public. ── */
