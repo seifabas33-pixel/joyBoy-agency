@@ -56,6 +56,7 @@ function syncAttendance(){
   const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f }));
   const from = Utilities.formatDate(new Date(Date.now() - DAYS_BACK * 864e5), TZ, "yyyy-MM-dd"), today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd");
   const recs = fetchAll("attendance").map(d => ({ id: d.id, ...d.f })).filter(r => r.date >= from);
+  const plans = fetchAll("plans").map(d => ({ id: d.id, ...d.f })).filter(p => p.date >= from), planOf = (hid, d) => plans.find(p => p.hotelId === hid && p.date === d);
   const byHotel = Object.fromEntries(hotels.map(h => [h.id, h]));
   const firstDay = {}; recs.forEach(r => { if (!firstDay[r.uid] || r.date < firstDay[r.uid]) firstDay[r.uid] = r.date; });
   employees.forEach(e => { const reg = String(e.createdAt || "").slice(0, 10); if (reg && (!firstDay[e.uid] || reg < firstDay[e.uid])) firstDay[e.uid] = reg; });
@@ -64,7 +65,7 @@ function syncAttendance(){
     const dayRecs = recs.filter(r => r.date === d);
     const people = employees.filter(e => e.status === "approved" && e.hotelId && (!firstDay[e.uid] || d >= firstDay[e.uid])).map(e => ({ e, r: dayRecs.find(r => r.uid === e.uid) || null, hotelId: e.hotelId }));
     dayRecs.forEach(r => { if (!people.some(x => x.e.uid === r.uid)) people.push({ e: { uid: r.uid, fullName: r.name, email: r.email }, r, hotelId: r.hotelId }); });
-    people.forEach(x => { const h = byHotel[x.hotelId] || {}, shifts = hotelShifts(h), dayRec = dayRecs.find(r => r.uid === (x.e.uid || x.r && x.r.uid) && !r.shift) || null, srecs = dayRecs.filter(r => r.uid === (x.e.uid || x.r && x.r.uid) && r.shift);
+    people.forEach(x => { const uid = x.e.uid || (x.r && x.r.uid), h = byHotel[x.hotelId] || {}, shifts = scheduledShifts(hotelShifts(h), planOf(x.hotelId, d), uid), dayRec = dayRecs.find(r => r.uid === uid && !r.shift) || null, srecs = dayRecs.filter(r => r.uid === uid && r.shift);
       const ds = dayStatus(dayRec, srecs, shifts, h, d, today), cells = [];
       for (let i = 0; i < 4; i++){ const y = ds.shifts[i]; cells.push(y ? y.sh.name : "", y && y.r && y.r.checkInAt ? hhmm(y.r.checkInAt) : "", y && y.r && y.r.checkOutAt ? hhmm(y.r.checkOutAt) : "", y ? y.st.label : "", y && y.st.lateMin != null ? y.st.lateMin : "", y && y.r && y.r.spotName ? y.r.spotName : ""); }
       const lg = ds.legacy;
@@ -92,13 +93,15 @@ function shiftStatus(r, sh, date, today, nowMin){
   if (date > today || (date === today && nowMin <= start + grace)) return { code: "pending", label: LABEL.pending, lateMin: null };
   return { code: "absent", label: LABEL.absent, lateMin: null };
 }
+function scheduledShifts(shifts, plan, uid){ const e = plan && plan.roster && plan.roster[uid]; if (!e) return shifts; if (e.off) return []; const keys = Array.isArray(e.shifts) ? e.shifts : []; return shifts.filter(s => keys.indexOf(s.key) >= 0); }
 function dayStatus(dayRec, srecs, shifts, h, date, today){
   const nowMin = toMin(hhmm(new Date()));
   const sts = shifts.map(sh => { const r = srecs.find(x => x.shift === sh.key) || null; return { sh, r, st: shiftStatus(r, sh, date, today, nowMin) }; });
   const done = sts.filter(x => ["present","late","excused"].indexOf(x.st.code) >= 0).length, pend = sts.filter(x => x.st.code === "pending").length, review = sts.some(x => x.st.review);
   if (dayRec && dayRec.override) return { code: dayRec.override, label: LABEL[dayRec.override] || dayRec.override, shifts: sts, review: false };
   if (!srecs.length && dayRec && dayRec.checkInAt){ const st = status(dayRec, h, date, today); return { code: st.label === LABEL.present ? "present" : st.label === LABEL["half-day"] ? "half-day" : "absent", label: st.label, shifts: [], review: !!st.review, legacy: dayRec }; }
-  const code = !shifts.length ? "pending" : pend > 0 ? "pending" : done === shifts.length ? "present" : done > 0 ? "half-day" : "absent";
+  if (!shifts.length) return { code: "off", label: LABEL.off, shifts: [], review: false };
+  const code = pend > 0 ? "pending" : done === shifts.length ? "present" : done > 0 ? "half-day" : "absent";
   return { code, label: review ? "Late (undecided)" : code === "pending" && done ? done + "/" + shifts.length + " so far" : LABEL[code], shifts: sts, review };
 }
 function status(r, h, date, today){
@@ -215,6 +218,7 @@ function sendDigest(){
   const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f }));
   const hotels = Object.fromEntries(fetchAll("hotels").map(d => [d.id, d.f]));
   const att = fetchAll("attendance").map(d => ({ id: d.id, ...d.f })).filter(r => r.date === today);
+  const plansToday = fetchAll("plans").map(d => ({ id: d.id, ...d.f })).filter(p => p.date === today);
   const reqs = fetchAll("requests").map(d => ({ id: d.id, ...d.f })).filter(r => r.status === "open");
   const admins = fetchAll("admins").map(d => d.id);
   const to = [...new Set(BUILT_IN_ADMINS.concat(admins))].join(",");
@@ -222,9 +226,10 @@ function sendDigest(){
   const pending = employees.filter(e => (e.status || "pending") === "pending");
   const active = employees.filter(e => e.status === "approved" && e.hotelId);
   const late = [], absent = [], present = [], perShift = {};
-  active.forEach(e => { const h = hotels[e.hotelId] || {}, shifts = hotelShifts(h), dayRec = att.find(a => a.uid === e.uid && !a.shift) || null, srecs = att.filter(a => a.uid === e.uid && a.shift);
+  active.forEach(e => { const h = hotels[e.hotelId] || {}, shifts = scheduledShifts(hotelShifts(h), plansToday.find(p => p.hotelId === e.hotelId), e.uid), dayRec = att.find(a => a.uid === e.uid && !a.shift) || null, srecs = att.filter(a => a.uid === e.uid && a.shift);
     const ds = dayStatus(dayRec, srecs, shifts, h, today, today);
     if (dayRec && dayRec.override) return;                                   // sick / vacation / off / marked by the office
+    if (!shifts.length) return;                                              // scheduled day off
     if (ds.legacy){ if (ds.review) late.push(`${name(e)} — ${h.name || ""}, in at ${hhmm(ds.legacy.checkInAt)} (old day format)`); else present.push(name(e)); return; }
     let any = false;
     ds.shifts.forEach(y => { const k = y.sh.name; perShift[k] = perShift[k] || { started: 0, in: 0 };

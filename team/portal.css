@@ -294,3 +294,22 @@ table td.tm{font-family:"IBM Plex Mono",monospace;white-space:nowrap}
 .slip .sh b{font-size:16px}
 .slip .net{font-family:"IBM Plex Mono",monospace;color:#9DF2E0;font-weight:700}
 .slip table.mini{margin-top:6px}
+
+/* ── schedule (2026-09-09) ── */
+.week{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.week .hint{width:100%;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-family:"IBM Plex Mono",monospace}
+.week .wd{display:flex;flex-direction:column;align-items:center;min-width:44px;padding:6px 6px;border:1px solid var(--line);border-radius:10px;background:var(--raised);font-size:11px}
+.week .wd b{font-weight:600;color:var(--ink-2)}
+.week .wd i{font-style:normal;font-family:"IBM Plex Mono",monospace;color:#9DF2E0;margin-top:2px}
+.week .wd.off i{color:var(--ink-3)}
+.week .wd.now{border-color:rgba(34,227,192,.55)}
+.cell-shift.dim{color:var(--ink-3);font-size:11px}
+table.sched th{white-space:nowrap}
+table.sched td{padding:8px 8px;vertical-align:top}
+table.sched td.day{min-width:96px}
+.sc{display:flex;flex-wrap:wrap;gap:4px}
+.sc button{font-family:"IBM Plex Mono",monospace;font-size:11px;min-width:26px;padding:4px 6px;border-radius:6px;border:1px solid var(--line-2);background:transparent;color:var(--ink-3);cursor:pointer}
+.sc button.on{background:rgba(34,227,192,.16);border-color:rgba(34,227,192,.6);color:#9DF2E0}
+.sc button.off{border-style:dashed}
+.sc button.off.on{background:rgba(139,92,246,.18);border-color:rgba(139,92,246,.6);color:#D9CCFF}
+tr.dirty td:first-child{box-shadow:inset 3px 0 0 var(--yellow)}
