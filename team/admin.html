@@ -18,8 +18,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609090926">
-<script src="firebase-config.js?v=202609090926"></script>
+<link rel="stylesheet" href="portal.css?v=202609090954">
+<script src="firebase-config.js?v=202609090954"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 </head>
 <body>
@@ -91,8 +91,8 @@
       <div id="pv-items" hidden>
         <div class="card">
           <h2 style="font-size:20px;font-weight:800">Items &amp; commission</h2>
-          <p class="hint" style="margin-top:6px">What staff can sell. Guests pay in any mix of EGP, USD and EUR; you enter each currency when you record the sale. <b>Currency</b> here is the currency of the price and of the commission per unit. <b>Comm./unit</b> is a fixed sum for every ticket or piece sold. The % column is optional (a share of what was collected, per currency) — leave it at 0 if you pay per unit.</p>
-          <div class="itemgrid" id="i-rows" style="margin-top:12px"></div>
+          <p class="hint" style="margin-top:6px">For each item: the price a guest pays in each currency, and the commission the seller gets per unit <b>in that same currency</b>. Example: Disco tour 25 USD or 20 EUR, commission 5 USD or 5 EUR. When you record a sale you enter the cash per currency; the portal works out the units (cash ÷ price) and the commission per currency. Leave a currency empty if the item is not sold in it.</p>
+          <div id="i-rows" style="margin-top:12px"></div>
           <div class="actions"><button class="btn ghost small" id="i-add" type="button">Add item</button><span style="flex:1"></span><button class="btn small" id="i-save" type="button">Save items</button></div>
         </div>
       </div>
@@ -218,7 +218,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap } from "./portal.js?v=202609090926";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem } from "./portal.js?v=202609090954";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -595,11 +595,11 @@ async function loadSales(){
 function paintSales(){
   const hid = $("s-hotel").value, staff = all.filter(p => p.status === "approved" && p.hotelId === hid).sort((a, b) => String(a.fullName).localeCompare(String(b.fullName)));
   const who = $("s-who").value; $("s-who").innerHTML = staff.map(p => `<option value="${esc(p.uid)}">${esc(p.fullName || p.email)}</option>`).join("") || `<option value="">No approved staff at this hotel</option>`; if (staff.some(p => p.uid === who)) $("s-who").value = who;
-  const it = $("s-item").value; $("s-item").innerHTML = items().map(i => `<option value="${esc(i.key)}">${esc(i.name)}${i.price ? ` · ${money(i.price)}/${esc(i.unit || "unit")}` : ""}</option>`).join(""); if (items().some(i => i.key === it)) $("s-item").value = it;
+  const it = $("s-item").value; $("s-item").innerHTML = items().map(i => `<option value="${esc(i.key)}">${esc(i.name)}${itemPriceText(i) ? ` · ${itemPriceText(i)}` : ""}</option>`).join(""); if (items().some(i => i.key === it)) $("s-item").value = it;
   const rows = daySales.filter(r => !hid || r.hotelId === hid).sort((a, b) => String(a.name).localeCompare(String(b.name)) || String(a.item).localeCompare(String(b.item)));
   $("s-rows").innerHTML = rows.map(r => `<tr><td><b>${esc(r.name || r.email)}</b></td><td>${esc(r.itemName || r.item)}</td><td>${r.qty ?? "—"}</td><td>${moneyMap(saleAmounts(r))}</td><td>${moneyMap(saleCommissions(r))}</td><td><small class="hint">${esc(r.note || "")}</small></td><td><span class="rowacts"><button class="btn ghost small" type="button" data-sedit="${esc(r.id)}">Edit</button><button class="btn ghost small" type="button" data-sdel="${esc(r.id)}" style="border-color:rgba(255,77,46,.6);color:#FFB3A3">Delete</button></span></td></tr>`).join("");
   show("s-empty", rows.length === 0);
-  $("s-rows").querySelectorAll("[data-sedit]").forEach(b => b.onclick = () => { const r = daySales.find(x => x.id === b.dataset.sedit); if (!r) return; $("s-who").value = r.uid; $("s-item").value = r.item; $("s-qty").value = r.qty ?? ""; setAmts(saleAmounts(r)); $("s-note").value = r.note || ""; previewComm(); $("s-formtitle").textContent = `Edit: ${r.name} · ${r.itemName}`; $("s-who").scrollIntoView({ behavior: "smooth", block: "center" }); });
+  $("s-rows").querySelectorAll("[data-sedit]").forEach(b => b.onclick = () => { const r = daySales.find(x => x.id === b.dataset.sedit); if (!r) return; $("s-who").value = r.uid; $("s-item").value = r.item; $("s-qty").value = r.qty ?? ""; delete $("s-qty").dataset.touched; setAmts(saleAmounts(r)); $("s-note").value = r.note || ""; previewComm(); $("s-formtitle").textContent = `Edit: ${r.name} · ${r.itemName}`; $("s-who").scrollIntoView({ behavior: "smooth", block: "center" }); });
   $("s-rows").querySelectorAll("[data-sdel]").forEach(b => b.onclick = async () => { const r = daySales.find(x => x.id === b.dataset.sdel); if (!r || !confirm(`Delete ${r.name}'s ${r.itemName} line for ${salesDay}?`)) return; try { await be.deleteSale(r.id); toast("Deleted"); loadSales(); } catch (ex) { toast("Could not delete: " + (ex.message || ex)); } });
   // month summary per person × item
   const ms = monthSales.filter(r => !hid || r.hotelId === hid), people = [...new Set(ms.map(r => r.uid))].map(u => ({ uid: u, name: (ms.find(r => r.uid === u) || {}).name || u })).sort((a, b) => String(a.name).localeCompare(String(b.name)));
@@ -609,28 +609,39 @@ function paintSales(){
 }
 const readAmts = () => { const m = {}; CURRENCIES.forEach(c => { const v = +$("s-amt-" + c).value || 0; if (v) m[c] = v; }); return m; };
 const setAmts = m => { CURRENCIES.forEach(c => { $("s-amt-" + c).value = m && m[c] ? m[c] : ""; delete $("s-amt-" + c).dataset.touched; }); };
-const autoFill = () => { const i = itemOf($("s-item").value); if (!i || !i.price) return; const c = i.currency || CURRENCY, el = $("s-amt-" + c); if (el && !el.dataset.touched && !CURRENCIES.some(k => k !== c && +$("s-amt-" + k).value)) el.value = Math.round((+$("s-qty").value || 0) * i.price) || ""; };
-function previewComm(){ const i = itemOf($("s-item").value), q = +$("s-qty").value || 0, c = i ? (i.currency || CURRENCY) : CURRENCY, cm = i ? commissionMap(i, q, readAmts()) : {}; $("s-comm").textContent = i ? `Commission: ${moneyMap(cm)}${i.commissionUnit ? ` (${money(i.commissionUnit, c)} per ${i.unit || "unit"}${i.commissionPct ? ` + ${i.commissionPct}% of each currency` : ""})` : i.commissionPct ? ` (${i.commissionPct}% of each currency)` : " — set the commission under Items & commission"}` : ""; }
-$("s-qty").addEventListener("input", () => { autoFill(); previewComm(); });
+/* quantity typed first: if the item is priced in exactly one currency, fill that amount; otherwise the office types the cash and the units follow */
+const autoFill = () => { const i = itemOf($("s-item").value); if (!i) return; const priced = Object.entries(i.prices || {}).filter(([, v]) => v > 0); if (priced.length !== 1) return; const [c, p] = priced[0], el = $("s-amt-" + c); if (el && !el.dataset.touched && !CURRENCIES.some(k => k !== c && +$("s-amt-" + k).value)) el.value = Math.round((+$("s-qty").value || 0) * p) || ""; };
+function previewComm(){
+  const i = itemOf($("s-item").value); if (!i){ $("s-comm").textContent = ""; return; }
+  const amts = readAmts(), units = unitsMap(i, amts), cm = commissionMap(i, 0, amts), total = Object.values(units).reduce((s, v) => s + v, 0);
+  if (!$("s-qty").dataset.touched && Object.keys(amts).length) $("s-qty").value = total || "";
+  const parts = Object.keys(amts).map(c => (i.prices || {})[c] > 0 ? `${units[c]} × ${money(i.prices[c], c)}` : `${money(amts[c], c)} (no ${c} price set for this item)`);
+  $("s-comm").textContent = Object.keys(amts).length ? `${parts.join(" + ")} → commission ${moneyMap(cm)}` : `Prices: ${itemPriceText(i) || "not set"} · commission per ${i.unit || "unit"}: ${moneyMap(i.commissions) || "not set"}`;
+}
+$("s-qty").addEventListener("input", () => { $("s-qty").dataset.touched = "1"; autoFill(); previewComm(); });
 CURRENCIES.forEach(c => $("s-amt-" + c).addEventListener("input", () => { $("s-amt-" + c).dataset.touched = "1"; previewComm(); }));
 $("s-item").addEventListener("change", () => { autoFill(); previewComm(); });
 $("s-save").addEventListener("click", async () => {
   const uid = $("s-who").value, i = itemOf($("s-item").value), p = all.find(x => x.uid === uid); if (!uid || !p) return toast("Choose who sold it"); if (!i) return toast("Choose the item");
-  const qty = +$("s-qty").value || 0, amounts = readAmts(); if (!Object.keys(amounts).length && !qty) return toast("Enter what was collected (in at least one currency)");
+  const amounts = readAmts(), units = unitsMap(i, amounts), qty = +$("s-qty").value || Object.values(units).reduce((s, v) => s + v, 0); if (!Object.keys(amounts).length && !qty) return toast("Enter what was collected (in at least one currency)");
   const id = `${uid}_${salesDay}_${i.key}`;
-  try { await be.setSale(id, { uid, name: p.fullName || p.email, email: p.email || "", hotelId: p.hotelId || $("s-hotel").value, date: salesDay, item: i.key, itemName: i.name, qty, amounts, commissions: commissionMap(i, qty, amounts), currency: i.currency || CURRENCY, note: $("s-note").value.trim(), by: user.email }); toast(`Saved: ${p.fullName} · ${i.name} · ${moneyMap(amounts)}`); ["s-qty","s-note"].forEach(k => $(k).value = ""); setAmts({}); $("s-comm").textContent = ""; $("s-formtitle").textContent = "Record a sale"; loadSales(); }
+  try { await be.setSale(id, { uid, name: p.fullName || p.email, email: p.email || "", hotelId: p.hotelId || $("s-hotel").value, date: salesDay, item: i.key, itemName: i.name, qty, units, amounts, commissions: commissionMap(i, qty, amounts), note: $("s-note").value.trim(), by: user.email }); toast(`Saved: ${p.fullName} · ${i.name} · ${moneyMap(amounts)}`); ["s-qty","s-note"].forEach(k => $(k).value = ""); delete $("s-qty").dataset.touched; setAmts({}); $("s-comm").textContent = ""; $("s-formtitle").textContent = "Record a sale"; loadSales(); }
   catch (ex) { toast("Could not save: " + (ex.message || ex)); }
 });
 /* items editor */
 function paintItems(){
   if (!editItems) editItems = JSON.parse(JSON.stringify(items()));
-  $("i-rows").innerHTML = `<span class="hd">Item</span><span class="hd">Unit</span><span class="hd">Currency</span><span class="hd">Price</span><span class="hd">Comm./unit</span><span class="hd">% (opt.)</span><span></span>` + editItems.map((i, n) => `<input class="in" data-i="${n}" data-f="name" value="${esc(i.name)}" placeholder="Name"><input class="in" data-i="${n}" data-f="unit" value="${esc(i.unit || "")}" placeholder="unit"><select class="in" data-i="${n}" data-f="currency">${CURRENCIES.map(c => `<option ${(i.currency || CURRENCY) === c ? "selected" : ""}>${c}</option>`).join("")}</select><input class="in" type="number" min="0" data-i="${n}" data-f="price" value="${i.price || ""}" placeholder="0"><input class="in" type="number" min="0" step="0.5" data-i="${n}" data-f="commissionUnit" value="${i.commissionUnit || ""}" placeholder="0"><input class="in" type="number" min="0" max="100" step="0.5" data-i="${n}" data-f="commissionPct" value="${i.commissionPct || ""}" placeholder="0"><button class="btn ghost small" type="button" data-irm="${n}" title="Remove">×</button>`).join("");
-  $("i-rows").querySelectorAll("input, select").forEach(el => el.oninput = el.onchange = () => { const it = editItems[+el.dataset.i]; it[el.dataset.f] = el.type === "number" ? (+el.value || 0) : el.value; });
+  $("i-rows").innerHTML = editItems.map((i, n) => `<div class="itemcard"><div class="ih"><input class="in" data-i="${n}" data-f="name" value="${esc(i.name)}" placeholder="Item name"><input class="in unit" data-i="${n}" data-f="unit" value="${esc(i.unit || "")}" placeholder="unit (tickets)"><button class="btn ghost small" type="button" data-irm="${n}" title="Remove">×</button></div>
+    <table class="mini itemtbl"><thead><tr><th></th>${CURRENCIES.map(c => `<th>${c}</th>`).join("")}</tr></thead><tbody>
+      <tr><td>Guest pays</td>${CURRENCIES.map(c => `<td><input class="in" type="number" min="0" step="0.5" inputmode="decimal" data-i="${n}" data-f="prices.${c}" value="${(i.prices || {})[c] || ""}" placeholder="—"></td>`).join("")}</tr>
+      <tr><td>Seller gets / ${esc(i.unit || "unit")}</td>${CURRENCIES.map(c => `<td><input class="in" type="number" min="0" step="0.5" inputmode="decimal" data-i="${n}" data-f="commissions.${c}" value="${(i.commissions || {})[c] || ""}" placeholder="—"></td>`).join("")}</tr>
+    </tbody></table></div>`).join("");
+  $("i-rows").querySelectorAll("input").forEach(el => el.oninput = () => { const it = editItems[+el.dataset.i], [f, c] = el.dataset.f.split("."); if (c){ it[f] = it[f] || {}; const v = +el.value || 0; if (v) it[f][c] = v; else delete it[f][c]; } else it[f] = el.value; });
   $("i-rows").querySelectorAll("[data-irm]").forEach(b => b.onclick = () => { editItems.splice(+b.dataset.irm, 1); paintItems(); });
 }
-$("i-add").addEventListener("click", () => { editItems.push({ key: "", name: "", unit: "", price: 0, commissionPct: 0, commissionUnit: 0 }); paintItems(); });
+$("i-add").addEventListener("click", () => { editItems.push({ key: "", name: "", unit: "", prices: {}, commissions: {} }); paintItems(); });
 $("i-save").addEventListener("click", async () => {
-  const clean = editItems.filter(i => (i.name || "").trim()).map(i => ({ ...i, name: i.name.trim(), key: i.key || slug(i.name) || "item" + Date.now() }));
+  const clean = editItems.filter(i => (i.name || "").trim()).map(i => ({ key: i.key || slug(i.name) || "item" + Date.now(), name: i.name.trim(), unit: (i.unit || "").trim(), prices: i.prices || {}, commissions: i.commissions || {} }));
   if (!clean.length) return toast("Keep at least one item"); if (new Set(clean.map(i => i.key)).size !== clean.length) return toast("Two items have the same name");
   try { await be.setSalesSettings({ items: clean, currency: CURRENCY }); salesCfg = { ...salesCfg, items: clean }; editItems = null; toast("Items saved"); paintItems(); paintSales(); } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
 });
