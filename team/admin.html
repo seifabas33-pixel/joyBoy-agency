@@ -18,8 +18,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609090857">
-<script src="firebase-config.js?v=202609090857"></script>
+<link rel="stylesheet" href="portal.css?v=202609090926">
+<script src="firebase-config.js?v=202609090926"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 </head>
 <body>
@@ -60,7 +60,7 @@
             <label class="f"><span>Who sold it <b class="req">*</b></span><select class="in" id="s-who"></select></label>
             <label class="f"><span>Item <b class="req">*</b></span><select class="in" id="s-item"></select></label>
             <label class="f"><span>Quantity</span><input class="in" type="number" id="s-qty" min="0" step="1" inputmode="numeric" placeholder="0"></label>
-            <label class="f"><span>Amount collected (<span class="cur">EGP</span>) <b class="req">*</b></span><input class="in" type="number" id="s-amount" min="0" step="1" inputmode="numeric" placeholder="0"><span class="hint" id="s-comm"></span></label>
+            <div class="f full"><span>Cash handed in <b class="req">*</b> — what was collected, in each currency</span><div class="amts"><label>EGP<input class="in" type="number" id="s-amt-EGP" min="0" step="1" inputmode="decimal" placeholder="0"></label><label>USD<input class="in" type="number" id="s-amt-USD" min="0" step="1" inputmode="decimal" placeholder="0"></label><label>EUR<input class="in" type="number" id="s-amt-EUR" min="0" step="1" inputmode="decimal" placeholder="0"></label></div><span class="hint" id="s-comm"></span></div>
             <label class="f full"><span>Note</span><input class="in" id="s-note" maxlength="140" placeholder="e.g. 12 tickets at the pool, cash handed to Moaz"></label>
           </div>
           <div class="actions"><button class="btn small" id="s-save" type="button">Save sale</button><span class="hint">One line per person, item and day — saving again replaces that line.</span></div>
@@ -91,7 +91,7 @@
       <div id="pv-items" hidden>
         <div class="card">
           <h2 style="font-size:20px;font-weight:800">Items &amp; commission</h2>
-          <p class="hint" style="margin-top:6px">What staff can sell, in which currency. The price fills the amount automatically (quantity × price, editable). <b>Commission per unit</b> is a fixed sum for every ticket or piece sold, in the item's currency. The % column is optional (a share of the amount collected) — leave it at 0 if you pay per unit.</p>
+          <p class="hint" style="margin-top:6px">What staff can sell. Guests pay in any mix of EGP, USD and EUR; you enter each currency when you record the sale. <b>Currency</b> here is the currency of the price and of the commission per unit. <b>Comm./unit</b> is a fixed sum for every ticket or piece sold. The % column is optional (a share of what was collected, per currency) — leave it at 0 if you pay per unit.</p>
           <div class="itemgrid" id="i-rows" style="margin-top:12px"></div>
           <div class="actions"><button class="btn ghost small" id="i-add" type="button">Add item</button><span style="flex:1"></span><button class="btn small" id="i-save" type="button">Save items</button></div>
         </div>
@@ -218,7 +218,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap } from "./portal.js?v=202609090857";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap } from "./portal.js?v=202609090926";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -596,27 +596,29 @@ function paintSales(){
   const hid = $("s-hotel").value, staff = all.filter(p => p.status === "approved" && p.hotelId === hid).sort((a, b) => String(a.fullName).localeCompare(String(b.fullName)));
   const who = $("s-who").value; $("s-who").innerHTML = staff.map(p => `<option value="${esc(p.uid)}">${esc(p.fullName || p.email)}</option>`).join("") || `<option value="">No approved staff at this hotel</option>`; if (staff.some(p => p.uid === who)) $("s-who").value = who;
   const it = $("s-item").value; $("s-item").innerHTML = items().map(i => `<option value="${esc(i.key)}">${esc(i.name)}${i.price ? ` · ${money(i.price)}/${esc(i.unit || "unit")}` : ""}</option>`).join(""); if (items().some(i => i.key === it)) $("s-item").value = it;
-  document.querySelectorAll(".cur").forEach(e => e.textContent = (itemOf($("s-item").value) || {}).currency || salesCfg.currency || CURRENCY);
   const rows = daySales.filter(r => !hid || r.hotelId === hid).sort((a, b) => String(a.name).localeCompare(String(b.name)) || String(a.item).localeCompare(String(b.item)));
-  $("s-rows").innerHTML = rows.map(r => `<tr><td><b>${esc(r.name || r.email)}</b></td><td>${esc(r.itemName || r.item)}</td><td>${r.qty ?? "—"}</td><td>${money(r.amount, r.currency)}</td><td>${money(r.commission, r.currency)}</td><td><small class="hint">${esc(r.note || "")}</small></td><td><span class="rowacts"><button class="btn ghost small" type="button" data-sedit="${esc(r.id)}">Edit</button><button class="btn ghost small" type="button" data-sdel="${esc(r.id)}" style="border-color:rgba(255,77,46,.6);color:#FFB3A3">Delete</button></span></td></tr>`).join("");
+  $("s-rows").innerHTML = rows.map(r => `<tr><td><b>${esc(r.name || r.email)}</b></td><td>${esc(r.itemName || r.item)}</td><td>${r.qty ?? "—"}</td><td>${moneyMap(saleAmounts(r))}</td><td>${moneyMap(saleCommissions(r))}</td><td><small class="hint">${esc(r.note || "")}</small></td><td><span class="rowacts"><button class="btn ghost small" type="button" data-sedit="${esc(r.id)}">Edit</button><button class="btn ghost small" type="button" data-sdel="${esc(r.id)}" style="border-color:rgba(255,77,46,.6);color:#FFB3A3">Delete</button></span></td></tr>`).join("");
   show("s-empty", rows.length === 0);
-  $("s-rows").querySelectorAll("[data-sedit]").forEach(b => b.onclick = () => { const r = daySales.find(x => x.id === b.dataset.sedit); if (!r) return; $("s-who").value = r.uid; $("s-item").value = r.item; $("s-qty").value = r.qty ?? ""; $("s-amount").value = r.amount ?? ""; $("s-note").value = r.note || ""; previewComm(); $("s-formtitle").textContent = `Edit: ${r.name} · ${r.itemName}`; $("s-who").scrollIntoView({ behavior: "smooth", block: "center" }); });
+  $("s-rows").querySelectorAll("[data-sedit]").forEach(b => b.onclick = () => { const r = daySales.find(x => x.id === b.dataset.sedit); if (!r) return; $("s-who").value = r.uid; $("s-item").value = r.item; $("s-qty").value = r.qty ?? ""; setAmts(saleAmounts(r)); $("s-note").value = r.note || ""; previewComm(); $("s-formtitle").textContent = `Edit: ${r.name} · ${r.itemName}`; $("s-who").scrollIntoView({ behavior: "smooth", block: "center" }); });
   $("s-rows").querySelectorAll("[data-sdel]").forEach(b => b.onclick = async () => { const r = daySales.find(x => x.id === b.dataset.sdel); if (!r || !confirm(`Delete ${r.name}'s ${r.itemName} line for ${salesDay}?`)) return; try { await be.deleteSale(r.id); toast("Deleted"); loadSales(); } catch (ex) { toast("Could not delete: " + (ex.message || ex)); } });
   // month summary per person × item
   const ms = monthSales.filter(r => !hid || r.hotelId === hid), people = [...new Set(ms.map(r => r.uid))].map(u => ({ uid: u, name: (ms.find(r => r.uid === u) || {}).name || u })).sort((a, b) => String(a.name).localeCompare(String(b.name)));
   $("s-mhead").innerHTML = `<tr><th>Person</th>${items().map(i => `<th>${esc(i.name)}</th>`).join("")}<th>Total</th><th>Commission</th></tr>`;
   $("s-mrows").innerHTML = people.map(pp => { const mine = ms.filter(r => r.uid === pp.uid);
-    return `<tr><td><b>${esc(pp.name)}</b></td>${items().map(i => { const x = mine.filter(r => r.item === i.key), q = x.reduce((s, r) => s + (+r.qty || 0), 0); return `<td>${x.length ? `${q ? q + " · " : ""}${moneyMap(sumByCur(x, "amount"))}` : "—"}</td>`; }).join("")}<td><b>${moneyMap(sumByCur(mine, "amount"))}</b></td><td>${moneyMap(sumByCur(mine, "commission"))}</td></tr>`; }).join("") || `<tr><td colspan="${items().length + 3}" class="hint">No sales this month yet.</td></tr>`;
+    return `<tr><td><b>${esc(pp.name)}</b></td>${items().map(i => { const x = mine.filter(r => r.item === i.key), q = x.reduce((s, r) => s + (+r.qty || 0), 0); return `<td>${x.length ? `${q ? q + " · " : ""}${moneyMap(sumMaps(x, saleAmounts))}` : "—"}</td>`; }).join("")}<td><b>${moneyMap(sumMaps(mine, saleAmounts))}</b></td><td>${moneyMap(sumMaps(mine, saleCommissions))}</td></tr>`; }).join("") || `<tr><td colspan="${items().length + 3}" class="hint">No sales this month yet.</td></tr>`;
 }
-function previewComm(){ const i = itemOf($("s-item").value), q = +$("s-qty").value || 0, a = +$("s-amount").value || 0, c = i ? (i.currency || salesCfg.currency || CURRENCY) : CURRENCY; $("s-comm").textContent = i ? `Commission: ${money(commissionOf(i, q, a), c)}${i.commissionUnit ? ` (${money(i.commissionUnit, c)} per ${i.unit || "unit"}${i.commissionPct ? ` + ${i.commissionPct}%` : ""})` : i.commissionPct ? ` (${i.commissionPct}%)` : " — set the commission under Items & commission"}` : ""; }
-$("s-qty").addEventListener("input", () => { const i = itemOf($("s-item").value); if (i && i.price && !$("s-amount").dataset.touched) $("s-amount").value = Math.round((+$("s-qty").value || 0) * i.price); previewComm(); });
-$("s-amount").addEventListener("input", () => { $("s-amount").dataset.touched = "1"; previewComm(); });
-$("s-item").addEventListener("change", () => { document.querySelectorAll(".cur").forEach(e => e.textContent = (itemOf($("s-item").value) || {}).currency || salesCfg.currency || CURRENCY); delete $("s-amount").dataset.touched; const i = itemOf($("s-item").value); if (i && i.price) $("s-amount").value = Math.round((+$("s-qty").value || 0) * i.price); previewComm(); });
+const readAmts = () => { const m = {}; CURRENCIES.forEach(c => { const v = +$("s-amt-" + c).value || 0; if (v) m[c] = v; }); return m; };
+const setAmts = m => { CURRENCIES.forEach(c => { $("s-amt-" + c).value = m && m[c] ? m[c] : ""; delete $("s-amt-" + c).dataset.touched; }); };
+const autoFill = () => { const i = itemOf($("s-item").value); if (!i || !i.price) return; const c = i.currency || CURRENCY, el = $("s-amt-" + c); if (el && !el.dataset.touched && !CURRENCIES.some(k => k !== c && +$("s-amt-" + k).value)) el.value = Math.round((+$("s-qty").value || 0) * i.price) || ""; };
+function previewComm(){ const i = itemOf($("s-item").value), q = +$("s-qty").value || 0, c = i ? (i.currency || CURRENCY) : CURRENCY, cm = i ? commissionMap(i, q, readAmts()) : {}; $("s-comm").textContent = i ? `Commission: ${moneyMap(cm)}${i.commissionUnit ? ` (${money(i.commissionUnit, c)} per ${i.unit || "unit"}${i.commissionPct ? ` + ${i.commissionPct}% of each currency` : ""})` : i.commissionPct ? ` (${i.commissionPct}% of each currency)` : " — set the commission under Items & commission"}` : ""; }
+$("s-qty").addEventListener("input", () => { autoFill(); previewComm(); });
+CURRENCIES.forEach(c => $("s-amt-" + c).addEventListener("input", () => { $("s-amt-" + c).dataset.touched = "1"; previewComm(); }));
+$("s-item").addEventListener("change", () => { autoFill(); previewComm(); });
 $("s-save").addEventListener("click", async () => {
   const uid = $("s-who").value, i = itemOf($("s-item").value), p = all.find(x => x.uid === uid); if (!uid || !p) return toast("Choose who sold it"); if (!i) return toast("Choose the item");
-  const qty = +$("s-qty").value || 0, amount = +$("s-amount").value || 0; if (!amount && !qty) return toast("Enter the amount collected");
+  const qty = +$("s-qty").value || 0, amounts = readAmts(); if (!Object.keys(amounts).length && !qty) return toast("Enter what was collected (in at least one currency)");
   const id = `${uid}_${salesDay}_${i.key}`;
-  try { await be.setSale(id, { uid, name: p.fullName || p.email, email: p.email || "", hotelId: p.hotelId || $("s-hotel").value, date: salesDay, item: i.key, itemName: i.name, qty, amount, currency: i.currency || salesCfg.currency || CURRENCY, commission: commissionOf(i, qty, amount), note: $("s-note").value.trim(), by: user.email }); toast(`Saved: ${p.fullName} · ${i.name} · ${money(amount, i.currency || salesCfg.currency || CURRENCY)}`); ["s-qty","s-amount","s-note"].forEach(k => $(k).value = ""); delete $("s-amount").dataset.touched; $("s-comm").textContent = ""; $("s-formtitle").textContent = "Record a sale"; loadSales(); }
+  try { await be.setSale(id, { uid, name: p.fullName || p.email, email: p.email || "", hotelId: p.hotelId || $("s-hotel").value, date: salesDay, item: i.key, itemName: i.name, qty, amounts, commissions: commissionMap(i, qty, amounts), currency: i.currency || CURRENCY, note: $("s-note").value.trim(), by: user.email }); toast(`Saved: ${p.fullName} · ${i.name} · ${moneyMap(amounts)}`); ["s-qty","s-note"].forEach(k => $(k).value = ""); setAmts({}); $("s-comm").textContent = ""; $("s-formtitle").textContent = "Record a sale"; loadSales(); }
   catch (ex) { toast("Could not save: " + (ex.message || ex)); }
 });
 /* items editor */
@@ -654,7 +656,7 @@ function payrollRows(){
   const hf = $("pr-hotel").value;
   return all.filter(p => p.status === "approved" && p.hotelId && (!hf || p.hotelId === hf)).sort((a, b) => String(a.fullName).localeCompare(String(b.fullName))).map(p => {
     const hotel = hotels.find(h => h.id === p.hotelId) || {}, doc = prDocs.find(d => d.uid === p.uid) || null, paid = doc && doc.status === "paid";
-    const pay = prPays[p.uid], days = paid ? doc.days : dayCounts(p.uid, hotel, prRecs), commission = paid ? (doc.commissionAll || { [doc.commissionCurrency || CURRENCY]: doc.commission || 0 }) : sumByCur(prSales.filter(s => s.uid === p.uid), "commission", salesCfg.currency || CURRENCY), adjustments = (doc && doc.adjustments) || [];
+    const pay = prPays[p.uid], days = paid ? doc.days : dayCounts(p.uid, hotel, prRecs), commission = paid ? (doc.commissionAll || { [doc.commissionCurrency || CURRENCY]: doc.commission || 0 }) : sumMaps(prSales.filter(s => s.uid === p.uid), saleCommissions), adjustments = (doc && doc.adjustments) || [];
     const calc = paid ? { salary: doc.salary, payType: doc.payType, currency: doc.currency || CURRENCY, commissionCurrency: doc.commissionCurrency || CURRENCY, mixed: !!doc.mixed, base: doc.base, commission: doc.commission, commissionAll: commission, commissionOther: doc.commissionOther || (doc.mixed ? { [doc.commissionCurrency || CURRENCY]: doc.commission } : {}), adjustments: doc.adjustmentsTotal, baseNet: doc.baseNet != null ? doc.baseNet : doc.net, net: doc.net, deducted: doc.deducted, worked: doc.worked } : payrollCompute(pay, days, commission, adjustments, prMonth, salesCfg.currency || CURRENCY);
     return { p, hotel, pay, doc, paid, days, adjustments, calc };
   });
@@ -684,7 +686,7 @@ function paintPayroll(){
   $("pr-rows").querySelectorAll("[data-unpay]").forEach(b => b.onclick = async () => { const r = rows.find(x => x.p.uid === b.dataset.unpay); if (!confirm(`Reopen ${r.p.fullName}'s ${prMonth} payslip? It disappears from their card until you mark it paid again.`)) return; await savePayrollDoc(r, { status: "draft", paidAt: null, paidBy: null }); });
 }
 async function savePayrollDoc(r, patch){
-  const adjustments = patch.adjustments || r.adjustments, days = r.paid && patch.status !== "draft" ? r.days : dayCounts(r.p.uid, r.hotel, prRecs), commission = sumByCur(prSales.filter(s => s.uid === r.p.uid), "commission", salesCfg.currency || CURRENCY);
+  const adjustments = patch.adjustments || r.adjustments, days = r.paid && patch.status !== "draft" ? r.days : dayCounts(r.p.uid, r.hotel, prRecs), commission = sumMaps(prSales.filter(s => s.uid === r.p.uid), saleCommissions);
   const calc = payrollCompute(r.pay, days, commission, adjustments, prMonth, salesCfg.currency || CURRENCY);
   const doc = { uid: r.p.uid, name: r.p.fullName || r.p.email, email: r.p.email || "", hotelId: r.p.hotelId, hotelName: r.hotel.name || "", month: prMonth, currency: calc.currency, commissionCurrency: calc.currency, commissionAll: calc.commissionAll, commissionOther: calc.commissionOther, mixed: calc.mixed, salary: calc.salary, payType: calc.payType, days, worked: calc.worked, deducted: calc.deducted, base: calc.base, commission: calc.commission, adjustments, adjustmentsTotal: calc.adjustments, baseNet: calc.baseNet, net: calc.net, status: r.doc && r.doc.status === "paid" ? "paid" : "draft", by: user.email, ...patch };
   try { await be.setPayroll(`${r.p.uid}_${prMonth}`, doc); toast(patch.status === "paid" ? "Marked paid — payslip published" : "Saved"); loadPayroll(); } catch (ex) { toast("Could not save: " + (ex.message || ex)); }

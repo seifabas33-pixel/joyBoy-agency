@@ -313,3 +313,7 @@ table.sched td.day{min-width:96px}
 .sc button.off{border-style:dashed}
 .sc button.off.on{background:rgba(139,92,246,.18);border-color:rgba(139,92,246,.6);color:#D9CCFF}
 tr.dirty td:first-child{box-shadow:inset 3px 0 0 var(--yellow)}
+
+.amts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:6px}
+.amts label{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;color:var(--ink-3)}
+.amts .in{margin-top:4px;min-width:0}

@@ -306,6 +306,17 @@ export const DEFAULT_SALES_ITEMS = [
 ];
 export const salesItems = cfg => (cfg && Array.isArray(cfg.items) && cfg.items.length ? cfg.items : DEFAULT_SALES_ITEMS);
 /** Commission for one sale: a percentage of the amount plus a fixed sum per unit, whichever the item defines (both may apply). */
+/* A sale can be paid in a mix of currencies: amounts = { EGP: 400, EUR: 5 }. Commission per unit is in the item's currency; a % commission follows each currency collected. */
+export const saleAmounts = r => (r && r.amounts && typeof r.amounts === "object") ? r.amounts : (r && r.amount ? { [r.currency || CURRENCY]: +r.amount } : {});
+export const saleCommissions = r => (r && r.commissions && typeof r.commissions === "object") ? r.commissions : (r && r.commission ? { [r.currency || CURRENCY]: +r.commission } : {});
+export const sumMaps = (list, fn) => (list || []).reduce((m, r) => { const x = fn(r) || {}; for (const k in x) m[k] = (m[k] || 0) + (+x[k] || 0); return m; }, {});
+export function commissionMap(item, qty, amounts){
+  const m = {}, cu = +(item && item.commissionUnit) || 0, pct = +(item && item.commissionPct) || 0, cur = (item && item.currency) || CURRENCY;
+  if (cu && qty) m[cur] = (m[cur] || 0) + qty * cu;
+  if (pct) for (const k in amounts || {}){ const v = +amounts[k] || 0; if (v) m[k] = (m[k] || 0) + v * pct / 100; }
+  for (const k in m) m[k] = Math.round(m[k] * 100) / 100;
+  return m;
+}
 export const commissionOf = (item, qty, amount) => Math.round(((+amount || 0) * (+(item && item.commissionPct) || 0) / 100 + (+qty || 0) * (+(item && item.commissionUnit) || 0)) * 100) / 100;
 /** Which day statuses cost money: absent = full day, half-day = half. Sick, vacation, excused and off are paid; the office adjusts by hand if not. */
 export const PAY_DEDUCT = { absent: 1, "half-day": 0.5 };
