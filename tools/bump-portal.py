@@ -10,12 +10,12 @@ auth_domain = (re.search(r'authDomain:\s*"([^"]+)"', cfg) or [None, "joy-boy-age
 def csp(hashes):
     return "; ".join([
         "default-src 'self'",
-        "script-src 'self' https://www.gstatic.com https://apis.google.com " + " ".join(f"'sha256-{h}'" for h in hashes),
+        "script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com " + " ".join(f"'sha256-{h}'" for h in hashes),
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
         "img-src 'self' data: blob: https://*.googleusercontent.com",
-        "connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com",
-        f"frame-src https://{auth_domain} https://accounts.google.com https://apis.google.com",
+        "connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com",
+        f"frame-src https://{auth_domain} https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com",
         "manifest-src 'self'", "base-uri 'self'", "form-action 'self'", "object-src 'none'",
     ])
 for f in ["team/index.html", "team/admin.html"]:

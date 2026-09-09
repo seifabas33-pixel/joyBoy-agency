@@ -9,6 +9,8 @@ window.JB_FIREBASE = {
   authDomain: "joy-boy-agency.firebaseapp.com",
   projectId: "joy-boy-agency",
   storageBucket: "joy-boy-agency.firebasestorage.app",
+  // App Check: the public reCAPTCHA v3 SITE key (never the secret key). Empty = App Check off.
+  recaptchaSiteKey: "",
   messagingSenderId: "366857907850",
   appId: "1:366857907850:web:f81e450575760c77180773"
 };
