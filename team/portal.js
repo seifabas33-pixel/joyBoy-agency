@@ -18,6 +18,11 @@ async function firebaseBackend(){
   const [{ initializeApp }, A, F] = await Promise.all([
     import(FB + "firebase-app.js"), import(FB + "firebase-auth.js"), import(FB + "firebase-firestore.js")]);
   const app = initializeApp(cfg);
+  // App Check (reCAPTCHA v3): proves requests come from our pages, not from a script using the public key. Off until a site key is set in firebase-config.js.
+  if (cfg.recaptchaSiteKey && !/PASTE/.test(cfg.recaptchaSiteKey)) {
+    try { const AC = await import(FB + "firebase-app-check.js"); AC.initializeAppCheck(app, { provider: new AC.ReCaptchaV3Provider(cfg.recaptchaSiteKey), isTokenAutoRefreshEnabled: true }); }
+    catch (e) { console.warn("App Check did not start", e); }
+  }
   const auth = A.getAuth(app), db = F.getFirestore(app);
   const provider = new A.GoogleAuthProvider(); provider.setCustomParameters({ prompt: "select_account" });
   const user = u => u ? { uid: u.uid, email: u.email, name: u.displayName || "", photo: u.photoURL || "", verified: !!u.emailVerified } : null;
