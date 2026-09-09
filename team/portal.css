@@ -317,3 +317,13 @@ tr.dirty td:first-child{box-shadow:inset 3px 0 0 var(--yellow)}
 .amts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:6px}
 .amts label{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;color:var(--ink-3)}
 .amts .in{margin-top:4px;min-width:0}
+
+.itemcard{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--raised);margin-bottom:10px}
+.itemcard .ih{display:flex;gap:8px;align-items:center}
+.itemcard .ih .in{min-width:0}
+.itemcard .ih .unit{max-width:140px}
+.itemtbl{width:100%;margin-top:8px}
+.itemtbl th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-family:"IBM Plex Mono",monospace;text-align:left;padding:4px 6px}
+.itemtbl td{padding:4px 6px;font-size:13px;color:var(--ink-2)}
+.itemtbl td:first-child{white-space:nowrap}
+.itemtbl .in{padding:7px 8px;min-width:0;width:100%}
