@@ -290,16 +290,19 @@ export function dayStatus(dayRec, shiftRecs, shifts, hotel, date, today = dayKey
 export const CURRENCY = "EGP";
 export const CURRENCIES = ["EGP", "USD", "EUR"];
 /** Net pay as text: one amount when salary and commission share a currency, otherwise both side by side. */
-export const netText = c => c.mixed ? `${money(c.baseNet, c.currency)} + ${money(c.commission, c.commissionCurrency)}` : money(c.net, c.currency);
+export const netText = c => [money(c.net, c.currency)].concat(Object.entries(c.commissionOther || {}).filter(([, v]) => v > 0).map(([k, v]) => money(v, k))).join(" + ");
+/** Sum a field of records per currency → { EGP: 600, EUR: 20 }. */
+export const sumByCur = (list, field, fallback = CURRENCY) => (list || []).reduce((m, r) => { const c = r.currency || fallback; m[c] = (m[c] || 0) + (+r[field] || 0); return m; }, {});
+export const moneyMap = m => Object.entries(m || {}).filter(([, v]) => v).map(([k, v]) => money(v, k)).join(" + ") || money(0);
 export const money = (n, cur = CURRENCY) => (n == null || isNaN(n) ? "—" : `${Math.round(+n).toLocaleString("en-EG")} ${cur}`);
 export const monthKey = (d = dayKey()) => String(d).slice(0, 7);
 export const daysInMonth = m => { const [y, mo] = String(m).split("-").map(Number); return new Date(Date.UTC(y, mo, 0)).getUTCDate(); };
 export const monthRange = m => [m + "-01", m + "-" + String(daysInMonth(m)).padStart(2, "0")];
 /** Things staff sell; the office edits names, prices and commission on the Pay & sales tab. */
 export const DEFAULT_SALES_ITEMS = [
-  { key: "lottery", name: "Lottery", unit: "tickets", price: 0, commissionPct: 10, commissionUnit: 0 },
-  { key: "tshirt", name: "T-shirts", unit: "pieces", price: 0, commissionPct: 10, commissionUnit: 0 },
-  { key: "disco", name: "Disco tour", unit: "guests", price: 0, commissionPct: 10, commissionUnit: 0 }
+  { key: "lottery", name: "Lottery", unit: "tickets", currency: "EGP", price: 0, commissionUnit: 0, commissionPct: 0 },
+  { key: "tshirt", name: "T-shirts", unit: "pieces", currency: "EGP", price: 0, commissionUnit: 0, commissionPct: 0 },
+  { key: "disco", name: "Disco tour", unit: "guests", currency: "EGP", price: 0, commissionUnit: 0, commissionPct: 0 }
 ];
 export const salesItems = cfg => (cfg && Array.isArray(cfg.items) && cfg.items.length ? cfg.items : DEFAULT_SALES_ITEMS);
 /** Commission for one sale: a percentage of the amount plus a fixed sum per unit, whichever the item defines (both may apply). */
@@ -312,14 +315,17 @@ export const PAY_DEDUCT = { absent: 1, "half-day": 0.5 };
  */
 export function payrollCompute(pay, days, commission, adjustments, month, commissionCurrency = CURRENCY){
   const salary = +(pay && pay.salary) || 0, type = (pay && pay.payType) || "month", dim = daysInMonth(month), d = k => +(days && days[k]) || 0;
-  const currency = (pay && pay.currency) || CURRENCY, mixed = (+commission || 0) > 0 && currency !== commissionCurrency;
+  const currency = (pay && pay.currency) || CURRENCY;
+  const comAll = commission && typeof commission === "object" ? commission : { [commissionCurrency]: +commission || 0 };   // per currency
+  const comSame = Math.round(+comAll[currency] || 0), comOther = Object.fromEntries(Object.entries(comAll).filter(([c, v]) => c !== currency && v > 0).map(([c, v]) => [c, Math.round(v)]));
+  const mixed = Object.keys(comOther).length > 0;
   const daily = type === "day" ? salary : salary / dim;
   const worked = d("present") + 0.5 * d("half-day");
   const deducted = type === "day" ? 0 : Math.round(daily * (d("absent") * PAY_DEDUCT.absent + d("half-day") * PAY_DEDUCT["half-day"]));
   const base = type === "day" ? Math.round(daily * worked) : Math.max(0, salary - deducted);
   const adj = (adjustments || []).reduce((s, a) => s + (a.type === "bonus" ? +a.amount || 0 : -(+a.amount || 0)), 0);
   const baseNet = Math.round(base + adj);                                        // salary part, in the salary's currency
-  return { salary, payType: type, currency, commissionCurrency, mixed, daily: Math.round(daily), worked, deducted, base, commission: Math.round(+commission || 0), adjustments: Math.round(adj), baseNet, net: mixed ? baseNet : Math.round(baseNet + (+commission || 0)) };
+  return { salary, payType: type, currency, commissionCurrency, mixed, daily: Math.round(daily), worked, deducted, base, commission: comSame, commissionAll: comAll, commissionOther: comOther, adjustments: Math.round(adj), baseNet, net: Math.round(baseNet + comSame) };
 }
 export const ADJ_LABEL = { bonus: "Bonus", advance: "Advance", deduction: "Deduction" };
 
