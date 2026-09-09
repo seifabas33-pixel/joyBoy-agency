@@ -18,6 +18,11 @@ service cloud.firestore {
         || exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower())));
     }
     function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+    // Approved staff (registered, reviewed and accepted by the office). Hotels, plans and sales items are only readable by them and by admins.
+    function isApproved() {
+      return signedIn() && exists(/databases/$(database)/documents/employees/$(request.auth.uid))
+        && get(/databases/$(database)/documents/employees/$(request.auth.uid)).data.status == 'approved';
+    }
     function adminOnlyFields() { return ['status', 'adminNotes', 'reviewedBy', 'reviewedAt', 'hotelId']; }
     // Optional image references written by the employee must point at their own files.
     function pathsOk(uid) {
@@ -46,7 +51,7 @@ service cloud.firestore {
     }
     // Sales items (names, prices, commission) are readable by signed-in staff so their card can show commission.
     match /settings/sales {
-      allow read: if signedIn();
+      allow read: if isApproved() || isAdmin();
       allow write: if isAdmin();
     }
     // ── Pay & sales: written by the office only. Staff read their own sales, and their own payslip once it is marked paid. ──
@@ -97,12 +102,12 @@ service cloud.firestore {
 
     // ── Hotels: where the teams work. Staff read them (for check-in), admins manage them. ──
     match /hotels/{hotelId} {
-      allow read: if signedIn();
+      allow read: if isApproved() || isAdmin();
       allow write: if isAdmin();
     }
     // Daily plan: which spot each shift checks in at — plans/{hotelId}_{date}, set by the office.
     match /plans/{id} {
-      allow read: if signedIn();
+      allow read: if isApproved() || isAdmin();
       allow write: if isAdmin();
     }
 
