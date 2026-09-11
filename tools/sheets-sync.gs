@@ -44,7 +44,7 @@
 const PROJECT_ID = "joy-boy-agency";
 const DAYS_BACK = 62;                 // how much history to (re)write each run
 const TZ = "Africa/Cairo";
-const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)";
+const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)", REPORT_TAB = "Sync report (portal)";
 
 function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addToUi(); }
 function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); note("Done — the sheet now refreshes every hour."); }
@@ -81,6 +81,7 @@ function syncAttendance(){
   const hdr = ["Date","Name","Email","Hotel"]; for (let i = 1; i <= 4; i++) hdr.push("Shift " + i, "S" + i + " in", "S" + i + " out", "S" + i + " status", "S" + i + " late (min)", "S" + i + " spot");
   writeTab(ATT_TAB, hdr.concat(["Day status","Old check-in","Old check-out","Day mark","Mark by","Needs decision"]), rows);
   writeTab(HOTEL_TAB, ["Hotel","Town","Shifts","Spots","Radius (m)","Active","Staff assigned"], hotels.map(h => [h.name, h.city || "", hotelShifts(h).map(x => x.name + " " + x.start + "–" + x.end).join(" · "), Object.keys(h.spots || {}).map(k => h.spots[k].name).join(", "), h.radiusM, h.active === false ? "no" : "yes", employees.filter(e => e.hotelId === h.id && e.status === "approved").length]));
+  writeSyncReport(employees, byHotel, recs, from, today);
   note("Attendance synced: " + rows.length + " rows over " + days + " days · " + employees.filter(e => e.status === "approved" && e.hotelId).length + " assigned staff · " + recs.length + " records" + (skipped ? " · " + skipped + " rows failed (see the log)" : ""));
 }
 
@@ -164,6 +165,27 @@ function diagnose(){
   Logger.log("last days: " + Object.keys(dates).sort().slice(-7).map(d => d + "=" + dates[d]).join("  "));
   why.forEach(x => Logger.log("  " + x));
   note(employees.length + " staff · " + inSheet + " should appear · " + recs.length + " records in " + Object.keys(dates).length + " days (" + from + "…" + today + "). Details: Executions → View logs.");
+}
+
+/**
+ * One line per registered person: is he in the attendance tab, and if not, why.
+ * Written on every sync, so a missing colleague is always explainable without opening the script.
+ */
+function writeSyncReport(employees, byHotel, recs, from, today){
+  const seen = {}; recs.forEach(r => { seen[r.uid] = (seen[r.uid] || 0) + 1; });
+  const rows = employees.map(e => {
+    const reg = String(e.createdAt || "").slice(0, 10), regOk = /^\d{4}-\d{2}-\d{2}$/.test(reg);
+    const hotel = e.hotelId ? byHotel[e.hotelId] : null;
+    const reason = (e.status || "pending") !== "approved" ? "NOT in the sheet — profile is " + (e.status || "pending") + " (approve in the Roster)"
+      : !e.hotelId ? "NOT in the sheet — no hotel assigned (Roster → open the person → Hotel)"
+      : !hotel ? "NOT in the sheet — hotel id not found: " + e.hotelId + " (re-assign the person)"
+      : "in the sheet";
+    return [e.fullName || "", e.email || "", e.status || "pending", hotel ? hotel.name : (e.hotelId || ""), reason.indexOf("NOT") === 0 ? "no" : "yes", reason, regOk ? reg : "(registration date unreadable: " + reg + ")", seen[e.uid] || 0];
+  }).sort((a, b) => String(a[4]).localeCompare(String(b[4])) || String(a[0]).localeCompare(String(b[0])));
+  const days = {}; recs.forEach(r => { days[r.date] = 1; });
+  rows.push([], ["Range", from + " … " + today, "", "", "", "Registered people: " + employees.length + " · in the sheet: " + rows.filter(r => r[4] === "yes").length, "", ""],
+            ["Attendance records in range", recs.length, "", "", "", "Days with records: " + Object.keys(days).length, "", ""]);
+  writeTab(REPORT_TAB, ["Name", "Email", "Status", "Hotel", "In the sheet", "Why", "Registered", "Records in range"], rows);
 }
 
 function writeTab(name, header, rows){
