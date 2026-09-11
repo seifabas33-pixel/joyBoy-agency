@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-oEUjPqrFYFVz7ObhD32hfO/UheR+TRnHGAA1Mu0oVBg='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-HZ4rDSfGpmkgZzSFcbCdDMvPThJtYoilSR5XXE8JeQw='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609112147">
-<script src="firebase-config.js?v=202609112147"></script>
+<link rel="stylesheet" href="portal.css?v=202609112205">
+<script src="firebase-config.js?v=202609112205"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 </head>
 <body>
@@ -45,7 +45,30 @@
 
   <section id="s-admin" hidden>
     <div class="hero" style="padding-top:18px"><span class="eyebrow" id="view-eyebrow">Roster</span><h1 style="font-size:clamp(30px,5vw,48px)" id="view-title">Team <em>registrations</em></h1></div>
-    <div class="tabs" role="tablist"><button class="on" data-view="today" role="tab">Today</button><button data-view="roster" role="tab">Roster</button><button data-view="att" role="tab">Attendance</button><button data-view="sched" role="tab">Schedule</button><button data-view="prog" role="tab">Programme</button><button data-view="pay" role="tab">Pay &amp; sales</button><button data-view="hotels" role="tab">Hotels &amp; office</button></div>
+    <div class="tabs" role="tablist"><button class="on" data-view="today" role="tab">Today</button><button data-view="roster" role="tab">Roster</button><button data-view="att" role="tab">Attendance</button><button data-view="sched" role="tab">Schedule</button><button data-view="prog" role="tab">Programme</button><button data-view="pay" role="tab">Pay &amp; sales</button><button data-view="guests" role="tab">Guests</button><button data-view="hotels" role="tab">Hotels &amp; office</button></div>
+
+    <div id="v-guests" hidden>
+      <div class="toolbar">
+        <input class="in" type="month" id="g-month"><select class="in" id="g-hotel"><option value="">All hotels</option></select>
+        <span style="flex:1"></span><button class="btn ghost small" id="g-refresh" type="button">Refresh</button>
+      </div>
+      <div class="stats" id="g-stats"></div>
+      <div class="todaygrid">
+        <div class="card"><h2>Who the guests name</h2><div class="tablewrap" style="margin-top:10px;border:0"><table><thead><tr><th>Person</th><th>Ratings</th><th>Average</th></tr></thead><tbody id="g-people"></tbody></table></div></div>
+        <div class="card"><h2>Print a QR card</h2>
+          <div class="grid" style="margin-top:10px">
+            <label class="f"><span>Hotel</span><select class="in" id="qr-hotel"></select></label>
+            <label class="f"><span>For</span><select class="in" id="qr-who"></select></label>
+          </div>
+          <div class="qrbox" id="qr-box"><p class="hint">Pick a hotel to see the code.</p></div>
+          <p class="hint" id="qr-link" style="word-break:break-all"></p>
+          <div class="actions"><button class="btn small" id="qr-print" type="button">Print</button><button class="btn ghost small" id="qr-copy" type="button">Copy the link</button></div>
+        </div>
+      </div>
+      <h3 class="sub" style="margin-top:6px">What they wrote</h3>
+      <div class="feedlist" id="g-list"></div>
+      <p class="hint" style="margin-top:10px">Every guest is offered the public review link after rating, whatever they gave — never only the happy ones. Set that link per hotel under Hotels &amp; office. A comment here can be quoted on the website only with the guest's name and date as written.</p>
+    </div>
 
     <div id="v-pay" hidden>
       <div class="paytabs"><button class="on" data-pv="sales" type="button">Sales</button><button data-pv="payroll" type="button">Payroll</button><button data-pv="items" type="button">Items &amp; commission</button></div>
@@ -169,6 +192,7 @@
           <label class="f full"><span>Location <b class="req">*</b> — paste a Google Maps link or "lat, lng"</span><input class="in" id="h-loc" placeholder="25.0676, 34.8934  (or a Maps link that contains @lat,lng)"><span class="hint" id="h-loc-hint">In Google Maps press and hold on the animation office or stage, copy the two numbers shown at the top and paste them here. Or tap the button while standing at the hotel.</span></label>
           <div class="full" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn ghost small" id="h-here" type="button">Use my current location</button><button class="btn ghost small" id="h-test" type="button">How far am I from this pin?</button><span class="hint" id="h-test-hint">Stand where the staff check in (stage, meeting area) and tap: it shows the distance the server will see.</span></div>
           <label class="f"><span>Allowed radius (metres)</span><input class="in" type="number" id="h-radius" value="300" min="50" max="3000"><span class="hint" id="h-radius-hint">Resort grounds are big: 300–800 m is typical. Phones are accurate to about 10–30 m outdoors and 50–100 m indoors, so anything under 200 m will refuse honest people.</span></label>
+          <label class="f full"><span>Guest review link (optional)</span><input class="in" id="h-review" placeholder="https://g.page/… or the TripAdvisor link"><span class="hint">Offered to every guest after they rate you, whatever the rating.</span></label>
           <label class="f"><span>Active</span><select class="in" id="h-active"><option value="1">Yes — staff can check in</option><option value="0">No — season closed</option></select></label>
           <div class="full"><h3 class="sub">Shifts</h3>
             <div class="shiftgrid" id="h-shifts"></div>
@@ -241,7 +265,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState } from "./portal.js?v=202609112147";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState } from "./portal.js?v=202609112205";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -318,8 +342,8 @@ $("drawer-bg").addEventListener("click", closeDrawer);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
 
 /* ── views ── */
-const VIEWS = { today: ["Today", "At a <em>glance</em>"], roster: ["Roster", "Team <em>registrations</em>"], att: ["Attendance", "Who is <em>on the floor</em>"], sched: ["Schedule", "Who works <em>when</em>"], prog: ["Programme", "What <em>happens</em> today"], pay: ["Pay & sales", "Salaries, <em>sales</em> and payslips"], hotels: ["Hotels & office", "Where the <em>teams</em> work"] };
-function setView(v){ document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === v)); ["today","roster","att","sched","prog","pay","hotels"].forEach(k => show("v-" + k, k === v)); $("view-eyebrow").textContent = VIEWS[v][0]; $("view-title").innerHTML = VIEWS[v][1]; if (v === "today") loadToday(); if (v === "att") loadAtt(); if (v === "sched") loadWeek(); if (v === "prog") loadProg(); if (v === "pay") loadPay(); if (v === "hotels"){ paintHotels(); paintAdmins(); } location.hash = v; }
+const VIEWS = { today: ["Today", "At a <em>glance</em>"], guests: ["Guests", "What the <em>guests</em> say"], roster: ["Roster", "Team <em>registrations</em>"], att: ["Attendance", "Who is <em>on the floor</em>"], sched: ["Schedule", "Who works <em>when</em>"], prog: ["Programme", "What <em>happens</em> today"], pay: ["Pay & sales", "Salaries, <em>sales</em> and payslips"], hotels: ["Hotels & office", "Where the <em>teams</em> work"] };
+function setView(v){ document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === v)); ["today","roster","att","sched","prog","pay","guests","hotels"].forEach(k => show("v-" + k, k === v)); $("view-eyebrow").textContent = VIEWS[v][0]; $("view-title").innerHTML = VIEWS[v][1]; if (v === "today") loadToday(); if (v === "att") loadAtt(); if (v === "sched") loadWeek(); if (v === "prog") loadProg(); if (v === "pay") loadPay(); if (v === "guests") loadGuests(); if (v === "hotels"){ paintHotels(); paintAdmins(); } location.hash = v; }
 document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
 
 /* ── hotels ── */
@@ -333,7 +357,7 @@ function editHotel(id){
   const h = hotels.find(x => x.id === id); hotelEdit = h ? id : null;
   $("h-title").textContent = h ? "Edit " + h.name : "Add a hotel";
   $("h-name").value = h ? h.name : ""; $("h-city").value = h ? (h.city || "") : ""; $("h-loc").value = h ? `${h.lat}, ${h.lng}` : "";
-  $("h-radius").value = h ? h.radiusM : 300; $("h-active").value = h && h.active === false ? "0" : "1";
+  $("h-radius").value = h ? h.radiusM : 300; $("h-active").value = h && h.active === false ? "0" : "1"; $("h-review").value = h ? (h.reviewUrl || "") : "";
   editSpots = h && h.spots ? JSON.parse(JSON.stringify(h.spots)) : {}; paintShiftGrid(hotelShifts(h || {})); paintSpots();
   show("h-new", !!h); show("h-del", !!h); paintHotels(); if (h) $("h-name").scrollIntoView({ behavior: "smooth", block: "center" });
 }
@@ -399,8 +423,14 @@ $("h-save").addEventListener("click", async () => {
   if (name.length < 2) return toast("Enter the hotel name"); if (!ll) return toast("Paste a Google Maps link or coordinates");
   const shifts = readShiftGrid(); if (!shifts) return; const first = Object.values(shifts)[0];
   if (!first) return toast("Keep at least one shift");
-  const data = { name, city: $("h-city").value.trim(), lat: ll.lat, lng: ll.lng, cosLat: Math.cos(ll.lat * Math.PI / 180), radiusM, shifts, spots: editSpots, shiftStart: first.start, graceMin: first.graceMin, active: $("h-active").value === "1" };
-  try { const id = await be.saveHotel(hotelEdit, data); hotels = await be.listHotels(); toast(hotelEdit ? "Hotel updated" : "Hotel added"); editHotel(null); render(); } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
+  const reviewUrl = $("h-review").value.trim();
+  if (reviewUrl && !/^https:\/\//.test(reviewUrl)) return toast("The review link must start with https://");
+  const data = { name, city: $("h-city").value.trim(), lat: ll.lat, lng: ll.lng, cosLat: Math.cos(ll.lat * Math.PI / 180), radiusM, shifts, spots: editSpots, reviewUrl, shiftStart: first.start, graceMin: first.graceMin, active: $("h-active").value === "1" };
+  try {
+    const id = await be.saveHotel(hotelEdit, data); hotels = await be.listHotels();
+    await be.savePublicHotel(id, { name, reviewUrl }).catch(() => {});     // the guest QR page reads this one
+    toast(hotelEdit ? "Hotel updated" : "Hotel added"); editHotel(null); render();
+  } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
 });
 $("h-del").addEventListener("click", async () => {
   const h = hotels.find(x => x.id === hotelEdit); if (!h) return;
@@ -879,6 +909,71 @@ function paintToday(){
   document.querySelectorAll("#v-today [data-go]").forEach(b => b.onclick = () => setView(b.dataset.go));
 }
 const shiftEnd = sh => toMin(sh.end) ?? (toMin(sh.start) + 180);
+
+/* ── guests: ratings from the QR cards, and the printable code ── */
+let gFrom = monthKey(), gRows = [], qrLib = null;
+$("g-month").value = gFrom;
+$("g-month").addEventListener("change", () => { if ($("g-month").value){ gFrom = $("g-month").value; loadGuests(); } });
+$("g-hotel").addEventListener("change", paintGuests);
+$("g-refresh").addEventListener("click", loadGuests);
+async function loadGuests(){
+  const keep = $("g-hotel").value;
+  $("g-hotel").innerHTML = `<option value="">All hotels</option>` + hotels.map(h => `<option value="${esc(h.id)}">${esc(h.name)}</option>`).join("");
+  if ([...$("g-hotel").options].some(o => o.value === keep)) $("g-hotel").value = keep;
+  const [from, to] = monthRange(gFrom);
+  try { gRows = await be.feedbackRange(from, to); } catch (ex) { gRows = []; toast("Could not load the feedback: " + (ex.message || ex)); }
+  paintQrPickers(); paintGuests();
+}
+const staffName = uid => { const p = all.find(x => x.uid === uid); return p ? (p.preferredName || p.fullName || p.email) : ""; };
+function paintGuests(){
+  const hf = $("g-hotel").value, rows = gRows.filter(r => !hf || r.hotelId === hf).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  const avg = list => list.length ? (list.reduce((s, r) => s + (+r.rating || 0), 0) / list.length).toFixed(1) : "—";
+  const five = rows.filter(r => +r.rating === 5).length, comments = rows.filter(r => (r.comment || "").trim());
+  $("g-stats").innerHTML = [["Ratings", rows.length], ["Average", avg(rows) + (rows.length ? " ★" : "")], ["Five stars", rows.length ? Math.round(five * 100 / rows.length) + "%" : "—"], ["With a comment", comments.length]]
+    .map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+  const byStaff = {}; rows.forEach(r => { if (!r.staffUid) return; (byStaff[r.staffUid] = byStaff[r.staffUid] || []).push(r); });
+  const people = Object.keys(byStaff).map(uid => ({ uid, list: byStaff[uid] })).sort((a, b) => b.list.length - a.list.length);
+  $("g-people").innerHTML = people.map(p => `<tr><td><b>${esc(staffName(p.uid) || p.list[0].staffName || "—")}</b></td><td>${p.list.length}</td><td><b>${avg(p.list)}</b> ★</td></tr>`).join("")
+    || `<tr><td colspan="3" class="hint">No ratings name a person yet. Print the personal cards below.</td></tr>`;
+  $("g-list").innerHTML = rows.slice(0, 60).map(r => `<div class="feed"><div class="fh"><span class="fstars">${"★".repeat(Math.max(0, Math.min(5, +r.rating || 0)))}</span><small>${esc(r.date)}${r.staffUid || r.staffName ? " · " + esc(staffName(r.staffUid) || r.staffName) : ""}${r.hotelName ? " · " + esc(r.hotelName) : ""}${r.lang ? " · " + esc(String(r.lang).toUpperCase()) : ""}</small><button class="lnk" type="button" data-fdel="${esc(r.id)}" title="Delete">×</button></div>${(r.comment || "").trim() ? `<p class="fc">“${esc(r.comment)}”</p>` : ""}${r.guestName ? `<small class="hint">— ${esc(r.guestName)}</small>` : ""}</div>`).join("")
+    || `<p class="hint">Nothing yet this month.</p>`;
+  $("g-list").querySelectorAll("[data-fdel]").forEach(b => b.onclick = async () => { if (!confirm("Delete this rating?")) return; try { await be.deleteFeedback(b.dataset.fdel); toast("Deleted"); loadGuests(); } catch (ex) { toast("Could not delete: " + (ex.message || ex)); } });
+}
+/* the printable code */
+function paintQrPickers(){
+  const keep = $("qr-hotel").value;
+  $("qr-hotel").innerHTML = hotels.filter(h => h.active !== false).map(h => `<option value="${esc(h.id)}">${esc(h.name)}</option>`).join("") || `<option value="">No active hotel</option>`;
+  if ([...$("qr-hotel").options].some(o => o.value === keep)) $("qr-hotel").value = keep;
+  paintQrWho();
+}
+function paintQrWho(){
+  const hid = $("qr-hotel").value, keep = $("qr-who").value;
+  const staff = all.filter(p => p.status === "approved" && p.hotelId === hid).sort((a, b) => String(a.fullName).localeCompare(String(b.fullName)));
+  $("qr-who").innerHTML = `<option value="">The whole team</option>` + staff.map(p => `<option value="${esc(p.uid)}">${esc(p.preferredName || p.fullName || p.email)}</option>`).join("");
+  if ([...$("qr-who").options].some(o => o.value === keep)) $("qr-who").value = keep;
+  drawQr();
+}
+$("qr-hotel").addEventListener("change", paintQrWho);
+$("qr-who").addEventListener("change", drawQr);
+function feedbackLink(){
+  const hid = $("qr-hotel").value, uid = $("qr-who").value, p = all.find(x => x.uid === uid);
+  const base = new URL("feedback.html", location.href).href;
+  const q = new URLSearchParams({ h: hid }); if (uid){ q.set("s", uid); q.set("n", (p && (p.preferredName || p.fullName) || "").split(" ")[0]); }
+  return base + "?" + q.toString();
+}
+async function drawQr(){
+  const hid = $("qr-hotel").value; if (!hid){ $("qr-box").innerHTML = `<p class="hint">Pick a hotel first.</p>`; $("qr-link").textContent = ""; return; }
+  const url = feedbackLink(); $("qr-link").textContent = url;
+  try {
+    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202609112205"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
+    const q = qrLib(0, "M"); q.addData(url); q.make();
+    const who = $("qr-who").selectedOptions[0] ? $("qr-who").selectedOptions[0].textContent : "";
+    const hotel = hotels.find(h => h.id === hid) || {};
+    $("qr-box").innerHTML = `<div class="qrcard" id="qrcard"><div class="qrtitle">How was your evening?</div>${q.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}<div class="qrwho">${esc(who === "The whole team" ? hotel.name || "" : who)}</div><div class="qrfoot">Joy Boy Agency · scan &amp; tell us</div></div>`;
+  } catch (ex) { $("qr-box").innerHTML = `<p class="hint">${esc(ex.message || String(ex))}</p>`; }
+}
+$("qr-copy").addEventListener("click", async () => { try { await navigator.clipboard.writeText(feedbackLink()); toast("Link copied"); } catch { toast("Copy it from the line above"); } });
+$("qr-print").addEventListener("click", () => { if (!document.getElementById("qrcard")) return toast("Pick a hotel first"); document.body.classList.add("printing"); window.print(); setTimeout(() => document.body.classList.remove("printing"), 500); });
 
 $("btn-csv").addEventListener("click", () => {
   const cols = ["fullName","preferredName","email","phone","gender","dob","nationality","city","languages","skills","instruments","experienceYears","payMethod","bankName","accountName","iban","instapay","walletProvider","walletNumber","idType","idNumber","idExpiry","availableFrom","contractPref","relocate","tshirt","emergencyName","emergencyPhone","status","createdAt"];

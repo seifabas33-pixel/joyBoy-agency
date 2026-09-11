@@ -90,6 +90,11 @@ async function firebaseBackend(){
     enableOfficePush: email => registerPush(F.doc(db, "officeDevices", deviceKey()), { email: String(email || "") }),
     disableOfficePush: async () => { try { localStorage.setItem("jb-push", "off"); } catch {} try { await F.deleteDoc(F.doc(db, "officeDevices", deviceKey())); } catch {} },
     queueNotification: rec => F.setDoc(F.doc(F.collection(db, "notify")), { ...rec, createdAt: ts() }),
+    // guest feedback
+    feedbackRange: async (from, to) => { const s = await F.getDocs(F.query(F.collection(db, "feedback"), F.where("date", ">=", from), F.where("date", "<=", to))); return s.docs.map(att); },
+    myFeedback: async (uid, from) => { const s = await F.getDocs(F.query(F.collection(db, "feedback"), F.where("staffUid", "==", uid))); return s.docs.map(att).filter(r => !from || r.date >= from); },
+    deleteFeedback: id => F.deleteDoc(F.doc(db, "feedback", id)),
+    savePublicHotel: (id, data) => F.setDoc(F.doc(db, "publicHotels", id), data, { merge: true }),
     // pay: salary per person (admin-only, employees/{uid}/private/pay), sales items (settings/sales, readable by staff), sales and payroll records
     getPay: async uid => { const s = await F.getDoc(F.doc(db, "employees", uid, "private", "pay")); return s.exists() ? plain(s) : null; },
     setPay: (uid, data, by) => F.setDoc(F.doc(db, "employees", uid, "private", "pay"), { ...data, by, updatedAt: ts() }, { merge: true }),
@@ -181,6 +186,10 @@ function demoBackend(){
     enableOfficePush: async email => { set("officedev", { token: "demo-office-" + deviceKey(), email, updatedAt: now() }); try { localStorage.setItem("jb-push", "on"); } catch {} return "ok"; },
     disableOfficePush: async () => { localStorage.removeItem(K + "officedev"); try { localStorage.setItem("jb-push", "off"); } catch {} },
     queueNotification: async rec => { const n = get("notify") || {}; n["n" + Date.now()] = { ...rec, createdAt: now() }; set("notify", n); },
+    feedbackRange: async (from, to) => JSON.parse(localStorage.getItem("jb-demo-feedback") || "[]").map((r, i) => ({ id: "f" + i, ...r })).filter(r => r.date >= from && r.date <= to),
+    myFeedback: async (uid, from) => JSON.parse(localStorage.getItem("jb-demo-feedback") || "[]").map((r, i) => ({ id: "f" + i, ...r })).filter(r => r.staffUid === uid && (!from || r.date >= from)),
+    deleteFeedback: async id => { const all = JSON.parse(localStorage.getItem("jb-demo-feedback") || "[]"); all.splice(+String(id).slice(1), 1); localStorage.setItem("jb-demo-feedback", JSON.stringify(all)); },
+    savePublicHotel: async (id, data) => { const p = get("pubhotels") || {}; p[id] = { ...(p[id] || {}), ...data }; set("pubhotels", p); },
     getPay: async uid => get("pay-" + uid) || null,
     setPay: async (uid, data, by) => set("pay-" + uid, { ...(get("pay-" + uid) || {}), ...data, by, updatedAt: now() }),
     getSalesSettings: async () => get("salescfg") || {},
@@ -245,6 +254,25 @@ export function toast(msg){ let t = document.querySelector(".toast"); if (!t){ t
 export function waNumber(phone){ let d = String(phone || "").replace(/\D/g, ""); if (!d) return ""; if (d.startsWith("00")) d = d.slice(2); else if (d.startsWith("0") && d.length === 11) d = "20" + d.slice(1); return d.length >= 8 ? d : ""; }
 export const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 export function completeness(p){ const keys = ["photoPath","fullName","gender","dob","nationality","phone","city","emergencyName","emergencyPhone","idType","idNumber","idExpiry","idScanPath","payMethod","skills","experienceYears","availableFrom","contractPref","tshirt","languages"]; const n = keys.filter(k => { const v = p[k]; return Array.isArray(v) ? v.length : (v !== undefined && v !== null && v !== ""); }).length; return Math.round(100 * n / keys.length); }
+
+/* ─────────────── guest feedback: the public QR page, no account needed ─────────────── */
+export const STARS = [1, 2, 3, 4, 5];
+/** Minimal backend for feedback.html: signs in anonymously and writes one rating. */
+export async function initGuest(){
+  if (DEMO) return {
+    mode: "demo",
+    send: async rec => { const k = "jb-demo-feedback"; const all = JSON.parse(localStorage.getItem(k) || "[]"); all.push({ ...rec, createdAt: new Date().toISOString() }); localStorage.setItem(k, JSON.stringify(all)); },
+    publicHotel: async id => ({ name: "Demo Beach Resort", reviewUrl: "" }),
+  };
+  const [{ initializeApp }, A, F] = await Promise.all([import(FB + "firebase-app.js"), import(FB + "firebase-auth.js"), import(FB + "firebase-firestore.js")]);
+  const app = initializeApp(cfg), auth = A.getAuth(app), db = F.getFirestore(app);
+  if (!auth.currentUser) await A.signInAnonymously(auth);
+  return {
+    mode: "firebase",
+    send: rec => F.addDoc(F.collection(db, "feedback"), { ...rec, createdAt: F.serverTimestamp() }),
+    publicHotel: async id => { const s = await F.getDoc(F.doc(db, "publicHotels", id)); return s.exists() ? s.data() : null; },
+  };
+}
 
 /* ─────────────── attendance helpers (shared by employee page, admin page and the Sheets script) ─────────────── */
 export const TZ = "Africa/Cairo";

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-3kUv1Tj+iqAynFi9LxJqzMZ4j8ql4sZKWCc2fjXRd8Q='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta name="robots" content="noindex, nofollow">
+<title>Joy Boy Agency — How was your evening?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0D0A14">
+<link rel="icon" type="image/png" sizes="64x64" href="../media/img/favicon-64.png">
+<link rel="apple-touch-icon" href="../media/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="portal.css?v=202609112205">
+<script src="firebase-config.js?v=202609112205"></script>
+</head>
+<body class="guest">
+<main class="gwrap" id="main">
+  <div class="glangs" id="langs"></div>
+
+  <section id="s-ask">
+    <img class="glogo" src="../media/img/logo.jpg" alt="Joy Boy Agency" width="64" height="64">
+    <h1 id="t-title">How was your evening?</h1>
+    <p class="glead" id="t-lead">Thirty seconds, and it goes straight to the animation team.</p>
+    <p class="gwho" id="t-who" hidden></p>
+
+    <div class="stars" id="stars" role="radiogroup" aria-label="Rating"></div>
+    <p class="ghint" id="t-starhint">Tap a star</p>
+
+    <label class="f full"><span id="t-commentlabel">Anything you want to tell us?</span>
+      <textarea class="in" id="comment" maxlength="600" rows="4"></textarea></label>
+    <label class="f full"><span id="t-namelabel">Your name (optional)</span>
+      <input class="in" id="guest" maxlength="60" autocomplete="name"></label>
+
+    <div class="actions"><button class="btn" id="send" type="button" disabled>Send</button></div>
+    <p class="ghint" id="err" hidden></p>
+  </section>
+
+  <section id="s-done" hidden>
+    <div class="gdone">🎉</div>
+    <h1 id="t-thanks">Thank you!</h1>
+    <p class="glead" id="t-thanks2">Your words go to the team tonight.</p>
+    <p id="t-review-wrap" hidden><a class="btn ghost" id="t-review" href="#" target="_blank" rel="noopener noreferrer">Share it publicly too</a></p>
+  </section>
+
+  <p class="gfoot">Joy Boy Agency · <span id="t-foot">entertainment &amp; animation</span></p>
+</main>
+
+<script type="module">
+import { initGuest, dayKey, esc, toast } from "./portal.js?v=202609112205";
+
+const DICT = {
+  en: { lang: "English", title: "How was your evening?", lead: "Thirty seconds, and it goes straight to the animation team.",
+        who: n => `You are rating <b>${n}</b>`, whoHotel: n => `Animation team at <b>${n}</b>`,
+        starhint: "Tap a star", comment: "Anything you want to tell us?", name: "Your name (optional)", send: "Send", sending: "Sending…",
+        thanks: "Thank you!", thanks2: "Your words go to the team tonight.", review: "Share it publicly too", foot: "entertainment &amp; animation",
+        need: "Please tap a star first.", fail: "Could not send. Please check your connection and try again." },
+  de: { lang: "Deutsch", title: "Wie war Ihr Abend?", lead: "Dreißig Sekunden — und es geht direkt an das Animationsteam.",
+        who: n => `Sie bewerten <b>${n}</b>`, whoHotel: n => `Animationsteam im <b>${n}</b>`,
+        starhint: "Tippen Sie auf einen Stern", comment: "Möchten Sie uns etwas sagen?", name: "Ihr Name (freiwillig)", send: "Senden", sending: "Wird gesendet…",
+        thanks: "Vielen Dank!", thanks2: "Ihre Worte erreichen das Team noch heute Abend.", review: "Auch öffentlich teilen", foot: "Entertainment &amp; Animation",
+        need: "Bitte tippen Sie zuerst auf einen Stern.", fail: "Konnte nicht gesendet werden. Bitte Verbindung prüfen und erneut versuchen." },
+  it: { lang: "Italiano", title: "Com'è andata la serata?", lead: "Trenta secondi, e arriva dritto al team di animazione.",
+        who: n => `Stai valutando <b>${n}</b>`, whoHotel: n => `Team di animazione al <b>${n}</b>`,
+        starhint: "Tocca una stella", comment: "Vuoi dirci qualcosa?", name: "Il tuo nome (facoltativo)", send: "Invia", sending: "Invio…",
+        thanks: "Grazie!", thanks2: "Le tue parole arrivano al team stasera.", review: "Condividi anche pubblicamente", foot: "entertainment &amp; animation",
+        need: "Tocca prima una stella.", fail: "Invio non riuscito. Controlla la connessione e riprova." },
+};
+
+const q = new URLSearchParams(location.search);
+const hotelId = (q.get("h") || "").slice(0, 60), staffUid = (q.get("s") || "").slice(0, 60), staffName = (q.get("n") || "").slice(0, 40);
+let lang = (q.get("l") || (navigator.language || "en").slice(0, 2)).toLowerCase(); if (!DICT[lang]) lang = "en";
+let rating = 0, hotel = null, be = null, sending = false;
+
+const $ = id => document.getElementById(id);
+const T = () => DICT[lang];
+
+function paint(){
+  const t = T();
+  document.documentElement.lang = lang;
+  $("t-title").textContent = t.title; $("t-lead").textContent = t.lead;
+  $("t-starhint").textContent = rating ? "★".repeat(rating) : t.starhint;
+  $("t-commentlabel").textContent = t.comment; $("t-namelabel").textContent = t.name;
+  $("send").textContent = sending ? t.sending : t.send; $("send").disabled = sending || !rating;
+  $("t-thanks").textContent = t.thanks; $("t-thanks2").textContent = t.thanks2;
+  $("t-review").textContent = t.review; $("t-foot").innerHTML = t.foot;
+  const who = staffName ? t.who(esc(staffName)) : hotel && hotel.name ? t.whoHotel(esc(hotel.name)) : "";
+  $("t-who").innerHTML = who; $("t-who").hidden = !who;
+  $("langs").innerHTML = Object.keys(DICT).map(k => `<button type="button" class="${k === lang ? "on" : ""}" data-l="${k}">${DICT[k].lang}</button>`).join("");
+  $("langs").querySelectorAll("[data-l]").forEach(b => b.onclick = () => { lang = b.dataset.l; paint(); });
+  $("stars").innerHTML = [1, 2, 3, 4, 5].map(n => `<button type="button" role="radio" aria-checked="${n === rating}" aria-label="${n}" data-s="${n}" class="${n <= rating ? "on" : ""}">★</button>`).join("");
+  $("stars").querySelectorAll("[data-s]").forEach(b => b.onclick = () => { rating = +b.dataset.s; paint(); });
+}
+
+$("send").addEventListener("click", async () => {
+  if (!rating) { $("err").textContent = T().need; $("err").hidden = false; return; }
+  sending = true; $("err").hidden = true; paint();
+  try {
+    await be.send({ hotelId, hotelName: (hotel && hotel.name) || "", staffUid: staffUid || "", staffName, rating,
+      comment: $("comment").value.trim().slice(0, 600), guestName: $("guest").value.trim().slice(0, 60), lang, date: dayKey(), source: "qr" });
+    $("s-ask").hidden = true; $("s-done").hidden = false;
+    if (hotel && /^https:\/\//.test(hotel.reviewUrl || "")) { $("t-review").href = hotel.reviewUrl; $("t-review-wrap").hidden = false; }
+    window.scrollTo(0, 0);
+  } catch (ex) { $("err").textContent = T().fail + " (" + (ex.message || ex) + ")"; $("err").hidden = false; }
+  finally { sending = false; paint(); }
+});
+
+paint();
+try {
+  be = await initGuest();
+  if (hotelId) hotel = await be.publicHotel(hotelId).catch(() => null);
+  paint();
+} catch (ex) { $("err").textContent = String(ex.message || ex); $("err").hidden = false; }
+</script>
+</body>
+</html>

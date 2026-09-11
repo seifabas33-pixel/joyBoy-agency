@@ -346,3 +346,42 @@ tr.dirty td:first-child{box-shadow:inset 3px 0 0 var(--yellow)}
 /* ── reminders (2026-09-11) ── */
 .pushrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
 .pushrow .hint{flex:1 1 220px;margin:0}
+
+/* ── guest feedback page + the Guests tab (2026-09-12) ── */
+body.guest{display:block}
+.gwrap{max-width:520px;margin:0 auto;padding:26px 20px 40px;text-align:center}
+.glogo{border-radius:50%;width:64px;height:64px;object-fit:cover}
+.gwrap h1{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:clamp(28px,7vw,40px);font-weight:800;letter-spacing:-.02em;margin:14px 0 6px}
+.glead{color:var(--ink-2);font-size:15.5px;line-height:1.5}
+.gwho{margin-top:10px;font-size:15px;color:var(--ink-2)}
+.glangs{display:flex;gap:6px;justify-content:center;margin-bottom:8px}
+.glangs button{background:transparent;border:1px solid var(--line-2);color:var(--ink-3);border-radius:99px;padding:5px 12px;font:inherit;font-size:12.5px;cursor:pointer}
+.glangs button.on{background:var(--yellow);border-color:var(--yellow);color:var(--dark);font-weight:600}
+.stars{display:flex;justify-content:center;gap:4px;margin:22px 0 4px}
+.stars button{background:none;border:0;cursor:pointer;font-size:clamp(38px,11vw,52px);line-height:1;color:var(--line-2);padding:2px 4px;transition:transform .12s,color .12s}
+.stars button.on{color:var(--yellow)}
+.stars button:active{transform:scale(.9)}
+.ghint{color:var(--ink-3);font-size:13.5px;min-height:20px;letter-spacing:.12em}
+.gwrap .f{text-align:left;margin-top:14px}
+.gwrap .actions{justify-content:center;margin-top:18px}
+.gwrap .btn{min-width:180px;justify-content:center}
+.gdone{font-size:56px;margin-top:30px}
+.gfoot{margin-top:34px;color:var(--ink-3);font-size:12px;font-family:"IBM Plex Mono",monospace;letter-spacing:.08em}
+.feedlist{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.feed{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.feed .fh{display:flex;align-items:center;gap:8px}
+.feed .fh small{color:var(--ink-3);font-size:12px;flex:1}
+.fstars{color:var(--yellow);letter-spacing:2px}
+.feed .fc{margin-top:8px;font-size:14.5px;color:var(--ink-2);line-height:1.5}
+.qrbox{display:flex;justify-content:center;margin-top:12px}
+.qrcard{background:#fff;color:#0D0A14;border-radius:16px;padding:18px 18px 14px;width:260px;text-align:center}
+.qrcard svg{width:200px;height:200px;display:block;margin:8px auto}
+.qrtitle{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:17px;line-height:1.15}
+.qrwho{font-weight:700;font-size:15px;margin-top:2px}
+.qrfoot{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#6b6478;margin-top:6px}
+@media print{
+  body.printing{background:#fff}
+  body.printing>*{display:none!important}
+  body.printing .qrcard{display:block!important;position:fixed;inset:0;margin:auto;width:74mm;height:max-content;box-shadow:none}
+  body.printing .qrcard svg{width:56mm;height:56mm}
+}
