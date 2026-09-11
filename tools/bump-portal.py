@@ -18,11 +18,12 @@ def csp(hashes):
         f"frame-src https://{auth_domain} https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com",
         "manifest-src 'self'", "worker-src 'self'", "base-uri 'self'", "form-action 'self'", "object-src 'none'",
     ])
-for f in ["team/index.html", "team/admin.html"]:
+for f in ["team/index.html", "team/admin.html", "team/feedback.html"]:
     p = root / f; s = p.read_text()
     s = re.sub(r'from "\./portal\.js(\?v=\d+)?"', f'from "./portal.js?v={v}"', s)
     s = re.sub(r'href="portal\.css(\?v=\d+)?"', f'href="portal.css?v={v}"', s)
     s = re.sub(r'src="firebase-config\.js(\?v=\d+)?"', f'src="firebase-config.js?v={v}"', s)
+    s = re.sub(r's\.src = "qr\.js(\?v=\d+)?"', f's.src = "qr.js?v={v}"', s)
     s = re.sub(r'\n?<meta http-equiv="Content-Security-Policy"[^>]*>', "", s)      # drop the old policy, then hash the inline scripts
     hashes = [base64.b64encode(hashlib.sha256(m.group(1).encode()).digest()).decode() for m in re.finditer(r'<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>', s, re.S)]
     meta = f'<meta http-equiv="Content-Security-Policy" content="{csp(hashes)}">'

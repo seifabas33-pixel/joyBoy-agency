@@ -55,6 +55,29 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     // ── Pay & sales: written by the office only. Staff read their own sales, and their own payslip once it is marked paid. ──
+    // The only public documents in the project: a hotel's display name and its review link,
+    // so the QR page can greet a guest who is not signed in. Nothing else is exposed.
+    match /publicHotels/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ── Guest feedback from the QR cards. Written by guests (anonymous sign-in), read by the office.
+    // Staff may read the feedback that names them, so their card can show their own rating.
+    match /feedback/{id} {
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['hotelId', 'hotelName', 'staffUid', 'staffName', 'rating', 'comment', 'guestName', 'lang', 'date', 'createdAt', 'source'])
+        && request.resource.data.rating is int && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
+        && request.resource.data.hotelId is string && request.resource.data.hotelId.size() <= 60
+        && request.resource.data.date.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+        && request.resource.data.createdAt == request.time
+        && (!('comment' in request.resource.data) || (request.resource.data.comment is string && request.resource.data.comment.size() <= 600))
+        && (!('guestName' in request.resource.data) || (request.resource.data.guestName is string && request.resource.data.guestName.size() <= 60))
+        && (!('staffUid' in request.resource.data) || (request.resource.data.staffUid is string && request.resource.data.staffUid.size() <= 60));
+      allow read: if isAdmin() || (signedIn() && resource.data.staffUid == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
     // Phones of the office accounts, for decisions and tests. Admins only.
     match /officeDevices/{id} {
       allow read, write: if isAdmin();
