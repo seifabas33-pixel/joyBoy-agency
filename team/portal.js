@@ -43,9 +43,11 @@ async function firebaseBackend(){
     if (!cfg.vapidKey || /PASTE/.test(String(cfg.vapidKey))) throw new Error("Reminders are not switched on for the agency yet.");
     const perm = await Notification.requestPermission();
     if (perm !== "granted") throw new Error(perm === "denied" ? "Reminders are blocked for this site. Allow notifications in the browser settings, then try again." : "Reminders were not allowed.");
-    const reg = await navigator.serviceWorker.register("./firebase-messaging-sw.js", { scope: "./" });
-    const M = await import(FB + "firebase-messaging.js"), messaging = M.getMessaging(app);
-    const token = await M.getToken(messaging, { vapidKey: cfg.vapidKey, serviceWorkerRegistration: reg });
+    const step = async (what, fn) => { try { return await fn(); } catch (e) { throw new Error(what + ": " + (e && e.message ? e.message : String(e))); } };
+    const reg = await step("could not start the background service", () => navigator.serviceWorker.register("./firebase-messaging-sw.js", { scope: "./" }));
+    const M = await step("could not load the notification library", () => import(FB + "firebase-messaging.js"));
+    const messaging = M.getMessaging(app);
+    const token = await step("the notification service refused (close the app completely and open it again, so it picks up the newest version)", () => M.getToken(messaging, { vapidKey: cfg.vapidKey, serviceWorkerRegistration: reg }));
     if (!token) throw new Error("The browser did not give a reminder token. Try again in a moment.");
     await F.setDoc(ref, { token, ua: String(navigator.userAgent).slice(0, 300), updatedAt: ts(), ...(extra || {}) }, { merge: true });
     M.onMessage(messaging, p => { const d = (p && p.data) || {}, n = (p && p.notification) || {}; const t = n.title || d.title; if (t) toast(t + (n.body || d.body ? " — " + (n.body || d.body) : "")); });
