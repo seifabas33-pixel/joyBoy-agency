@@ -37,6 +37,21 @@ async function firebaseBackend(){
   const user = u => u ? { uid: u.uid, email: u.email, name: u.displayName || "", photo: u.photoURL || "", verified: !!u.emailVerified } : null;
   A.getRedirectResult(auth).catch(() => {});                                   // popup sign-in only; never block start-up on this
   const ts = () => F.serverTimestamp();
+  /** Ask for permission, register the service worker and store this phone's token at `ref`. */
+  async function registerPush(ref, extra){
+    if (typeof Notification === "undefined" || !("serviceWorker" in navigator)) throw new Error("This browser cannot show reminders. On an iPhone, add the portal to the Home screen first and open it from there.");
+    if (!cfg.vapidKey || /PASTE/.test(String(cfg.vapidKey))) throw new Error("Reminders are not switched on for the agency yet.");
+    const perm = await Notification.requestPermission();
+    if (perm !== "granted") throw new Error(perm === "denied" ? "Reminders are blocked for this site. Allow notifications in the browser settings, then try again." : "Reminders were not allowed.");
+    const reg = await navigator.serviceWorker.register("./firebase-messaging-sw.js", { scope: "./" });
+    const M = await import(FB + "firebase-messaging.js"), messaging = M.getMessaging(app);
+    const token = await M.getToken(messaging, { vapidKey: cfg.vapidKey, serviceWorkerRegistration: reg });
+    if (!token) throw new Error("The browser did not give a reminder token. Try again in a moment.");
+    await F.setDoc(ref, { token, ua: String(navigator.userAgent).slice(0, 300), updatedAt: ts(), ...(extra || {}) }, { merge: true });
+    M.onMessage(messaging, p => { const d = (p && p.data) || {}, n = (p && p.notification) || {}; const t = n.title || d.title; if (t) toast(t + (n.body || d.body ? " — " + (n.body || d.body) : "")); });
+    try { localStorage.setItem("jb-push", "on"); } catch {}
+    return token;
+  }
   const clean = d => { const o = {}; for (const k in d){ if (d[k] instanceof Date) o[k] = F.Timestamp.fromDate(d[k]); else if (d[k] && d[k].toDate) o[k] = d[k].toDate().toISOString(); else o[k] = d[k]; } return o; };
   // every Firestore Timestamp becomes an ISO string, whatever the field is called (setAt, decidedAt, …)
   const iso = d => { for (const k in d) if (d[k] && typeof d[k].toDate === "function") d[k] = d[k].toDate().toISOString(); return d; };
@@ -67,21 +82,11 @@ async function firebaseBackend(){
     setSettings: patch => F.setDoc(F.doc(db, "settings", "registration"), patch, { merge: true }),
     // push notifications: this device registers itself; tools/sheets-sync.gs sends to the stored tokens
     pushReady: () => typeof Notification !== "undefined" && "serviceWorker" in navigator && !!cfg.vapidKey && !/PASTE/.test(String(cfg.vapidKey)),
-    enablePush: async uid => {
-      if (typeof Notification === "undefined" || !("serviceWorker" in navigator)) throw new Error("This browser cannot show reminders. On an iPhone, add the portal to the Home screen first and open it from there.");
-      if (!cfg.vapidKey || /PASTE/.test(String(cfg.vapidKey))) throw new Error("Reminders are not switched on for the agency yet. Ask the office.");
-      const perm = await Notification.requestPermission();
-      if (perm !== "granted") throw new Error(perm === "denied" ? "Reminders are blocked for this site. Allow notifications in the browser settings, then try again." : "Reminders were not allowed.");
-      const reg = await navigator.serviceWorker.register("./firebase-messaging-sw.js", { scope: "./" });
-      const M = await import(FB + "firebase-messaging.js"), messaging = M.getMessaging(app);
-      const token = await M.getToken(messaging, { vapidKey: cfg.vapidKey, serviceWorkerRegistration: reg });
-      if (!token) throw new Error("The browser did not give a reminder token. Try again in a moment.");
-      await F.setDoc(F.doc(db, "employees", uid, "devices", deviceKey()), { token, ua: String(navigator.userAgent).slice(0, 300), updatedAt: ts() }, { merge: true });
-      M.onMessage(messaging, p => { const d = (p && p.data) || {}, n = (p && p.notification) || {}; const t = n.title || d.title; if (t) toast(t + (n.body || d.body ? " — " + (n.body || d.body) : "")); });
-      try { localStorage.setItem("jb-push", "on"); } catch {}
-      return token;
-    },
+    enablePush: uid => registerPush(F.doc(db, "employees", uid, "devices", deviceKey())),
     disablePush: async uid => { try { localStorage.setItem("jb-push", "off"); } catch {} try { await F.deleteDoc(F.doc(db, "employees", uid, "devices", deviceKey())); } catch {} },
+    // the office's own phone: decisions, staff notes and the test message
+    enableOfficePush: email => registerPush(F.doc(db, "officeDevices", deviceKey()), { email: String(email || "") }),
+    disableOfficePush: async () => { try { localStorage.setItem("jb-push", "off"); } catch {} try { await F.deleteDoc(F.doc(db, "officeDevices", deviceKey())); } catch {} },
     queueNotification: rec => F.setDoc(F.doc(F.collection(db, "notify")), { ...rec, createdAt: ts() }),
     // pay: salary per person (admin-only, employees/{uid}/private/pay), sales items (settings/sales, readable by staff), sales and payroll records
     getPay: async uid => { const s = await F.getDoc(F.doc(db, "employees", uid, "private", "pay")); return s.exists() ? plain(s) : null; },
@@ -171,6 +176,8 @@ function demoBackend(){
     pushReady: () => true,
     enablePush: async uid => { const t = "demo-token-" + deviceKey(); set("dev-" + uid, { token: t, updatedAt: now() }); try { localStorage.setItem("jb-push", "on"); } catch {} return t; },
     disablePush: async uid => { localStorage.removeItem(K + "dev-" + uid); try { localStorage.setItem("jb-push", "off"); } catch {} },
+    enableOfficePush: async email => { set("officedev", { token: "demo-office-" + deviceKey(), email, updatedAt: now() }); try { localStorage.setItem("jb-push", "on"); } catch {} return "ok"; },
+    disableOfficePush: async () => { localStorage.removeItem(K + "officedev"); try { localStorage.setItem("jb-push", "off"); } catch {} },
     queueNotification: async rec => { const n = get("notify") || {}; n["n" + Date.now()] = { ...rec, createdAt: now() }; set("notify", n); },
     getPay: async uid => get("pay-" + uid) || null,
     setPay: async (uid, data, by) => set("pay-" + uid, { ...(get("pay-" + uid) || {}), ...data, by, updatedAt: now() }),
