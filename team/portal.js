@@ -213,6 +213,13 @@ export function dayKey(d = new Date()){ return new Intl.DateTimeFormat("en-CA", 
 /** HH:MM in Egypt time. */
 export function hhmm(d){ if (!d) return ""; if (typeof d.toDate === "function") d = d.toDate(); const t = new Date(d); if (isNaN(t)) return ""; return new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(t); }
 export function addDays(key, n){ const d = new Date(key + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+/** A Cairo wall-clock time on a given day → Date (handles the local offset for that day). */
+export function fromCairo(dateKey, time){
+  const [y, m, d] = String(dateKey).split("-").map(Number), [H, M] = String(time).split(":").map(Number), want = Date.UTC(y, m - 1, d, H, M);
+  let t = want;
+  for (let i = 0; i < 2; i++){ const g = {}; new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(t)).forEach(p => { g[p.type] = p.value; }); t += want - Date.UTC(+g.year, +g.month - 1, +g.day, +g.hour, +g.minute); }
+  return new Date(t);
+}
 export const toMin = t => { const m = /^(\d{1,2}):(\d{2})$/.exec(String(t || "").trim()); return m ? (+m[1]) * 60 + (+m[2]) : null; };
 /** Metres between two points (haversine). */
 /* Same maths as insideFence() in firestore.rules (equirectangular with the hotel's stored cosLat), so the phone predicts the server's answer. */

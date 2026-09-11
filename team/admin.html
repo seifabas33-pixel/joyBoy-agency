@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-UJPH8gvel1t87aec0nUf3yptOToETFtQeg+xyKf88rE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-QRTU9R2QumRPa0VrgV8zTs7JIKm1I49BrfpIrm8Gjhc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609091438">
-<script src="firebase-config.js?v=202609091438"></script>
+<link rel="stylesheet" href="portal.css?v=202609111217">
+<script src="firebase-config.js?v=202609111217"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 </head>
 <body>
@@ -45,7 +45,7 @@
 
   <section id="s-admin" hidden>
     <div class="hero" style="padding-top:18px"><span class="eyebrow" id="view-eyebrow">Roster</span><h1 style="font-size:clamp(30px,5vw,48px)" id="view-title">Team <em>registrations</em></h1></div>
-    <div class="tabs" role="tablist"><button class="on" data-view="roster" role="tab">Roster</button><button data-view="att" role="tab">Attendance</button><button data-view="sched" role="tab">Schedule</button><button data-view="prog" role="tab">Programme</button><button data-view="pay" role="tab">Pay &amp; sales</button><button data-view="hotels" role="tab">Hotels &amp; office</button></div>
+    <div class="tabs" role="tablist"><button class="on" data-view="today" role="tab">Today</button><button data-view="roster" role="tab">Roster</button><button data-view="att" role="tab">Attendance</button><button data-view="sched" role="tab">Schedule</button><button data-view="prog" role="tab">Programme</button><button data-view="pay" role="tab">Pay &amp; sales</button><button data-view="hotels" role="tab">Hotels &amp; office</button></div>
 
     <div id="v-pay" hidden>
       <div class="paytabs"><button class="on" data-pv="sales" type="button">Sales</button><button data-pv="payroll" type="button">Payroll</button><button data-pv="items" type="button">Items &amp; commission</button></div>
@@ -192,7 +192,15 @@
       </div>
     </div>
 
-    <div id="v-roster">
+    <div id="v-today" hidden>
+      <div class="toolbar"><select class="in" id="td-hotel"><option value="">All hotels</option></select><span class="hint" id="td-when"></span><span style="flex:1"></span><button class="btn ghost small" id="td-refresh" type="button">Refresh</button></div>
+      <div class="stats" id="td-stats"></div>
+      <div class="decide" id="td-decide"></div>
+      <div class="todaygrid" id="td-hotels"></div>
+      <div class="todaygrid"><div class="card" id="td-prog"></div><div class="card" id="td-sales"></div></div>
+    </div>
+
+    <div id="v-roster" hidden>
     <div class="stats" id="stats"></div>
     <div class="toolbar">
       <input class="in" id="q" placeholder="Search name, email, city…">
@@ -215,11 +223,19 @@
 </main>
 
 <div class="drawer" id="drawer"><div class="bg" id="drawer-bg"></div><div class="panel" id="panel"></div></div>
+<div class="drawer" id="edit"><div class="bg" id="edit-bg"></div><div class="panel small">
+  <button class="close" id="edit-close" aria-label="Close">×</button>
+  <p class="eyebrow">Correct a check-in</p><h2 id="e-title" style="font-size:22px;font-weight:800;margin-top:4px"></h2><p class="hint" id="e-sub"></p>
+  <div class="grid" style="margin-top:14px"><label class="f"><span>Check-in</span><input class="in" type="time" id="e-in"></label><label class="f"><span>Check-out</span><input class="in" type="time" id="e-out"></label>
+  <label class="f full"><span>Reason <b class="req">*</b> — kept with the record and shown as "edited"</span><input class="in" id="e-why" maxlength="140" placeholder="forgot to check out · phone died · came with the late bus"></label></div>
+  <div class="actions"><button class="btn small" id="e-save" type="button">Save</button><span style="flex:1"></span><button class="btn ghost small" id="e-del" type="button" style="border-color:rgba(255,77,46,.6);color:#FFB3A3" hidden>Remove check-in</button></div>
+  <p class="hint" id="e-hist" style="margin-top:12px"></p>
+</div></div>
 <footer class="small">Joy Boy Agency · Team admin · Personal data — do not share exports outside the office.</footer>
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem } from "./portal.js?v=202609091438";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift } from "./portal.js?v=202609111217";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -296,8 +312,8 @@ $("drawer-bg").addEventListener("click", closeDrawer);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
 
 /* ── views ── */
-const VIEWS = { roster: ["Roster", "Team <em>registrations</em>"], att: ["Attendance", "Who is <em>on the floor</em>"], sched: ["Schedule", "Who works <em>when</em>"], prog: ["Programme", "What <em>happens</em> today"], pay: ["Pay & sales", "Salaries, <em>sales</em> and payslips"], hotels: ["Hotels & office", "Where the <em>teams</em> work"] };
-function setView(v){ document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === v)); ["roster","att","sched","prog","pay","hotels"].forEach(k => show("v-" + k, k === v)); $("view-eyebrow").textContent = VIEWS[v][0]; $("view-title").innerHTML = VIEWS[v][1]; if (v === "att") loadAtt(); if (v === "sched") loadWeek(); if (v === "prog") loadProg(); if (v === "pay") loadPay(); if (v === "hotels"){ paintHotels(); paintAdmins(); } location.hash = v; }
+const VIEWS = { today: ["Today", "At a <em>glance</em>"], roster: ["Roster", "Team <em>registrations</em>"], att: ["Attendance", "Who is <em>on the floor</em>"], sched: ["Schedule", "Who works <em>when</em>"], prog: ["Programme", "What <em>happens</em> today"], pay: ["Pay & sales", "Salaries, <em>sales</em> and payslips"], hotels: ["Hotels & office", "Where the <em>teams</em> work"] };
+function setView(v){ document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === v)); ["today","roster","att","sched","prog","pay","hotels"].forEach(k => show("v-" + k, k === v)); $("view-eyebrow").textContent = VIEWS[v][0]; $("view-title").innerHTML = VIEWS[v][1]; if (v === "today") loadToday(); if (v === "att") loadAtt(); if (v === "sched") loadWeek(); if (v === "prog") loadProg(); if (v === "pay") loadPay(); if (v === "hotels"){ paintHotels(); paintAdmins(); } location.hash = v; }
 document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
 
 /* ── hotels ── */
@@ -422,12 +438,12 @@ async function decideDay(uid, code){
 }
 /* the plan (spots + roster) for a hotel and day: today's tab cache first, then the payroll month cache */
 function plansFor(hotelId, day){ if (day === attDay && attPlans[hotelId] !== undefined) return attPlans[hotelId]; return (prPlans || []).find(p => p.hotelId === hotelId && p.date === day) || null; }
-function attRows(day, recs){
+function attRows(day, recs, planMap){
   // every approved person with a hotel gets a row, plus anyone who has a record that day
   const staff = all.filter(p => p.status === "approved" && p.hotelId && day >= String(p.createdAt || "").slice(0, 10));
   const rows = staff.map(p => ({ p, hotelId: p.hotelId }));
   recs.forEach(r => { if (!rows.some(x => x.p.uid === r.uid)) rows.push({ p: all.find(p => p.uid === r.uid) || { uid: r.uid, fullName: r.name, email: r.email }, hotelId: r.hotelId }); });
-  return rows.map(x => { const hotel = hotels.find(h => h.id === x.hotelId) || {}, allShifts = hotelShifts(hotel), shifts = scheduledShifts(allShifts, plansFor(x.hotelId, day), x.p.uid), dayRec = recs.find(r => r.uid === x.p.uid && !r.shift) || null, srecs = recs.filter(r => r.uid === x.p.uid && r.shift);
+  return rows.map(x => { const hotel = hotels.find(h => h.id === x.hotelId) || {}, allShifts = hotelShifts(hotel), shifts = scheduledShifts(allShifts, planMap ? (planMap[x.hotelId] || null) : plansFor(x.hotelId, day), x.p.uid), dayRec = recs.find(r => r.uid === x.p.uid && !r.shift) || null, srecs = recs.filter(r => r.uid === x.p.uid && r.shift);
     return { ...x, hotel, allShifts, shifts, dayRec, srecs, day: dayStatus(dayRec, srecs, shifts, hotel, day, dayKey()) }; });
 }
 function paintPlan(rowsHotels){
@@ -467,13 +483,15 @@ function paintAttInner(){
   // table: one column per shift (names from the first hotel shown), then the day
   const maxS = Math.max(0, ...rows.map(x => x.allShifts.length)), names = (rows[0] ? rows[0].allShifts : []).map(x => x.name), same = rows.every(x => x.allShifts.map(y => y.name).join("|") === names.join("|"));
   $("a-head").innerHTML = `<tr><th>Person</th><th>Hotel</th>${Array.from({ length: maxS }, (_, i) => `<th>${same && names[i] ? esc(names[i]) : "Shift " + (i + 1)}</th>`).join("")}<th>Day</th><th>Day mark</th></tr>`;
-  const cell = (y, sh) => !y ? (sh ? `<td class="cell-shift dim">off</td>` : "<td>—</td>") : `<td class="cell-shift">${y.rec && y.rec.checkInAt ? `${hhmm(y.rec.checkInAt)}${y.rec.checkOutAt ? " → " + hhmm(y.rec.checkOutAt) : ""}` : "—"}<br><span class="status att-${y.st.review ? "review" : y.st.code}">${y.st.review ? "Late" : ATT_LABEL[y.st.code]}</span>${y.st.auto ? "" : " <small class='hint'>manual</small>"}${y.rec && (y.rec.spotName || y.rec.distM != null) ? `<small>${esc(y.rec.spotName || "")}${y.rec.distM != null ? ` ${y.rec.distM} m` : ""}</small>` : ""}</td>`;
+  const pen = (uid, sh) => `<button class="lnk pen" type="button" data-tedit="${esc(uid)}|${sh.key}" title="Correct the times">✎</button>`;
+  const cell = (y, sh, uid) => !y ? (sh ? `<td class="cell-shift dim">off ${pen(uid, sh)}</td>` : "<td>—</td>") : `<td class="cell-shift">${y.rec && y.rec.checkInAt ? `${hhmm(y.rec.checkInAt)}${y.rec.checkOutAt ? " → " + hhmm(y.rec.checkOutAt) : ""}` : "—"} ${pen(uid, sh)}<br><span class="status att-${y.st.review ? "review" : y.st.code}">${y.st.review ? "Late" : ATT_LABEL[y.st.code]}</span>${y.st.auto ? "" : " <small class='hint'>manual</small>"}${y.rec && y.rec.editedBy ? ` <small class='hint' title='${esc(y.rec.editReason || "")}'>edited</small>` : ""}${y.rec && (y.rec.spotName || y.rec.distM != null) ? `<small>${esc(y.rec.spotName || "")}${y.rec.distM != null ? ` ${y.rec.distM} m` : ""}</small>` : ""}</td>`;
   $("a-rows").innerHTML = rows.map(x => `<tr data-uid="${esc(x.p.uid)}" style="cursor:default">
     <td><div class="who"><img src="${esc(x.p.photoThumb || "../media/img/logo.jpg")}" alt=""><div><b>${esc(x.p.fullName || x.p.email || "—")}</b><small>${esc(x.p.email || "")}</small></div></div></td>
-    <td>${esc(x.hotel.name || hotelName(x.hotelId))}</td>${Array.from({ length: maxS }, (_, i) => { const sh = x.allShifts[i]; return cell(sh ? (x.day.shifts || []).find(y => y.shift.key === sh.key) : null, sh); }).join("")}
+    <td>${esc(x.hotel.name || hotelName(x.hotelId))}</td>${Array.from({ length: maxS }, (_, i) => { const sh = x.allShifts[i]; return cell(sh ? (x.day.shifts || []).find(y => y.shift.key === sh.key) : null, sh, x.p.uid); }).join("")}
     <td><span class="status att-${x.day.review ? "review" : x.day.code}">${dayLabel(x.day)}</span>${x.day.auto ? "" : " <small class='hint'>manual</small>"}${x.dayRec && x.dayRec.checkInAt ? `<br><small class="hint">in ${hhmm(x.dayRec.checkInAt)}${x.dayRec.checkOutAt ? " → " + hhmm(x.dayRec.checkOutAt) : ""} (old day format)</small>` : ""}</td>
     <td><select class="in tiny" data-ov="${esc(x.p.uid)}"><option value="">auto</option>${ATT_OVERRIDES.map(c => `<option value="${c}" ${x.dayRec && x.dayRec.override === c ? "selected" : ""}>${ATT_LABEL[c]}</option>`).join("")}</select></td></tr>`).join("");
   show("a-empty", rows.length === 0);
+  $("a-rows").querySelectorAll("[data-tedit]").forEach(b => b.onclick = () => { const [uid, sk] = b.dataset.tedit.split("|"); openEdit(uid, sk); });
   $("a-rows").querySelectorAll("[data-ov]").forEach(sel => sel.onchange = async () => {
     const uid = sel.dataset.ov, x = rows.find(r => r.p.uid === uid), id = `${uid}_${attDay}`, ov = sel.value || null;
     try {
@@ -757,6 +775,63 @@ $("w-copy").addEventListener("click", async () => {
 });
 $("w-reset").addEventListener("click", () => { if (!confirm("Clear this week's schedule so everyone works every shift?")) return; wDays().forEach(d => { if (Object.keys(wRoster[d]).length){ Object.keys(wRoster[d]).forEach(u => wDirty.add(u + "|" + d)); wDirty.add("*|" + d); } wRoster[d] = {}; }); $("w-save").disabled = wDirty.size === 0; paintWeek(); });
 
+/* ── correct a check-in: set / fix / remove the times of one shift, with a reason ── */
+let editCtx = null;
+function openEdit(uid, shiftKey){
+  const x = attRows(attDay, attRecs).find(r => r.p.uid === uid); if (!x) return;
+  const sh = x.allShifts.find(s => s.key === shiftKey) || { key: shiftKey, name: shiftKey, start: "", end: "" }, rec = x.srecs.find(r => r.shift === shiftKey) || null;
+  editCtx = { x, sh, rec };
+  $("e-title").textContent = `${x.p.fullName || x.p.email} · ${sh.name}`; $("e-sub").textContent = `${attDay} · ${x.hotel.name || ""} · shift ${sh.start}–${sh.end || "?"}`;
+  $("e-in").value = rec && rec.checkInAt ? hhmm(rec.checkInAt) : ""; $("e-out").value = rec && rec.checkOutAt ? hhmm(rec.checkOutAt) : ""; $("e-why").value = "";
+  show("e-del", !!(rec && rec.checkInAt));
+  $("e-hist").textContent = rec && rec.editedBy ? `Last edited by ${rec.editedBy}${rec.editedAt ? " at " + hhmm(rec.editedAt) : ""}: ${rec.editReason || ""}` : rec && rec.checkInAt ? `Recorded from the phone${rec.spotName ? " at the " + rec.spotName : ""}${rec.distM != null ? `, ${rec.distM} m from the pin` : ""}.` : "No check-in recorded for this shift. Set the times to add one by hand.";
+  $("edit").classList.add("open"); $("e-in").focus();
+}
+const closeEdit = () => { $("edit").classList.remove("open"); editCtx = null; };
+$("edit-bg").addEventListener("click", closeEdit); $("edit-close").addEventListener("click", closeEdit);
+async function saveEdit(remove){
+  if (!editCtx) return; const { x, sh, rec } = editCtx, why = $("e-why").value.trim(); if (why.length < 3) return toast("Write the reason first");
+  const id = `${x.p.uid}_${attDay}_${sh.key}`, inV = $("e-in").value, outV = $("e-out").value;
+  const patch = { uid: x.p.uid, email: x.p.email || "", name: x.p.fullName || "", hotelId: x.hotelId, hotelName: x.hotel.name || "", date: attDay, shift: sh.key, shiftName: sh.name, editedBy: user.email, editedAt: new Date().toISOString(), editReason: why, source: rec && rec.checkInAt ? (rec.source || "edited") : "manual" };
+  if (remove){ patch.checkInAt = null; patch.checkOutAt = null; }
+  else { if (!inV) return toast("Set the check-in time"); if (outV && toMin(outV) <= toMin(inV)) return toast("Check-out must be after check-in"); patch.checkInAt = fromCairo(attDay, inV); patch.checkOutAt = outV ? fromCairo(attDay, outV) : null; }
+  try { await be.setAttendance(id, patch); toast(remove ? "Check-in removed" : `Saved: ${sh.name} ${inV}${outV ? " → " + outV : ""}`); closeEdit(); loadAtt(); } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
+}
+$("e-save").addEventListener("click", () => saveEdit(false));
+$("e-del").addEventListener("click", () => { if (confirm("Remove this check-in? The shift then counts as not attended unless you mark it.")) saveEdit(true); });
+
+/* ── Today: one screen with what matters right now ── */
+let tdRecs = [], tdReqs = [], tdPlans = {}, tdSales = [];
+$("td-refresh").addEventListener("click", loadToday); $("td-hotel").addEventListener("change", paintToday);
+async function loadToday(){
+  const today = dayKey(), keep = $("td-hotel").value; $("td-hotel").innerHTML = `<option value="">All hotels</option>` + hotels.filter(h => h.active !== false).map(h => `<option value="${esc(h.id)}">${esc(h.name)}</option>`).join(""); if ([...$("td-hotel").options].some(o => o.value === keep)) $("td-hotel").value = keep;
+  $("td-when").textContent = `${today} · ${hhmm(new Date())} Egypt time`;
+  try { const [recs, reqs, plans, sales] = await Promise.all([be.attendanceOn(today), be.requestsOn(today).catch(() => []), be.plansRange(today, today).catch(() => []), be.salesOn(today).catch(() => [])]); tdRecs = recs; tdReqs = reqs; tdPlans = Object.fromEntries(plans.map(p => [p.hotelId, p])); tdSales = sales; }
+  catch (ex) { toast("Could not load today: " + (ex.message || ex)); }
+  paintToday();
+}
+function paintToday(){
+  const today = dayKey(), now = toMin(hhmm(new Date())), hf = $("td-hotel").value, hs = hotels.filter(h => h.active !== false && (!hf || h.id === hf));
+  const rows = attRows(today, tdRecs, tdPlans).filter(x => !hf || x.hotelId === hf);
+  const started = sh => now > toMin(sh.start) + (sh.graceMin != null ? +sh.graceMin : 5);
+  let inNow = 0, expNow = 0; const late = [], missing = [];
+  rows.forEach(x => (x.day.shifts || []).forEach(y => { if (y.st.review) late.push({ x, y }); if (started(y.shift) && !(y.rec && y.rec.checkInAt) && !(x.dayRec && x.dayRec.override)) missing.push({ x, y }); }));
+  hs.forEach(h => { const cur = currentShift(hotelShifts(h), now); if (!cur) return; rows.filter(x => x.hotelId === h.id).forEach(x => { const y = (x.day.shifts || []).find(z => z.shift.key === cur.key); if (!y) return; expNow++; if (y.rec && y.rec.checkInAt) inNow++; }); });
+  const openReqs = tdReqs.filter(r => r.status === "open" && (!hf || r.hotelId === hf)), salesLines = tdSales.filter(s => !hf || s.hotelId === hf);
+  $("td-stats").innerHTML = [["Expected today", rows.filter(x => x.shifts.length).length], ["In the current shift", `${inNow} / ${expNow}`], ["Missed check-ins so far", missing.length], ["Need a decision", late.length + openReqs.length], ["Sales lines today", salesLines.length]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+  $("td-decide").innerHTML = (late.length + openReqs.length) ? `<div class="d"><div><b>${late.length + openReqs.length} to decide</b><br><small>${late.map(({ x, y }) => `${esc((x.p.fullName || x.p.email).split(" ")[0])} · ${esc(y.shift.name)} ${y.st.lateMin} min late`).concat(openReqs.map(r => `${esc((r.name || r.email).split(" ")[0])} · note${r.shiftName ? " · " + esc(r.shiftName) : ""}`)).join(" &nbsp;·&nbsp; ")}</small></div><span class="acts"><button class="btn small" type="button" id="td-goatt">Decide in Attendance</button></span></div>` : "";
+  const g = $("td-goatt"); if (g) g.onclick = () => { attDay = today; $("a-date").value = today; setView("att"); };
+  $("td-hotels").innerHTML = hs.map(h => { const shifts = hotelShifts(h), cur = currentShift(shifts, now), plan = tdPlans[h.id], hr = rows.filter(x => x.hotelId === h.id);
+    return `<div class="card tcard"><h2>${esc(h.name)}</h2><p class="hint">${hr.filter(x => x.shifts.length).length} scheduled · ${hr.filter(x => !x.shifts.length).length} off${plan && plan.setBy ? "" : " · no spot plan today"}</p>` + shifts.map(sh => { const sp = plannedSpot(h, plan, sh.key), ppl = hr.filter(x => x.shifts.some(s => s.key === sh.key)), inN = ppl.filter(x => (x.day.shifts || []).some(y => y.shift.key === sh.key && y.rec && y.rec.checkInAt)).length, miss = ppl.filter(x => !(x.day.shifts || []).some(y => y.shift.key === sh.key && y.rec && y.rec.checkInAt) && !(x.dayRec && x.dayRec.override)), isCur = cur && cur.key === sh.key, over = now > shiftEnd(sh);
+      return `<div class="tshift ${isCur ? "now" : ""} ${over ? "over" : ""}"><div><b>${esc(sh.name)}</b> <small>${esc(sh.start)}–${esc(sh.end || "?")} · ${sp ? "at the " + esc(sp.name) : "anywhere"}</small>${started(sh) && miss.length ? `<div class="tmiss">${over ? "missed" : "not in yet"}: ${miss.map(x => esc((x.p.preferredName || x.p.fullName || x.p.email).split(" ")[0])).join(", ")}</div>` : ""}</div><span class="status ${inN >= ppl.length && ppl.length ? "att-present" : started(sh) ? "att-review" : "att-pending"}">${inN} / ${ppl.length}</span></div>`; }).join("") + `</div>`; }).join("") || `<p class="hint">No active hotel.</p>`;
+  const tasks = hs.flatMap(h => sortTasks(tdPlans[h.id] && tdPlans[h.id].tasks).map(t => ({ ...t, hotel: h.name }))).sort((a, b) => String(a.time).localeCompare(String(b.time)));
+  const upcoming = tasks.filter(t => toMin(t.end || t.time) + 30 >= now);
+  $("td-prog").innerHTML = `<h2>Programme</h2>` + (tasks.length ? `<div class="tasks" style="margin-top:8px">${(upcoming.length ? upcoming : tasks.slice(-3)).slice(0, 8).map(t => `<div class="task mine ${toMin(t.time) <= now && now <= toMin(t.end || t.time) + 30 ? "next" : ""}"><span class="tm">${esc(t.time)}${t.end ? `<small>until ${esc(t.end)}</small>` : ""}</span><div><b>${esc(t.title)}</b>${t.place ? `<div class="pl">${esc(t.place)}${hs.length > 1 ? " · " + esc(t.hotel) : ""}</div>` : ""}<div class="who">${t.all ? "<span>everyone</span>" : (t.names || []).map(n => `<span>${esc(n.split(" ")[0])}</span>`).join("")}</div></div></div>`).join("")}</div><p class="hint" style="margin-top:8px">${tasks.length} activities today${upcoming.length ? `, ${upcoming.length} still to come` : ", all done"}.</p>` : `<p class="hint" style="margin-top:8px">Nothing planned for today yet.</p>`) + `<div class="actions"><button class="btn ghost small" type="button" data-go="prog">Open Programme</button></div>`;
+  $("td-sales").innerHTML = `<h2>Sales today</h2>` + (salesLines.length ? `<p style="margin-top:8px"><b>${moneyMap(sumMaps(salesLines, saleAmounts))}</b><br><small class="hint">${salesLines.length} lines · commission ${moneyMap(sumMaps(salesLines, saleCommissions))}</small></p><table class="mini"><tbody>${[...new Set(salesLines.map(s => s.uid))].map(u => { const mine = salesLines.filter(s => s.uid === u); return `<tr><td>${esc((mine[0].name || "").split(" ")[0])}</td><td>${mine.map(s => esc(s.itemName)).join(", ")}</td><td>${moneyMap(sumMaps(mine, saleAmounts))}</td></tr>`; }).join("")}</tbody></table>` : `<p class="hint" style="margin-top:8px">No sales recorded yet today.</p>`) + `<div class="actions"><button class="btn ghost small" type="button" data-go="pay">Record sales</button></div>`;
+  document.querySelectorAll("#v-today [data-go]").forEach(b => b.onclick = () => setView(b.dataset.go));
+}
+const shiftEnd = sh => toMin(sh.end) ?? (toMin(sh.start) + 180);
+
 $("btn-csv").addEventListener("click", () => {
   const cols = ["fullName","preferredName","email","phone","gender","dob","nationality","city","languages","skills","instruments","experienceYears","payMethod","bankName","accountName","iban","instapay","walletProvider","walletNumber","idType","idNumber","idExpiry","availableFrom","contractPref","relocate","tshirt","emergencyName","emergencyPhone","status","createdAt"];
   const cell = v => { let t = String(Array.isArray(v) ? v.join("; ") : (v ?? "")); if (/^[=+\-@\t\r]/.test(t) || /^0\d+$/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
@@ -791,7 +866,7 @@ try {
     if (!(await isAdminUser(be, u.email))){ $("deny-msg").textContent = `${u.email} is not an office account. An existing admin can add it under Hotels & office → Office accounts.`; return show("s-deny", true); }
     show("s-admin", true);
     try { [all, hotels] = await Promise.all([be.listEmployees(), be.listHotels()]); render(); paintHotels(); } catch (ex) { err("Could not load the roster: " + (ex.message || ex)); }
-    const v = location.hash.replace("#", ""); if (VIEWS[v] && v !== "roster") setView(v);
+    const v = location.hash.replace("#", ""); setView(VIEWS[v] ? v : "today");
   });
 } catch (ex) { err("The admin page could not start: " + (ex.message || ex)); }
 </script>
