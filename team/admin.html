@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-QRTU9R2QumRPa0VrgV8zTs7JIKm1I49BrfpIrm8Gjhc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-8vweVA+stTDnKG2ftciLOjHy0J8Fc90t8Os5mYa+iak='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609111217">
-<script src="firebase-config.js?v=202609111217"></script>
+<link rel="stylesheet" href="portal.css?v=202609112116">
+<script src="firebase-config.js?v=202609112116"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 </head>
 <body>
@@ -118,6 +118,7 @@
         <select class="in" id="p-hotel"></select>
         <span style="flex:1"></span>
         <button class="btn ghost small" id="p-copy" type="button">Copy yesterday</button>
+        <button class="btn ghost small" id="p-notify" type="button">Notify the team</button>
         <button class="btn small" id="p-share" type="button">Share on WhatsApp</button>
       </div>
       <div class="card">
@@ -197,7 +198,12 @@
       <div class="stats" id="td-stats"></div>
       <div class="decide" id="td-decide"></div>
       <div class="todaygrid" id="td-hotels"></div>
-      <div class="todaygrid"><div class="card" id="td-prog"></div><div class="card" id="td-sales"></div></div>
+      <div class="todaygrid"><div class="card" id="td-prog"></div><div class="card" id="td-sales"></div>
+        <div class="card"><h2>Send a message</h2><p class="hint" style="margin-top:6px">Reaches the phones of everyone who turned reminders on.</p>
+          <div class="grid" style="margin-top:10px"><label class="f full"><span>Message</span><input class="in" id="nt-body" maxlength="160" placeholder="Meeting at 19:30 at the theatre · bring the white costumes"></label>
+          <label class="f"><span>To</span><select class="in" id="nt-who"></select></label></div>
+          <div class="actions"><button class="btn small" id="nt-send" type="button">Send</button><span class="hint" id="nt-hint"></span></div></div>
+      </div>
     </div>
 
     <div id="v-roster" hidden>
@@ -235,7 +241,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift } from "./portal.js?v=202609111217";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift } from "./portal.js?v=202609112116";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -581,6 +587,13 @@ $("p-copy").addEventListener("click", async () => {
   const cur = sortTasks(progPlan && progPlan.tasks); if (cur.length && !confirm(`Add yesterday's ${src.length} activities to the ${cur.length} already planned for ${progDay}?`)) return;
   await saveTasks([...cur, ...src.map(t => ({ ...t, id: taskId() }))]);
 });
+$("p-notify").addEventListener("click", async () => {
+  const h = progHotel(); if (!h) return; const tasks = sortTasks(progPlan && progPlan.tasks);
+  if (!tasks.length) return toast("Nothing planned for this day yet");
+  const b = $("p-notify"); b.disabled = true;
+  await queueNote({ title: progDay === dayKey() ? "Today's programme" : "Programme " + progDay, body: tasks.slice(0, 6).map(t => `${t.time} ${t.title}${t.place ? " (" + t.place + ")" : ""}`).join(" · ") + (tasks.length > 6 ? " …" : ""), hotelId: h.id, tag: "programme" }, "Queued for " + h.name + " — it goes out within 15 minutes.");
+  b.disabled = false;
+});
 $("p-share").addEventListener("click", async () => {
   const h = progHotel(); if (!h) return; const text = programmeText(h, progDay, progPlan && progPlan.tasks);
   try { if (navigator.share) { await navigator.share({ text }); return; } } catch (ex) { if (ex && ex.name === "AbortError") return; }
@@ -719,7 +732,12 @@ async function savePayrollDoc(r, patch){
   const adjustments = patch.adjustments || r.adjustments, days = r.paid && patch.status !== "draft" ? r.days : dayCounts(r.p.uid, r.hotel, prRecs), commission = sumMaps(prSales.filter(s => s.uid === r.p.uid), saleCommissions);
   const calc = payrollCompute(r.pay, days, commission, adjustments, prMonth, salesCfg.currency || CURRENCY);
   const doc = { uid: r.p.uid, name: r.p.fullName || r.p.email, email: r.p.email || "", hotelId: r.p.hotelId, hotelName: r.hotel.name || "", month: prMonth, currency: calc.currency, commissionCurrency: calc.currency, commissionAll: calc.commissionAll, commissionOther: calc.commissionOther, mixed: calc.mixed, salary: calc.salary, payType: calc.payType, days, worked: calc.worked, deducted: calc.deducted, base: calc.base, commission: calc.commission, adjustments, adjustmentsTotal: calc.adjustments, baseNet: calc.baseNet, net: calc.net, status: r.doc && r.doc.status === "paid" ? "paid" : "draft", by: user.email, ...patch };
-  try { await be.setPayroll(`${r.p.uid}_${prMonth}`, doc); toast(patch.status === "paid" ? "Marked paid — payslip published" : "Saved"); loadPayroll(); } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
+  try {
+    await be.setPayroll(`${r.p.uid}_${prMonth}`, doc);
+    if (patch.status === "paid") queueNote({ title: "Your payslip is ready", body: `${prMonth}: ${netText(calc)}. Open the portal to see the details.`, uids: [r.p.uid], tag: "payslip" }, "Marked paid — payslip published, the person gets a notification").catch(() => {});
+    else toast("Saved");
+    loadPayroll();
+  } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
 }
 $("pr-csv").addEventListener("click", () => {
   const rows = payrollRows(), cols = ["month","name","email","hotel","payType","currency","salary","present","halfDays","absent","paidLeave","base","deducted","adjustments","net","netCurrency","commissionAll","status","paidAt"];
@@ -775,6 +793,24 @@ $("w-copy").addEventListener("click", async () => {
 });
 $("w-reset").addEventListener("click", () => { if (!confirm("Clear this week's schedule so everyone works every shift?")) return; wDays().forEach(d => { if (Object.keys(wRoster[d]).length){ Object.keys(wRoster[d]).forEach(u => wDirty.add(u + "|" + d)); wDirty.add("*|" + d); } wRoster[d] = {}; }); $("w-save").disabled = wDirty.size === 0; paintWeek(); });
 
+/* ── push a short message to the team's phones (the sheet script delivers it) ── */
+function paintNotifyWho(){
+  const keep = $("nt-who").value;
+  $("nt-who").innerHTML = `<option value="">Everyone</option>` + hotels.filter(h => h.active !== false).map(h => `<option value="${esc(h.id)}">${esc(h.name)} only</option>`).join("");
+  if ([...$("nt-who").options].some(o => o.value === keep)) $("nt-who").value = keep;
+}
+async function queueNote(rec, okMsg){
+  try { await be.queueNotification({ ...rec, by: user.email }); toast(okMsg); return true; }
+  catch (ex) { toast("Could not queue the message: " + (ex.message || ex)); return false; }
+}
+$("nt-send").addEventListener("click", async () => {
+  const body = $("nt-body").value.trim(); if (body.length < 3) return toast("Write the message first");
+  const hid = $("nt-who").value, b = $("nt-send"); b.disabled = true;
+  if (await queueNote({ title: "Joy Boy", body, hotelId: hid || null, tag: "office" }, "Queued — it goes out within 15 minutes.")) { $("nt-body").value = ""; }
+  $("nt-hint").textContent = "Sent by the sheet script on its next run (every 15 min).";
+  b.disabled = false;
+});
+
 /* ── correct a check-in: set / fix / remove the times of one shift, with a reason ── */
 let editCtx = null;
 function openEdit(uid, shiftKey){
@@ -805,7 +841,7 @@ let tdRecs = [], tdReqs = [], tdPlans = {}, tdSales = [];
 $("td-refresh").addEventListener("click", loadToday); $("td-hotel").addEventListener("change", paintToday);
 async function loadToday(){
   const today = dayKey(), keep = $("td-hotel").value; $("td-hotel").innerHTML = `<option value="">All hotels</option>` + hotels.filter(h => h.active !== false).map(h => `<option value="${esc(h.id)}">${esc(h.name)}</option>`).join(""); if ([...$("td-hotel").options].some(o => o.value === keep)) $("td-hotel").value = keep;
-  $("td-when").textContent = `${today} · ${hhmm(new Date())} Egypt time`;
+  $("td-when").textContent = `${today} · ${hhmm(new Date())} Egypt time`; paintNotifyWho();
   try { const [recs, reqs, plans, sales] = await Promise.all([be.attendanceOn(today), be.requestsOn(today).catch(() => []), be.plansRange(today, today).catch(() => []), be.salesOn(today).catch(() => [])]); tdRecs = recs; tdReqs = reqs; tdPlans = Object.fromEntries(plans.map(p => [p.hotelId, p])); tdSales = sales; }
   catch (ex) { toast("Could not load today: " + (ex.message || ex)); }
   paintToday();
