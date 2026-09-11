@@ -192,6 +192,12 @@ function writeTab(name, header, rows){
   const ss = SpreadsheetApp.getActive(); let sh = ss.getSheetByName(name); if (!sh) sh = ss.insertSheet(name);
   // Sheets refuses the whole write if one cell is undefined or an object, and if a row is not the width of the header — so normalise first.
   const safe = rows.map(r => { const out = []; for (let i = 0; i < header.length; i++){ const v = r[i]; out.push(v === undefined || v === null ? "" : (typeof v === "number" || typeof v === "string" || typeof v === "boolean" ? v : String(v))); } return out; });
+  const need = safe.length + 1;
+  if (sh.getMaxRows() < need) sh.insertRowsAfter(sh.getMaxRows(), need - sh.getMaxRows());
+  if (sh.getMaxColumns() < header.length) sh.insertColumnsAfter(sh.getMaxColumns(), header.length - sh.getMaxColumns());
+  // A leftover dropdown (data validation) rejects any value outside its list and aborts the whole write half way —
+  // that is how this tab once ended up holding a single row. This tab belongs to the script, so clear the rules first.
+  sh.getRange(1, 1, sh.getMaxRows(), sh.getMaxColumns()).clearDataValidations();
   sh.clearContents(); sh.getRange(1, 1, 1, header.length).setValues([header]).setFontWeight("bold");
   if (safe.length) sh.getRange(2, 1, safe.length, header.length).setValues(safe);
   sh.setFrozenRows(1); sh.autoResizeColumns(1, header.length);
