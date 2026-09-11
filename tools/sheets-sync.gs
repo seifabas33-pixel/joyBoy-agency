@@ -46,7 +46,7 @@ const PROJECT_ID = "joy-boy-agency";
 const DAYS_BACK = 62;                 // how much history to (re)write each run
 const TZ = "Africa/Cairo";
 const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)", REPORT_TAB = "Sync report (portal)";
-const SCRIPT_VERSION = "2026-09-11d";   // shown in every toast, so you can tell which copy the sheet is running
+const SCRIPT_VERSION = "2026-09-11e";   // shown in every toast, so you can tell which copy the sheet is running
 
 function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addSeparator().addItem("Reminders: install (every 15 min)", "installPushTriggers").addItem("Reminders: send a test", "testPush").addToUi(); }
 function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); note("Done — the sheet now refreshes every hour."); }
@@ -304,11 +304,16 @@ function restDelete(path){
   UrlFetchApp.fetch(`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${path}`,
     { method: "delete", headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
 }
-/** Every registered phone of the given people: [{uid, id, token}]. */
+/** Every registered phone of the given people: [{path, token}]. */
 function devicesOf(uids){
   const out = [];
-  uids.forEach(uid => { try { fetchAll("employees/" + uid + "/devices").forEach(d => { if (d.f && d.f.token) out.push({ uid, id: d.id, token: d.f.token }); }); } catch (e) { Logger.log("devices " + uid + ": " + e); } });
+  uids.forEach(uid => { try { fetchAll("employees/" + uid + "/devices").forEach(d => { if (d.f && d.f.token) out.push({ path: "employees/" + uid + "/devices/" + d.id, token: d.f.token }); }); } catch (e) { Logger.log("devices " + uid + ": " + e); } });
   return out;
+}
+/** The office's own phones (registered on the admin page, Today tab). */
+function officeDevices(){
+  try { return fetchAll("officeDevices").filter(d => d.f && d.f.token).map(d => ({ path: "officeDevices/" + d.id, token: d.f.token })); }
+  catch (e) { Logger.log("officeDevices: " + e); return []; }
 }
 /** Send one data-only message to each device; a phone that is gone is removed from the list. */
 function sendPush(devices, title, body, url, tag){
@@ -324,7 +329,7 @@ function sendPush(devices, title, body, url, tag){
     const code = res.getResponseCode();
     if (code < 300) { sent++; return; }
     const txt = res.getContentText();
-    if (code === 404 || txt.indexOf("UNREGISTERED") >= 0 || txt.indexOf("INVALID_ARGUMENT") >= 0){ restDelete("employees/" + devices[i].uid + "/devices/" + devices[i].id); Logger.log("dropped a dead phone for " + devices[i].uid); }
+    if (code === 404 || txt.indexOf("UNREGISTERED") >= 0 || txt.indexOf("INVALID_ARGUMENT") >= 0){ restDelete(devices[i].path); Logger.log("dropped a dead phone: " + devices[i].path); }
     else Logger.log("push failed (" + code + "): " + txt.slice(0, 200));
   });
   return sent;
@@ -365,6 +370,14 @@ function pushTick(){
     restPatch("notify/" + n.id, { sentAt: new Date().toISOString(), sentTo: n2 });
   });
 
+  // 3. a staff member could not check in: tell the office once
+  const fresh = fetchAll("requests").map(d => ({ id: d.id, ...d.f })).filter(r => r.status === "open" && !r.notifiedAt);
+  if (fresh.length){
+    const office = officeDevices();
+    if (office.length) sent += sendPush(office, fresh.length === 1 ? "Check-in note from " + (fresh[0].name || fresh[0].email) : fresh.length + " check-in notes", fresh.length === 1 ? String(fresh[0].reason || "").slice(0, 120) : "Open the Attendance tab to decide.", ADMIN_URL + "#att", "requests");
+    fresh.forEach(r => restPatch("requests/" + r.id, { notifiedAt: new Date().toISOString() }));
+  }
+
   if (sent) Logger.log("pushTick sent " + sent + " notifications");
   return sent;
 }
@@ -373,10 +386,19 @@ function installPushTriggers(){
   ScriptApp.newTrigger("pushTick").timeBased().everyMinutes(15).create();
   note("v" + SCRIPT_VERSION + " · Reminders are live: the script checks every 15 minutes.");
 }
-/** Send yourself a test notification (register your phone in the portal first). */
+/** Send a test to the office phones only — register yours on the admin page, Today tab. The team is never disturbed by this. */
 function testPush(){
-  const me = fetchAll("employees").map(d => ({ uid: d.id, ...d.f })), devs = devicesOf(me.map(e => e.uid));
-  note("v" + SCRIPT_VERSION + " · " + devs.length + " registered phone(s); sent " + sendPush(devs, "Joy Boy test", "If you can read this, reminders work.", PORTAL_URL, "test"));
+  const devs = officeDevices();
+  if (!devs.length) return note("No office phone registered yet. Open the admin page → Today → \"Reminders on this phone\", then run this again.");
+  note("v" + SCRIPT_VERSION + " · sent " + sendPush(devs, "Joy Boy test", "If you can read this, reminders work.", ADMIN_URL, "test") + " of " + devs.length + " office phone(s).");
+}
+/** Send a test to one staff member's phones, by e-mail address. */
+function testPushToStaff(){
+  const email = (SpreadsheetApp.getActive().getRangeByName("TEST_EMAIL") || {}).getValue ? SpreadsheetApp.getActive().getRangeByName("TEST_EMAIL").getValue() : "";
+  const who = fetchAll("employees").map(d => ({ uid: d.id, ...d.f })).filter(e => String(e.email || "").toLowerCase() === String(email || "").toLowerCase());
+  if (!who.length) return note("Put the staff e-mail in a cell, name that cell TEST_EMAIL (Data → Named ranges), then run this again.");
+  const devs = devicesOf(who.map(e => e.uid));
+  note("v" + SCRIPT_VERSION + " · " + who[0].fullName + ": " + devs.length + " phone(s); sent " + sendPush(devs, "Joy Boy test", "If you can read this, reminders work.", PORTAL_URL, "test"));
 }
 
 function installDigestTriggers(){

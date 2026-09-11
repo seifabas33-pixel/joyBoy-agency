@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-XMIqPluNY5FrxZsD/YHCX0R+3Ok40yIHNx5Wn8RBx38='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-d24A0WbjwXMmkGJVuSlE4tf/Z4GRDPtYKauh/aAMuwc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609112124">
-<script src="firebase-config.js?v=202609112124"></script>
+<link rel="stylesheet" href="portal.css?v=202609112134">
+<script src="firebase-config.js?v=202609112134"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 </head>
 <body>
@@ -194,7 +194,7 @@
     </div>
 
     <div id="v-today" hidden>
-      <div class="toolbar"><select class="in" id="td-hotel"><option value="">All hotels</option></select><span class="hint" id="td-when"></span><span style="flex:1"></span><button class="btn ghost small" id="td-refresh" type="button">Refresh</button></div>
+      <div class="toolbar"><select class="in" id="td-hotel"><option value="">All hotels</option></select><span class="hint" id="td-when"></span><span style="flex:1"></span><button class="btn ghost small" id="td-push" type="button" hidden>Reminders on this phone</button><button class="btn ghost small" id="td-refresh" type="button">Refresh</button></div>
       <div class="stats" id="td-stats"></div>
       <div class="decide" id="td-decide"></div>
       <div class="todaygrid" id="td-hotels"></div>
@@ -241,7 +241,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift } from "./portal.js?v=202609112124";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState } from "./portal.js?v=202609112134";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -793,6 +793,18 @@ $("w-copy").addEventListener("click", async () => {
 });
 $("w-reset").addEventListener("click", () => { if (!confirm("Clear this week's schedule so everyone works every shift?")) return; wDays().forEach(d => { if (Object.keys(wRoster[d]).length){ Object.keys(wRoster[d]).forEach(u => wDirty.add(u + "|" + d)); wDirty.add("*|" + d); } wRoster[d] = {}; }); $("w-save").disabled = wDirty.size === 0; paintWeek(); });
 
+/* ── the office's own phone: staff notes and decisions land here ── */
+function paintOfficePush(){
+  const ready = be.pushReady && be.pushReady(); show("td-push", !!ready); if (!ready) return;
+  const st = pushState();
+  $("td-push").textContent = st === "on" ? "Reminders: on" : st === "blocked" ? "Reminders: blocked" : "Reminders on this phone";
+}
+$("td-push").addEventListener("click", async () => {
+  const b = $("td-push"), on = pushState() === "on"; b.disabled = true;
+  try { if (on){ await be.disableOfficePush(); toast("This phone will not be notified any more."); } else { await be.enableOfficePush(user.email); toast("This phone is registered. You will hear about staff notes and the test message."); } }
+  catch (ex) { toast(ex.message || String(ex)); } finally { b.disabled = false; paintOfficePush(); }
+});
+
 /* ── push a short message to the team's phones (the sheet script delivers it) ── */
 function paintNotifyWho(){
   const keep = $("nt-who").value;
@@ -841,7 +853,7 @@ let tdRecs = [], tdReqs = [], tdPlans = {}, tdSales = [];
 $("td-refresh").addEventListener("click", loadToday); $("td-hotel").addEventListener("change", paintToday);
 async function loadToday(){
   const today = dayKey(), keep = $("td-hotel").value; $("td-hotel").innerHTML = `<option value="">All hotels</option>` + hotels.filter(h => h.active !== false).map(h => `<option value="${esc(h.id)}">${esc(h.name)}</option>`).join(""); if ([...$("td-hotel").options].some(o => o.value === keep)) $("td-hotel").value = keep;
-  $("td-when").textContent = `${today} · ${hhmm(new Date())} Egypt time`; paintNotifyWho();
+  $("td-when").textContent = `${today} · ${hhmm(new Date())} Egypt time`; paintNotifyWho(); paintOfficePush();
   try { const [recs, reqs, plans, sales] = await Promise.all([be.attendanceOn(today), be.requestsOn(today).catch(() => []), be.plansRange(today, today).catch(() => []), be.salesOn(today).catch(() => [])]); tdRecs = recs; tdReqs = reqs; tdPlans = Object.fromEntries(plans.map(p => [p.hotelId, p])); tdSales = sales; }
   catch (ex) { toast("Could not load today: " + (ex.message || ex)); }
   paintToday();
