@@ -327,3 +327,18 @@ tr.dirty td:first-child{box-shadow:inset 3px 0 0 var(--yellow)}
 .itemtbl td{padding:4px 6px;font-size:13px;color:var(--ink-2)}
 .itemtbl td:first-child{white-space:nowrap}
 .itemtbl .in{padding:7px 8px;min-width:0;width:100%}
+
+/* ── today tab + check-in editor (2026-09-11) ── */
+.todaygrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-bottom:14px}
+.todaygrid .card{margin:0}
+.todaygrid h2{font-size:18px;font-weight:800}
+.tshift{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--raised);margin-top:8px}
+.tshift b{font-size:14.5px}
+.tshift small{color:var(--ink-3);font-size:12px}
+.tshift.now{border-color:rgba(34,227,192,.55);box-shadow:0 0 0 3px rgba(34,227,192,.08)}
+.tshift.over{opacity:.7}
+.tmiss{font-size:12.5px;color:#FFD9A3;margin-top:3px}
+.lnk.pen{color:var(--ink-3);font-size:13px;padding:0 3px;vertical-align:middle}
+.lnk.pen:hover{color:var(--yellow)}
+.drawer .panel.small{width:min(460px,100%);left:auto}
+@media(max-width:560px){.drawer .panel.small{width:100%}}
