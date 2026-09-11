@@ -13,7 +13,7 @@ self.JB_FIREBASE = {
   recaptchaSiteKey: "",
   // Push notifications: the public "Web Push certificate" key pair from
   // Firebase console → Project settings → Cloud Messaging → Web configuration. Empty = notifications off.
-  vapidKey: "",
+  vapidKey: "BFMw6PTMjuk-1YXSe9AYNUq0Xr_a7Rdi9Ay9rsYOorPEuumBwQ3vIzAybWWno9xIcny3HxC9-nUJxhM9ZPDPRrs",
   messagingSenderId: "366857907850",
   appId: "1:366857907850:web:f81e450575760c77180773"
 };
