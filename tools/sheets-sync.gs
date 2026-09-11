@@ -59,23 +59,29 @@ function syncAttendance(){
   const plans = fetchAll("plans").map(d => ({ id: d.id, ...d.f })).filter(p => p.date >= from), planOf = (hid, d) => plans.find(p => p.hotelId === hid && p.date === d);
   const byHotel = Object.fromEntries(hotels.map(h => [h.id, h]));
   const firstDay = {}; recs.forEach(r => { if (!firstDay[r.uid] || r.date < firstDay[r.uid]) firstDay[r.uid] = r.date; });
-  employees.forEach(e => { const reg = String(e.createdAt || "").slice(0, 10); if (reg && (!firstDay[e.uid] || reg < firstDay[e.uid])) firstDay[e.uid] = reg; });
-  const rows = [];
+  employees.forEach(e => { const reg = String(e.createdAt || "").slice(0, 10); if (/^\d{4}-\d{2}-\d{2}$/.test(reg) && (!firstDay[e.uid] || reg < firstDay[e.uid])) firstDay[e.uid] = reg; });
+  const rows = []; let skipped = 0, days = 0;
   for (let d = from; d <= today; d = addDays(d, 1)){
+    days++;
     const dayRecs = recs.filter(r => r.date === d);
     const people = employees.filter(e => e.status === "approved" && e.hotelId && (!firstDay[e.uid] || d >= firstDay[e.uid])).map(e => ({ e, r: dayRecs.find(r => r.uid === e.uid) || null, hotelId: e.hotelId }));
     dayRecs.forEach(r => { if (!people.some(x => x.e.uid === r.uid)) people.push({ e: { uid: r.uid, fullName: r.name, email: r.email }, r, hotelId: r.hotelId }); });
-    people.forEach(x => { const uid = x.e.uid || (x.r && x.r.uid), h = byHotel[x.hotelId] || {}, shifts = scheduledShifts(hotelShifts(h), planOf(x.hotelId, d), uid), dayRec = dayRecs.find(r => r.uid === uid && !r.shift) || null, srecs = dayRecs.filter(r => r.uid === uid && r.shift);
-      const ds = dayStatus(dayRec, srecs, shifts, h, d, today), cells = [];
-      for (let i = 0; i < 4; i++){ const y = ds.shifts[i]; cells.push(y ? y.sh.name : "", y && y.r && y.r.checkInAt ? hhmm(y.r.checkInAt) : "", y && y.r && y.r.checkOutAt ? hhmm(y.r.checkOutAt) : "", y ? y.st.label : "", y && y.st.lateMin != null ? y.st.lateMin : "", y && y.r && y.r.spotName ? y.r.spotName : ""); }
-      const lg = ds.legacy;
-      rows.push([d, x.e.fullName || "", x.e.email || "", h.name || x.hotelId || ""].concat(cells, [ds.label, lg && lg.checkInAt ? hhmm(lg.checkInAt) : "", lg && lg.checkOutAt ? hhmm(lg.checkOutAt) : "", dayRec && dayRec.override ? dayRec.override : "", dayRec && dayRec.overrideBy ? dayRec.overrideBy : "", ds.review ? "yes" : ""])); });
+    people.forEach(x => {
+      const uid = x.e.uid || (x.r && x.r.uid), h = byHotel[x.hotelId] || {};
+      try {
+        const shifts = scheduledShifts(hotelShifts(h), planOf(x.hotelId, d), uid), dayRec = dayRecs.find(r => r.uid === uid && !r.shift) || null, srecs = dayRecs.filter(r => r.uid === uid && r.shift);
+        const ds = dayStatus(dayRec, srecs, shifts, h, d, today), cells = [];
+        for (let i = 0; i < 4; i++){ const y = ds.shifts[i]; cells.push(y ? y.sh.name : "", y && y.r && y.r.checkInAt ? hhmm(y.r.checkInAt) : "", y && y.r && y.r.checkOutAt ? hhmm(y.r.checkOutAt) : "", y ? y.st.label : "", y && y.st.lateMin != null ? y.st.lateMin : "", y && y.r && y.r.spotName ? y.r.spotName : ""); }
+        const lg = ds.legacy;
+        rows.push([d, x.e.fullName || "", x.e.email || "", h.name || x.hotelId || ""].concat(cells, [ds.label, lg && lg.checkInAt ? hhmm(lg.checkInAt) : "", lg && lg.checkOutAt ? hhmm(lg.checkOutAt) : "", dayRec && dayRec.override ? dayRec.override : "", dayRec && dayRec.overrideBy ? dayRec.overrideBy : "", ds.review ? "yes" : ""]));
+      } catch (err) { skipped++; Logger.log("row failed " + d + " " + uid + ": " + err); rows.push([d, x.e.fullName || "", x.e.email || "", h.name || x.hotelId || ""].concat(new Array(24).fill(""), ["error: " + err, "", "", "", "", ""])); }
+    });
   }
   rows.sort((a, b) => (a[0] < b[0] ? 1 : a[0] > b[0] ? -1 : String(a[3]).localeCompare(b[3]) || String(a[1]).localeCompare(b[1])));
   const hdr = ["Date","Name","Email","Hotel"]; for (let i = 1; i <= 4; i++) hdr.push("Shift " + i, "S" + i + " in", "S" + i + " out", "S" + i + " status", "S" + i + " late (min)", "S" + i + " spot");
   writeTab(ATT_TAB, hdr.concat(["Day status","Old check-in","Old check-out","Day mark","Mark by","Needs decision"]), rows);
   writeTab(HOTEL_TAB, ["Hotel","Town","Shifts","Spots","Radius (m)","Active","Staff assigned"], hotels.map(h => [h.name, h.city || "", hotelShifts(h).map(x => x.name + " " + x.start + "–" + x.end).join(" · "), Object.keys(h.spots || {}).map(k => h.spots[k].name).join(", "), h.radiusM, h.active === false ? "no" : "yes", employees.filter(e => e.hotelId === h.id && e.status === "approved").length]));
-  SpreadsheetApp.getActive().toast("Attendance synced: " + rows.length + " rows", "Joy Boy", 5);
+  note("Attendance synced: " + rows.length + " rows over " + days + " days · " + employees.filter(e => e.status === "approved" && e.hotelId).length + " assigned staff · " + recs.length + " records" + (skipped ? " · " + skipped + " rows failed (see the log)" : ""));
 }
 
 /* ── status rule (mirror of team/portal.js attStatus) ── */
@@ -131,10 +137,41 @@ function fetchAll(collection){
 function unwrap(fields){ const o = {}; for (const k in fields) o[k] = val(fields[k]); return o; }
 function val(v){ if ("stringValue" in v) return v.stringValue; if ("integerValue" in v) return +v.integerValue; if ("doubleValue" in v) return v.doubleValue; if ("booleanValue" in v) return v.booleanValue; if ("timestampValue" in v) return v.timestampValue; if ("nullValue" in v) return null; if ("arrayValue" in v) return (v.arrayValue.values || []).map(val); if ("mapValue" in v) return unwrap(v.mapValue.fields || {}); return null; }
 
+/**
+ * Why is someone missing from the sheet? Run this and read the toast / the execution log.
+ * It only counts and names reasons — no attendance figures leave the sheet.
+ */
+function diagnose(){
+  const today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd"), from = Utilities.formatDate(new Date(Date.now() - DAYS_BACK * 864e5), TZ, "yyyy-MM-dd");
+  const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f }));
+  const hotels = fetchAll("hotels").map(d => ({ id: d.id, ...d.f })), byHotel = {}; hotels.forEach(h => { byHotel[h.id] = h; });
+  const all = fetchAll("attendance").map(d => ({ id: d.id, ...d.f })), recs = all.filter(r => r.date >= from);
+  const dates = {}; recs.forEach(r => { dates[r.date] = (dates[r.date] || 0) + 1; });
+  const why = [];
+  employees.forEach(e => {
+    const reg = String(e.createdAt || "").slice(0, 10), regOk = /^\d{4}-\d{2}-\d{2}$/.test(reg);
+    const r = e.status !== "approved" ? "not approved (" + (e.status || "no status") + ")"
+      : !e.hotelId ? "no hotel assigned"
+      : !byHotel[e.hotelId] ? "hotel id not found: " + e.hotelId
+      : !regOk ? "registration date unreadable: " + reg
+      : "IN THE SHEET";
+    why.push((e.fullName || e.email || e.uid) + " → " + r);
+  });
+  const inSheet = why.filter(x => x.indexOf("IN THE SHEET") > 0).length;
+  Logger.log("range " + from + " … " + today);
+  Logger.log("employees " + employees.length + ", of them in the sheet " + inSheet);
+  Logger.log("attendance docs " + all.length + ", in range " + recs.length + ", days with records " + Object.keys(dates).length);
+  Logger.log("last days: " + Object.keys(dates).sort().slice(-7).map(d => d + "=" + dates[d]).join("  "));
+  why.forEach(x => Logger.log("  " + x));
+  note(employees.length + " staff · " + inSheet + " should appear · " + recs.length + " records in " + Object.keys(dates).length + " days (" + from + "…" + today + "). Details: Executions → View logs.");
+}
+
 function writeTab(name, header, rows){
   const ss = SpreadsheetApp.getActive(); let sh = ss.getSheetByName(name); if (!sh) sh = ss.insertSheet(name);
+  // Sheets refuses the whole write if one cell is undefined or an object, and if a row is not the width of the header — so normalise first.
+  const safe = rows.map(r => { const out = []; for (let i = 0; i < header.length; i++){ const v = r[i]; out.push(v === undefined || v === null ? "" : (typeof v === "number" || typeof v === "string" || typeof v === "boolean" ? v : String(v))); } return out; });
   sh.clearContents(); sh.getRange(1, 1, 1, header.length).setValues([header]).setFontWeight("bold");
-  if (rows.length) sh.getRange(2, 1, rows.length, header.length).setValues(rows);
+  if (safe.length) sh.getRange(2, 1, safe.length, header.length).setValues(safe);
   sh.setFrozenRows(1); sh.autoResizeColumns(1, header.length);
 }
 
