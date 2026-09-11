@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-lvor2dC392knvkIG/RWsq5OaGN4reP2yd1pmrGrEq7Y='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-s+9imzNcVGuaDHTLOzPKyvfyUx/+C10mtskBRZZLXfE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team portal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,8 +20,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609111217">
-<script src="firebase-config.js?v=202609111217"></script>
+<link rel="stylesheet" href="portal.css?v=202609112116">
+<script src="firebase-config.js?v=202609112116"></script>
 </head>
 <body>
 <div class="topbar"><div class="topbar-inner">
@@ -151,6 +151,7 @@
       <div class="att-now" id="att-body"></div>
       <div class="shifts" id="att-shifts"></div>
       <div class="week" id="att-week"></div>
+      <div class="pushrow" id="pushrow" hidden><button class="btn ghost small" id="btn-push" type="button">Turn on reminders</button><span class="hint" id="push-hint"></span></div>
       <div class="actions" style="margin:14px 0 6px"><button class="btn" id="btn-in" type="button">Check in now</button><button class="btn ghost" id="btn-out" type="button" hidden>Check out</button></div>
       <div class="reqbox" id="reqbox" hidden>
         <p class="att-line"><b>Could not check in?</b> Tell the office what happened and they decide this shift.</p>
@@ -193,7 +194,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps } from "./portal.js?v=202609111217";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState } from "./portal.js?v=202609112116";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -328,7 +329,7 @@ async function loadAttendance(){
   [hist, plan, reqs, planTmrw, weekPlans] = await Promise.all([be.myAttendance(user.uid, addDays(today, -14)).catch(ex => { console.warn(ex); return []; }), be.getPlan(hotel.id, today).catch(() => null), be.myRequests(user.uid, today).catch(() => []), be.getPlan(hotel.id, addDays(today, 1)).catch(() => null), be.plansRange(today, addDays(today, 6)).then(ps => ps.filter(p => p.hotelId === hotel.id)).catch(() => [])]);
   shifts = scheduledShifts(allShifts, plan, user.uid);
   dayRec = hist.find(r => r.date === today && !r.shift) || null; recs = hist.filter(r => r.date === today && r.shift);
-  $("att-hotel").textContent = hotel.name; $("att-date").textContent = today; show("att", true); paintAtt(); paintProg();
+  $("att-hotel").textContent = hotel.name; $("att-date").textContent = today; show("att", true); paintAtt(); paintProg(); paintPush();
   loadPay();
 }
 const whereText = k => { const sp = plannedSpot(hotel, plan, k); return sp ? `at the <b>${esc(sp.name)}</b>` : `anywhere at ${esc(hotel.name)}`; };
@@ -365,6 +366,19 @@ async function loadPay(){
   show("pay-slips-wrap", slips.length > 0);
   $("pay-slips").innerHTML = slips.map(d => `<div class="slip"><div class="sh"><b>${esc(d.month)}</b><span class="net">${[money(d.net, d.currency)].concat(Object.entries(d.commissionOther || {}).filter(([, v]) => v > 0).map(([k, v]) => money(v, k))).join(" + ")}</span></div><table class="mini"><tbody><tr><td>${d.payType === "day" ? "Daily rate" : "Salary"}</td><td>${money(d.salary, d.currency)}${d.payType === "day" ? ` × ${d.worked} days` : ""}</td></tr>${d.deducted ? `<tr><td>Absences</td><td>−${money(d.deducted, d.currency)} <small class="hint">${(d.days || {}).absent || 0} absent · ${(d.days || {})["half-day"] || 0} half</small></td></tr>` : ""}<tr><td>Base</td><td>${money(d.base, d.currency)}</td></tr><tr><td>Commission</td><td>${moneyMap(d.commissionAll || { [d.commissionCurrency || d.currency]: d.commission })}</td></tr>${(d.adjustments || []).map(a => `<tr><td>${esc(ADJ_LABEL[a.type] || a.type)}${a.note ? ` <small class="hint">${esc(a.note)}</small>` : ""}</td><td>${a.type === "bonus" ? "+" : "−"}${money(a.amount, d.currency)}</td></tr>`).join("")}<tr><td><b>Net</b></td><td><b>${[money(d.net, d.currency)].concat(Object.entries(d.commissionOther || {}).filter(([, v]) => v > 0).map(([k, v]) => money(v, k))).join(" + ")}</b></td></tr></tbody></table><small class="hint">Paid ${d.paidAt ? new Date(d.paidAt).toLocaleDateString("en-GB") : ""}</small></div>`).join("");
 }
+/* reminders on this phone: a shift starting, a change in the programme, a payslip */
+function paintPush(){
+  const ready = be.pushReady && be.pushReady(); show("pushrow", !!ready);
+  if (!ready) return;
+  const st = pushState();
+  $("btn-push").textContent = st === "on" ? "Turn reminders off" : "Turn on reminders";
+  $("push-hint").textContent = st === "on" ? "Reminders are on for this phone." : st === "blocked" ? "Blocked in your browser settings — allow notifications for this site, then tap again." : "Get a reminder before each shift and when the programme changes.";
+}
+$("btn-push").addEventListener("click", async () => {
+  const b = $("btn-push"), on = pushState() === "on"; b.disabled = true;
+  try { if (on){ await be.disablePush(user.uid); toast("Reminders are off for this phone."); } else { await be.enablePush(user.uid); toast("Reminders are on. You will hear from us before each shift."); } }
+  catch (ex) { toast(ex.message || String(ex)); } finally { b.disabled = false; paintPush(); }
+});
 function taskRows(tasks, all, isToday){
   const now = nowMin(); let nextDone = false;
   const list = sortTasks(tasks).filter(t => all || taskIsMine(t, user.uid));

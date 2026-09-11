@@ -342,3 +342,7 @@ tr.dirty td:first-child{box-shadow:inset 3px 0 0 var(--yellow)}
 .lnk.pen:hover{color:var(--yellow)}
 .drawer .panel.small{width:min(460px,100%);left:auto}
 @media(max-width:560px){.drawer .panel.small{width:100%}}
+
+/* ── reminders (2026-09-11) ── */
+.pushrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.pushrow .hint{flex:1 1 220px;margin:0}

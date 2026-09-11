@@ -8,6 +8,15 @@ export const isAdminEmail = e => !!e && ADMINS.includes(String(e).toLowerCase())
 /** Built-in list OR an entry in admins/{email}. Use this one for access decisions. */
 export async function isAdminUser(be, email){ if (isAdminEmail(email)) return true; try { return await be.isListedAdmin(email); } catch { return false; } }
 const FB = "https://www.gstatic.com/firebasejs/10.14.1/";
+/** A stable id for this phone, so re-registering updates the same device instead of piling up. */
+function deviceKey(){ let d = null; try { d = localStorage.getItem("jb-device"); } catch {} if (!d){ d = Math.random().toString(36).slice(2, 10) + Date.now().toString(36); try { localStorage.setItem("jb-device", d); } catch {} } return d; }
+export const pushState = () => {
+  try {
+    if (typeof Notification === "undefined") return "unsupported";
+    if (Notification.permission === "denied") return "blocked";
+    return localStorage.getItem("jb-push") === "on" ? "on" : "off";
+  } catch { return "off"; }
+};
 
 export async function initBackend(){
   return DEMO ? demoBackend() : firebaseBackend();
@@ -56,6 +65,24 @@ async function firebaseBackend(){
     deleteEmployee: async uid => { for (const f of ["avatar.jpg", "id.jpg"]) { try { await F.deleteDoc(F.doc(db, "employees", uid, "files", f)); } catch {} } try { await F.deleteDoc(F.doc(db, "employees", uid, "private", "notes")); } catch {} await F.deleteDoc(F.doc(db, "employees", uid)); },
     getSettings: async () => { const s = await F.getDoc(F.doc(db, "settings", "registration")); return s.exists() ? s.data() : {}; },
     setSettings: patch => F.setDoc(F.doc(db, "settings", "registration"), patch, { merge: true }),
+    // push notifications: this device registers itself; tools/sheets-sync.gs sends to the stored tokens
+    pushReady: () => typeof Notification !== "undefined" && "serviceWorker" in navigator && !!cfg.vapidKey && !/PASTE/.test(String(cfg.vapidKey)),
+    enablePush: async uid => {
+      if (typeof Notification === "undefined" || !("serviceWorker" in navigator)) throw new Error("This browser cannot show reminders. On an iPhone, add the portal to the Home screen first and open it from there.");
+      if (!cfg.vapidKey || /PASTE/.test(String(cfg.vapidKey))) throw new Error("Reminders are not switched on for the agency yet. Ask the office.");
+      const perm = await Notification.requestPermission();
+      if (perm !== "granted") throw new Error(perm === "denied" ? "Reminders are blocked for this site. Allow notifications in the browser settings, then try again." : "Reminders were not allowed.");
+      const reg = await navigator.serviceWorker.register("./firebase-messaging-sw.js", { scope: "./" });
+      const M = await import(FB + "firebase-messaging.js"), messaging = M.getMessaging(app);
+      const token = await M.getToken(messaging, { vapidKey: cfg.vapidKey, serviceWorkerRegistration: reg });
+      if (!token) throw new Error("The browser did not give a reminder token. Try again in a moment.");
+      await F.setDoc(F.doc(db, "employees", uid, "devices", deviceKey()), { token, ua: String(navigator.userAgent).slice(0, 300), updatedAt: ts() }, { merge: true });
+      M.onMessage(messaging, p => { const d = (p && p.data) || {}, n = (p && p.notification) || {}; const t = n.title || d.title; if (t) toast(t + (n.body || d.body ? " — " + (n.body || d.body) : "")); });
+      try { localStorage.setItem("jb-push", "on"); } catch {}
+      return token;
+    },
+    disablePush: async uid => { try { localStorage.setItem("jb-push", "off"); } catch {} try { await F.deleteDoc(F.doc(db, "employees", uid, "devices", deviceKey())); } catch {} },
+    queueNotification: rec => F.setDoc(F.doc(F.collection(db, "notify")), { ...rec, createdAt: ts() }),
     // pay: salary per person (admin-only, employees/{uid}/private/pay), sales items (settings/sales, readable by staff), sales and payroll records
     getPay: async uid => { const s = await F.getDoc(F.doc(db, "employees", uid, "private", "pay")); return s.exists() ? plain(s) : null; },
     setPay: (uid, data, by) => F.setDoc(F.doc(db, "employees", uid, "private", "pay"), { ...data, by, updatedAt: ts() }, { merge: true }),
@@ -141,6 +168,10 @@ function demoBackend(){
     deleteEmployee: async uid => { ["emp-" + uid, "notes-" + uid, "img-" + uid + "-avatar.jpg", "img-" + uid + "-id.jpg"].forEach(k => localStorage.removeItem(K + k)); set("emps", (get("emps") || []).filter(x => x !== uid)); },
     getSettings: async () => get("settings") || {},
     setSettings: async patch => set("settings", { ...(get("settings") || {}), ...patch }),
+    pushReady: () => true,
+    enablePush: async uid => { const t = "demo-token-" + deviceKey(); set("dev-" + uid, { token: t, updatedAt: now() }); try { localStorage.setItem("jb-push", "on"); } catch {} return t; },
+    disablePush: async uid => { localStorage.removeItem(K + "dev-" + uid); try { localStorage.setItem("jb-push", "off"); } catch {} },
+    queueNotification: async rec => { const n = get("notify") || {}; n["n" + Date.now()] = { ...rec, createdAt: now() }; set("notify", n); },
     getPay: async uid => get("pay-" + uid) || null,
     setPay: async (uid, data, by) => set("pay-" + uid, { ...(get("pay-" + uid) || {}), ...data, by, updatedAt: now() }),
     getSalesSettings: async () => get("salescfg") || {},

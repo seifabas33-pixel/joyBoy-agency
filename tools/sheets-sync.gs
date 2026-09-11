@@ -15,7 +15,8 @@
  *            "https://www.googleapis.com/auth/script.external_request",
  *            "https://www.googleapis.com/auth/script.scriptapp",
  *            "https://www.googleapis.com/auth/script.send_mail",
- *            "https://www.googleapis.com/auth/datastore"
+ *            "https://www.googleapis.com/auth/datastore",
+ *            "https://www.googleapis.com/auth/firebase.messaging"
  *          ]
  *        }
  *  4. Back in Code.gs, choose the function `syncAttendance` in the toolbar and press Run.
@@ -45,9 +46,9 @@ const PROJECT_ID = "joy-boy-agency";
 const DAYS_BACK = 62;                 // how much history to (re)write each run
 const TZ = "Africa/Cairo";
 const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)", REPORT_TAB = "Sync report (portal)";
-const SCRIPT_VERSION = "2026-09-11c";   // shown in every toast, so you can tell which copy the sheet is running
+const SCRIPT_VERSION = "2026-09-11d";   // shown in every toast, so you can tell which copy the sheet is running
 
-function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addToUi(); }
+function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addSeparator().addItem("Reminders: install (every 15 min)", "installPushTriggers").addItem("Reminders: send a test", "testPush").addToUi(); }
 function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); note("Done — the sheet now refreshes every hour."); }
 /** Non-blocking confirmation: a toast in the sheet if it is open, otherwise just the log (an alert would wait for a click and time out). */
 function note(msg){ Logger.log(msg); try { SpreadsheetApp.getActive().toast(msg, "Joy Boy", 8); } catch (e) {} }
@@ -281,6 +282,102 @@ function patchAll(writes){
 /* ────────────────────────── Digest e-mail for the office ────────────────────────── */
 const BUILT_IN_ADMINS = ["seifabas33@gmail.com", "seif.abas33@gmail.com", "joyboyentertainmentagency@gmail.com", "the.z.1417@gmail.com"];
 const ADMIN_URL = "https://seifabas33-pixel.github.io/joyBoy-agency/team/admin.html";
+const PORTAL_URL = "https://seifabas33-pixel.github.io/joyBoy-agency/team/";
+const REMIND_BEFORE = 30;             // minutes before a shift starts that the reminder goes out
+
+/* ───────────────────── push notifications to the staff phones ─────────────────────
+ * Firebase Cloud Messaging, sent with your own Google account — no paid plan and no server.
+ * Needs "https://www.googleapis.com/auth/firebase.messaging" in appsscript.json (see the header),
+ * and a Web Push certificate key pasted into team/firebase-config.js by Claude.
+ * Run installPushTriggers() once; after that pushTick() runs every 15 minutes and
+ *   1. reminds scheduled staff about a shift that starts in ~30 minutes and that they have not checked into,
+ *   2. sends anything the office queued from the admin page (a message, the programme, a payslip).
+ */
+function restPatch(path, fields){
+  const enc = v => typeof v === "number" ? (Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v }) : typeof v === "boolean" ? { booleanValue: v } : { stringValue: String(v) };
+  const mask = Object.keys(fields).map(k => "updateMask.fieldPaths=" + k).join("&");
+  const res = UrlFetchApp.fetch(`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${path}?${mask}`,
+    { method: "patch", contentType: "application/json", headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() }, payload: JSON.stringify({ fields: Object.fromEntries(Object.entries(fields).map(([k, v]) => [k, enc(v)])) }), muteHttpExceptions: true });
+  if (res.getResponseCode() >= 300) Logger.log("patch " + path + " → " + res.getContentText().slice(0, 200));
+}
+function restDelete(path){
+  UrlFetchApp.fetch(`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${path}`,
+    { method: "delete", headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
+}
+/** Every registered phone of the given people: [{uid, id, token}]. */
+function devicesOf(uids){
+  const out = [];
+  uids.forEach(uid => { try { fetchAll("employees/" + uid + "/devices").forEach(d => { if (d.f && d.f.token) out.push({ uid, id: d.id, token: d.f.token }); }); } catch (e) { Logger.log("devices " + uid + ": " + e); } });
+  return out;
+}
+/** Send one data-only message to each device; a phone that is gone is removed from the list. */
+function sendPush(devices, title, body, url, tag){
+  if (!devices.length) return 0;
+  const reqs = devices.map(d => ({
+    url: `https://fcm.googleapis.com/v1/projects/${PROJECT_ID}/messages:send`, method: "post", contentType: "application/json",
+    headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() },
+    payload: JSON.stringify({ message: { token: d.token, data: { title: String(title), body: String(body), url: url || PORTAL_URL, tag: tag || "joyboy" }, webpush: { headers: { Urgency: "high", TTL: "7200" } } } }),
+    muteHttpExceptions: true,
+  }));
+  let sent = 0;
+  UrlFetchApp.fetchAll(reqs).forEach((res, i) => {
+    const code = res.getResponseCode();
+    if (code < 300) { sent++; return; }
+    const txt = res.getContentText();
+    if (code === 404 || txt.indexOf("UNREGISTERED") >= 0 || txt.indexOf("INVALID_ARGUMENT") >= 0){ restDelete("employees/" + devices[i].uid + "/devices/" + devices[i].id); Logger.log("dropped a dead phone for " + devices[i].uid); }
+    else Logger.log("push failed (" + code + "): " + txt.slice(0, 200));
+  });
+  return sent;
+}
+function pushTick(){
+  const props = PropertiesService.getScriptProperties();
+  const today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd"), nowMin = toMin(hhmm(new Date()));
+  const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f })).filter(e => e.status === "approved" && e.hotelId);
+  const hotels = fetchAll("hotels").map(d => ({ id: d.id, ...d.f })), byHotel = {}; hotels.forEach(h => { byHotel[h.id] = h; });
+  const att = fetchAll("attendance").map(d => ({ id: d.id, ...d.f })).filter(r => r.date === today);
+  const plans = fetchAll("plans").map(d => ({ id: d.id, ...d.f })).filter(p => p.date === today);
+  let sent = 0;
+
+  // 1. shift reminders
+  hotels.filter(h => h.active !== false).forEach(h => {
+    const plan = plans.filter(p => p.hotelId === h.id)[0] || null;
+    hotelShifts(h).forEach(sh => {
+      const mins = toMin(sh.start) - nowMin;
+      if (mins > REMIND_BEFORE + 10 || mins < REMIND_BEFORE - 20) return;              // only the window around "30 minutes before"
+      const key = "rem_" + today + "_" + h.id + "_" + sh.key; if (props.getProperty(key)) return;
+      const due = employees.filter(e => e.hotelId === h.id)
+        .filter(e => scheduledShifts(hotelShifts(h), plan, e.uid).some(s => s.key === sh.key))
+        .filter(e => !att.some(r => r.uid === e.uid && r.shift === sh.key && r.checkInAt))
+        .filter(e => !att.some(r => r.uid === e.uid && !r.shift && r.override));
+      const spotKey = plan && plan.shifts && plan.shifts[sh.key] ? plan.shifts[sh.key].spot : "";
+      const spot = spotKey && h.spots && h.spots[spotKey] ? h.spots[spotKey].name : "";
+      if (due.length) sent += sendPush(devicesOf(due.map(e => e.uid)), sh.name + " shift at " + sh.start, "Check in at " + (spot ? "the " + spot : h.name) + " when you arrive.", PORTAL_URL, "shift-" + sh.key);
+      props.setProperty(key, "1");
+    });
+  });
+
+  // 2. whatever the office queued from the admin page
+  const queue = fetchAll("notify").map(d => ({ id: d.id, ...d.f })).filter(n => !n.sentAt);
+  queue.forEach(n => {
+    const uids = (n.uids && n.uids.length) ? n.uids : employees.filter(e => !n.hotelId || e.hotelId === n.hotelId).map(e => e.uid);
+    const n2 = sendPush(devicesOf(uids), n.title || "Joy Boy", n.body || "", n.url || PORTAL_URL, n.tag || "office");
+    sent += n2;
+    restPatch("notify/" + n.id, { sentAt: new Date().toISOString(), sentTo: n2 });
+  });
+
+  if (sent) Logger.log("pushTick sent " + sent + " notifications");
+  return sent;
+}
+function installPushTriggers(){
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "pushTick").forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger("pushTick").timeBased().everyMinutes(15).create();
+  note("v" + SCRIPT_VERSION + " · Reminders are live: the script checks every 15 minutes.");
+}
+/** Send yourself a test notification (register your phone in the portal first). */
+function testPush(){
+  const me = fetchAll("employees").map(d => ({ uid: d.id, ...d.f })), devs = devicesOf(me.map(e => e.uid));
+  note("v" + SCRIPT_VERSION + " · " + devs.length + " registered phone(s); sent " + sendPush(devs, "Joy Boy test", "If you can read this, reminders work.", PORTAL_URL, "test"));
+}
 
 function installDigestTriggers(){
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "sendDigest").forEach(t => ScriptApp.deleteTrigger(t));

@@ -55,6 +55,10 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     // ── Pay & sales: written by the office only. Staff read their own sales, and their own payslip once it is marked paid. ──
+    // Notifications the office queued; the sheet script sends them and stamps sentAt. Staff never read this.
+    match /notify/{id} {
+      allow read, write: if isAdmin();
+    }
     match /sales/{id} {
       allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
       allow write: if isAdmin();
@@ -91,6 +95,15 @@ service cloud.firestore {
           && request.resource.data.data.size() < 1000000
           && request.resource.data.type is string
           && request.resource.data.type.matches('image/.*');
+        allow delete: if isOwner(uid) || isAdmin();
+      }
+
+      // Devices registered for push notifications. The employee registers their own; the office only reads them to send.
+      match /devices/{id} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow create, update: if isOwner(uid)
+          && request.resource.data.token is string && request.resource.data.token.size() < 4096
+          && request.resource.data.keys().hasOnly(['token', 'ua', 'updatedAt']);
         allow delete: if isOwner(uid) || isAdmin();
       }
 
