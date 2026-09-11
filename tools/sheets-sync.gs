@@ -45,6 +45,7 @@ const PROJECT_ID = "joy-boy-agency";
 const DAYS_BACK = 62;                 // how much history to (re)write each run
 const TZ = "Africa/Cairo";
 const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)", REPORT_TAB = "Sync report (portal)";
+const SCRIPT_VERSION = "2026-09-11c";   // shown in every toast, so you can tell which copy the sheet is running
 
 function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addToUi(); }
 function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); note("Done — the sheet now refreshes every hour."); }
@@ -82,7 +83,7 @@ function syncAttendance(){
   writeTab(ATT_TAB, hdr.concat(["Day status","Old check-in","Old check-out","Day mark","Mark by","Needs decision"]), rows);
   writeTab(HOTEL_TAB, ["Hotel","Town","Shifts","Spots","Radius (m)","Active","Staff assigned"], hotels.map(h => [h.name, h.city || "", hotelShifts(h).map(x => x.name + " " + x.start + "–" + x.end).join(" · "), Object.keys(h.spots || {}).map(k => h.spots[k].name).join(", "), h.radiusM, h.active === false ? "no" : "yes", employees.filter(e => e.hotelId === h.id && e.status === "approved").length]));
   writeSyncReport(employees, byHotel, recs, from, today);
-  note("Attendance synced: " + rows.length + " rows over " + days + " days · " + employees.filter(e => e.status === "approved" && e.hotelId).length + " assigned staff · " + recs.length + " records" + (skipped ? " · " + skipped + " rows failed (see the log)" : ""));
+  note("v" + SCRIPT_VERSION + " · Attendance synced: " + rows.length + " rows over " + days + " days · " + employees.filter(e => e.status === "approved" && e.hotelId).length + " assigned staff · " + recs.length + " records" + (skipped ? " · " + skipped + " rows failed (see the log)" : ""));
 }
 
 /* ── status rule (mirror of team/portal.js attStatus) ── */
@@ -164,7 +165,7 @@ function diagnose(){
   Logger.log("attendance docs " + all.length + ", in range " + recs.length + ", days with records " + Object.keys(dates).length);
   Logger.log("last days: " + Object.keys(dates).sort().slice(-7).map(d => d + "=" + dates[d]).join("  "));
   why.forEach(x => Logger.log("  " + x));
-  note(employees.length + " staff · " + inSheet + " should appear · " + recs.length + " records in " + Object.keys(dates).length + " days (" + from + "…" + today + "). Details: Executions → View logs.");
+  note("v" + SCRIPT_VERSION + " · " + employees.length + " staff · " + inSheet + " should appear · " + recs.length + " records in " + Object.keys(dates).length + " days (" + from + "…" + today + "). Details: Executions → View logs.");
 }
 
 /**
@@ -188,15 +189,25 @@ function writeSyncReport(employees, byHotel, recs, from, today){
   writeTab(REPORT_TAB, ["Name", "Email", "Status", "Hotel", "In the sheet", "Why", "Registered", "Records in range"], rows);
 }
 
+/**
+ * Write one of the script's own tabs. Two traps this guards against, both of which used to
+ * abort the write half way and leave a tab holding only the first row(s):
+ *  - a cell that is undefined or an object, or a row that is not the width of the header;
+ *  - a leftover dropdown (data validation) that refuses any value outside its list.
+ * If the tab still refuses the data, it is deleted and recreated clean, then written again.
+ */
 function writeTab(name, header, rows){
-  const ss = SpreadsheetApp.getActive(); let sh = ss.getSheetByName(name); if (!sh) sh = ss.insertSheet(name);
-  // Sheets refuses the whole write if one cell is undefined or an object, and if a row is not the width of the header — so normalise first.
   const safe = rows.map(r => { const out = []; for (let i = 0; i < header.length; i++){ const v = r[i]; out.push(v === undefined || v === null ? "" : (typeof v === "number" || typeof v === "string" || typeof v === "boolean" ? v : String(v))); } return out; });
+  try { fillTab(name, header, safe, false); }
+  catch (err) { Logger.log("writeTab " + name + " failed (" + err + ") — rebuilding the tab"); fillTab(name, header, safe, true); }
+}
+function fillTab(name, header, safe, rebuild){
+  const ss = SpreadsheetApp.getActive(); let sh = ss.getSheetByName(name);
+  if (sh && rebuild){ const at = sh.getIndex(); ss.deleteSheet(sh); sh = ss.insertSheet(name, at - 1); }   // start from a clean tab: no rules, no formats
+  if (!sh) sh = ss.insertSheet(name);
   const need = safe.length + 1;
   if (sh.getMaxRows() < need) sh.insertRowsAfter(sh.getMaxRows(), need - sh.getMaxRows());
   if (sh.getMaxColumns() < header.length) sh.insertColumnsAfter(sh.getMaxColumns(), header.length - sh.getMaxColumns());
-  // A leftover dropdown (data validation) rejects any value outside its list and aborts the whole write half way —
-  // that is how this tab once ended up holding a single row. This tab belongs to the script, so clear the rules first.
   sh.getRange(1, 1, sh.getMaxRows(), sh.getMaxColumns()).clearDataValidations();
   sh.clearContents(); sh.getRange(1, 1, 1, header.length).setValues([header]).setFontWeight("bold");
   if (safe.length) sh.getRange(2, 1, safe.length, header.length).setValues(safe);
