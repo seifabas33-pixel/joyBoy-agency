@@ -112,16 +112,20 @@ async function firebaseBackend(){
     // hotels (any signed-in user reads; admins write)
     listHotels: async () => { const s = await F.getDocs(F.collection(db, "hotels")); return s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.name).localeCompare(String(b.name))); },
     getHotel: async id => { if (!id) return null; const s = await F.getDoc(F.doc(db, "hotels", id)); return s.exists() ? { id: s.id, ...s.data() } : null; },
-    saveHotel: async (id, data) => { const ref = id ? F.doc(db, "hotels", id) : F.doc(F.collection(db, "hotels")); await F.setDoc(ref, { ...data, updatedAt: ts() }, { merge: true }); return ref.id; },
+    // mergeFields, not merge: a plain merge melts maps together key by key, so a spot or a shift
+    // the office deleted in the editor would silently come back. Listing the fields replaces them whole.
+    saveHotel: async (id, data) => { const ref = id ? F.doc(db, "hotels", id) : F.doc(F.collection(db, "hotels")); const doc = { ...data, updatedAt: ts() }; await F.setDoc(ref, doc, { mergeFields: Object.keys(doc) }); return ref.id; },
     deleteHotel: id => F.deleteDoc(F.doc(db, "hotels", id)),
     // daily plan: which spot each shift checks in at — plans/{hotelId}_{date}
     getPlan: async (hotelId, date) => { const s = await F.getDoc(F.doc(db, "plans", `${hotelId}_${date}`)); return s.exists() ? att(s) : null; },
-    savePlan: (hotelId, date, shifts, by) => F.setDoc(F.doc(db, "plans", `${hotelId}_${date}`), { hotelId, date, shifts, setBy: by, setAt: ts() }, { merge: true }),
+    savePlan: (hotelId, date, shifts, by) => F.setDoc(F.doc(db, "plans", `${hotelId}_${date}`), { hotelId, date, shifts, setBy: by, setAt: ts() }, { mergeFields: ["hotelId", "date", "shifts", "setBy", "setAt"] }),
     plansRange: async (from, to) => { const s = await F.getDocs(F.query(F.collection(db, "plans"), F.where("date", ">=", from), F.where("date", "<=", to))); return s.docs.map(att); },
     // who works which shifts that day (schedule): roster = { uid: { off: bool, shifts: ["s1", …] } }; no entry = all shifts
-    saveRoster: (hotelId, date, roster, by) => F.setDoc(F.doc(db, "plans", `${hotelId}_${date}`), { hotelId, date, roster, rosterBy: by, rosterAt: ts() }, { merge: true }),
+    // the whole roster map is replaced (mergeFields), otherwise taking a day off away from someone —
+    // which means removing their entry — would be merged back in and the day off would stick.
+    saveRoster: (hotelId, date, roster, by) => F.setDoc(F.doc(db, "plans", `${hotelId}_${date}`), { hotelId, date, roster, rosterBy: by, rosterAt: ts() }, { mergeFields: ["hotelId", "date", "roster", "rosterBy", "rosterAt"] }),
     // the day's programme (activities with time, place and people) lives in the same plan document
-    saveTasks: (hotelId, date, tasks, by) => F.setDoc(F.doc(db, "plans", `${hotelId}_${date}`), { hotelId, date, tasks, tasksBy: by, tasksAt: ts() }, { merge: true }),
+    saveTasks: (hotelId, date, tasks, by) => F.setDoc(F.doc(db, "plans", `${hotelId}_${date}`), { hotelId, date, tasks, tasksBy: by, tasksAt: ts() }, { mergeFields: ["hotelId", "date", "tasks", "tasksBy", "tasksAt"] }),
     // attendance: one document per person, day AND shift, id = uid_YYYY-MM-DD_s1; day marks by the office live in uid_YYYY-MM-DD. The server stamps the time.
     checkIn: async rec => { const id = `${rec.uid}_${rec.date}_${rec.shift}`; await F.setDoc(F.doc(db, "attendance", id), { ...rec, checkInAt: ts() }, { merge: true }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); }, // merge: keeps an office mark (override) that already exists for the shift
     checkOut: async id => { await F.updateDoc(F.doc(db, "attendance", id), { checkOutAt: ts() }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); },
