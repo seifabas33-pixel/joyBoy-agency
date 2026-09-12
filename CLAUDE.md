@@ -62,6 +62,8 @@ noindex (not robots-blocked, so the tag is honoured); privacy policy has a staff
 
 **Light/dark (2026-09-12)**: the portal is no longer dark-only — topbar button cycles Auto → Light → Dark, kept per phone in `localStorage.jb-theme`; **Auto is the default**: light 06:00–18:00 on the phone clock, dark after, re-checked every 10 min. Applied by an inline `<head>` script in `team/index.html` + `team/admin.html` (no dark flash; also sets the `theme-color` meta; it is inline, so `tools/bump-portal.py` must run after any change). `team/feedback.html` has no button and follows the guest's phone (`prefers-color-scheme` on `:root:not([data-theme])`). All colours go through tokens; light overrides sit in `:root[data-theme="light"]` (mirrored in the media query) — accent text is `--t-ok/-warn/-bad/-violet/-orange/-sick/-blue`, chrome is `--topbar/--overlay/--glow-a/--glow-b`. Never hard-code a light-on-dark colour in portal.css.
 
+**Firestore merge trap (fixed 2026-09-12)**: `setDoc(..., {merge:true})` merges **maps key by key**, so deleting a key from a map field never reached the database — taking a day off away from someone (removing their `roster` entry) looked saved but came back, and deleting a hotel spot did nothing. `saveRoster`, `savePlan`, `saveTasks` and `saveHotel` now write with `mergeFields: [...]` (replaces the listed fields whole, leaves the rest of the doc alone). Use `merge:true` only for flat documents; any map whose keys can disappear needs `mergeFields`. Demo mode replaces whole fields, so it cannot reproduce this.
+
 ## Design direction the owner chose
 
 Bold & playful: deep-aubergine dark base (light theme optional), saturated

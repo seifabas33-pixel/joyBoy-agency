@@ -231,3 +231,13 @@ The morning shift reads the portal outdoors in full sun, where the dark theme is
 - The theme is applied by a small inline script in the `<head>` of `team/index.html` and `team/admin.html` — before the page paints, so there is no dark flash. It also rewrites the `theme-color` meta so the phone's status bar matches. **It is an inline script: run `python3 tools/bump-portal.py` after touching it or the CSP hash stops matching and the page will not start.**
 - `team/feedback.html` (the guest card) has no button: it follows the guest's own phone (`@media (prefers-color-scheme:light)` on `:root:not([data-theme])`).
 - In CSS everything goes through tokens. Light values live in one block (`:root[data-theme="light"]`, mirrored in the media query). Pale accent text (`#FFE97A`, `#9DF2E0`, …) became `--t-warn`, `--t-ok`, `--t-bad`, `--t-violet`, `--t-orange`, `--t-sick`, `--t-blue`, with darker values in light mode; the topbar, the drawer backdrop and the background glows are `--topbar`, `--overlay`, `--glow-a/b`. **Never hard-code a light-on-dark colour again** — add a token, or light mode breaks.
+
+### A day off you take away comes back (fixed 2026-09-12)
+
+The office set someone to **off** for a day, then wanted to put them back on shift (the DJ was sick and he was replacing him). Tapping **off** cleared it on screen, **Save week** reported success — and the day off was still there after the reload.
+
+Cause: `saveRoster` wrote the plan document with `setDoc(..., { merge: true })`. Firestore's `merge` melts **maps together key by key**, so removing somebody from the `roster` map does not remove them in the database: the old `{off: true}` entry survives the write and comes back on the next read. Setting a day off worked (a new key), changing which shifts worked (an overwritten key) — only *removing* an entry silently did nothing.
+
+Fixed by writing those documents with **`mergeFields`** instead, which replaces the listed fields whole and leaves the rest of the document alone: `saveRoster` (roster), `savePlan` (shift spots), `saveTasks` (programme) and `saveHotel` (`spots` and `shifts` maps — deleting a spot in the hotel editor had the same problem). The day's programme and the spot plan in the same document are untouched by a roster save, as before.
+
+**Rule for anything new**: `merge: true` is only safe for documents of flat fields. The moment a field is a map whose keys can disappear (roster, spots, shifts), use `mergeFields` with the exact list of fields being written. Demo mode replaces the whole field, so a demo test will never show this — reason about the Firestore side.
