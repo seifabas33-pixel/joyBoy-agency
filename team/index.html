@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-WBC8h5j4Av+BVVhjoUq0HUT14d+dMtnjldwLDjDNgW0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-6Hbq6s7wuxQOQM306u5y7+wwOWzzUOBquqkBqEowGkQ='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team portal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,12 +20,45 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609112205">
-<script src="firebase-config.js?v=202609112205"></script>
+<link rel="stylesheet" href="portal.css?v=202609121039">
+<script src="firebase-config.js?v=202609121039"></script>
+<script>
+(function(){
+  var KEY = "jb-theme", ORDER = ["auto", "light", "dark"];
+  var LABEL = { auto: ["\u25D1", "Auto"], light: ["\u2600\uFE0F", "Light"], dark: ["\u{1F319}", "Dark"] };
+  function pref(){ try { return LABEL[localStorage.getItem(KEY)] ? localStorage.getItem(KEY) : "auto"; } catch (e) { return "auto"; } }
+  function daylight(){ var h = new Date().getHours(); return h >= 6 && h < 18; }          // Cairo phone clock
+  function apply(){
+    var p = pref(), light = p === "light" || (p === "auto" && daylight());
+    document.documentElement.setAttribute("data-theme", light ? "light" : "dark");
+    var m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute("content", light ? "#F6F2EC" : "#0D0A14");
+    var b = document.getElementById("theme");
+    if (b){
+      b.textContent = LABEL[p][0];
+      var s = document.createElement("b"); s.textContent = LABEL[p][1]; b.appendChild(s);
+      b.setAttribute("aria-label", "Screen: " + LABEL[p][1] + ". Tap to change.");
+      b.title = p === "auto" ? "Auto \u2014 light in the daytime, dark after 6 pm" : "Always " + LABEL[p][1].toLowerCase();
+    }
+  }
+  function cycle(){
+    var p = ORDER[(ORDER.indexOf(pref()) + 1) % ORDER.length];
+    try { localStorage.setItem(KEY, p); } catch (e) {}
+    apply();
+  }
+  apply();
+  document.addEventListener("DOMContentLoaded", function(){
+    var b = document.getElementById("theme"); if (b) b.addEventListener("click", cycle);
+    apply();
+  });
+  setInterval(apply, 600000);                                                            // auto flips at sunset without a reload
+})();
+</script>
 </head>
 <body>
 <div class="topbar"><div class="topbar-inner">
   <a class="brand" href="../"><img src="../media/img/logo.jpg" alt=""><span class="t">Joy Boy Agency</span> <small>Team portal</small></a>
+  <button class="themebtn" id="theme" type="button" aria-label="Screen brightness"></button>
   <div class="who" id="who" hidden><img id="who-img" alt=""><span id="who-name"></span><button class="linkbtn" id="signout" type="button">Sign out</button></div>
 </div></div>
 
@@ -194,7 +227,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState } from "./portal.js?v=202609112205";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState } from "./portal.js?v=202609121039";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);

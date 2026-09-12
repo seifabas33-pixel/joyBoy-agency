@@ -221,3 +221,13 @@ A guest scans a QR card on the table, rates the evening and — if they want —
 - **Admin page → Guests**: month + hotel filter, the four numbers (ratings, average, share of five stars, how many wrote something), "Who the guests name" (per staff member: ratings and average — from the personal cards), the list of what they wrote, and **Print a QR card**: pick the hotel and optionally a person, the QR is drawn locally (`team/qr.js`, vendored qrcode-generator, MIT — CSP only allows scripts from our own site), Print gives a card to cut out, "Copy the link" gives the plain URL for WhatsApp.
 - **Review link per hotel**: Hotels & office → the hotel → "Guest review link". Saving a hotel mirrors name + link into `publicHotels/{id}`.
 - Guest comments are guest words: quote them on the website only verbatim, with the name and date as written (same rule as the site's testimonials).
+
+### Light / dark screen (2026-09-12)
+
+The morning shift reads the portal outdoors in full sun, where the dark theme is unreadable.
+
+- The topbar has a button that cycles **Auto → Light → Dark**. The choice is kept in `localStorage` (`jb-theme`) on that phone only.
+- **Auto** (the default, so nobody has to touch it) is light from 06:00 to 18:00 on the phone's own clock and dark after that. It re-checks every 10 minutes, so an open page flips itself at sunset.
+- The theme is applied by a small inline script in the `<head>` of `team/index.html` and `team/admin.html` — before the page paints, so there is no dark flash. It also rewrites the `theme-color` meta so the phone's status bar matches. **It is an inline script: run `python3 tools/bump-portal.py` after touching it or the CSP hash stops matching and the page will not start.**
+- `team/feedback.html` (the guest card) has no button: it follows the guest's own phone (`@media (prefers-color-scheme:light)` on `:root:not([data-theme])`).
+- In CSS everything goes through tokens. Light values live in one block (`:root[data-theme="light"]`, mirrored in the media query). Pale accent text (`#FFE97A`, `#9DF2E0`, …) became `--t-warn`, `--t-ok`, `--t-bad`, `--t-violet`, `--t-orange`, `--t-sick`, `--t-blue`, with darker values in light mode; the topbar, the drawer backdrop and the background glows are `--topbar`, `--overlay`, `--glow-a/b`. **Never hard-code a light-on-dark colour again** — add a token, or light mode breaks.
