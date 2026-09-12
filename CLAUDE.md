@@ -98,5 +98,7 @@ the pre-launch checklist below. Preloader with the logo must always show
 19. Broken links → run the link check (anchors, media, external) before deploy
 20. Performance → HTML ~120 KB, images as lazy files with width/height; the hero wall uses 480px copies in media/img/wall/ (~330 KB, second half of each column lazy); reels stay preload=none
 
+**Waiting on the owner (2026-09-12)**: True Beach 2026 photos and clips for the website — he is sending them. Asked for: 6–10 photos at full phone resolution (night show with the audience in frame, the daytime line, the kids line / mini disco, a theme night, a wide sunset shot with the team) and 2–4 vertical clips of 10–20 s, each with a one-line description for the caption and alt text. Wide crowd shots preferred over recognisable close-ups; no close-ups of children; nothing showing room numbers, wristbands or staff lists. Then: resize, build the 480px copies in `media/img/wall/`, add to the masthead gallery with captions, mirror the captions into the DE/IT dictionaries, regenerate both files, deploy.
+
 Open items the owner knows about: Actions billing block; sensitive figures in
 old git history (needs repo recreation); no analytics; custom domain not bought.
