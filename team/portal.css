@@ -381,11 +381,16 @@ body.guest{display:block}
 .qrtitle{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:17px;line-height:1.15}
 .qrwho{font-weight:700;font-size:15px;margin-top:2px}
 .qrfoot{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#6b6478;margin-top:6px}
+/* Printing a QR card. The card is copied into #printarea, a direct child of <body>, because hiding
+   body's children hides everything inside them — un-hiding a deeply nested card cannot bring it back. */
+#printarea{display:none}
 @media print{
   body.printing{background:#fff}
+  body.printing::before{display:none}          /* the page glow is not a child of body, so it survives the rule below */
   body.printing>*{display:none!important}
-  body.printing .qrcard{display:block!important;position:fixed;inset:0;margin:auto;width:74mm;height:max-content;box-shadow:none}
-  body.printing .qrcard svg{width:56mm;height:56mm}
+  body.printing #printarea{display:block!important}
+  body.printing #printarea .qrcard{display:block;position:fixed;inset:0;margin:auto;width:74mm;height:max-content;box-shadow:none;background:#fff;color:#0D0A14}
+  body.printing #printarea .qrcard svg{width:56mm;height:56mm}
 }
 
 /* ── light theme (2026-09-12) — the morning shift reads the portal in direct sun.
