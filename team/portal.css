@@ -428,3 +428,51 @@ body.guest{display:block}
 .themebtn:hover{color:var(--ink);border-color:var(--ink-3)}
 .themebtn b{font-weight:600;font-size:12px}
 @media (max-width:560px){.themebtn b{display:none}}
+
+/* ── proposal page (public, one hotel per link) ── */
+body.prop{display:block}
+.pwrap{max-width:760px;margin:0 auto;padding:30px 22px 60px}
+.pload{color:var(--ink-3);font-size:14px;text-align:center;padding:60px 0}
+#p-bad{text-align:center;padding-top:40px}
+#p-bad h1{font-size:clamp(26px,6vw,36px);font-weight:800;margin:14px 0 8px}
+.phead{display:flex;gap:16px;align-items:flex-start;border-bottom:2px solid var(--line-2);padding-bottom:18px}
+.plogo{width:56px;height:56px;border-radius:50%;object-fit:cover;flex:none;background:#fff}
+.phead h1{font-size:clamp(30px,6.5vw,46px);font-weight:800;margin-top:6px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pmeta{margin-top:8px;color:var(--ink-2);font-size:14.5px}
+.plead{margin-top:22px;font-size:17px;line-height:1.6;color:var(--ink-2)}
+.pblock{margin-top:34px}
+.pblock h2{font-size:21px;font-weight:800;margin-bottom:10px}
+.pbig{font-size:17px;color:var(--ink-2)}
+.pbig b{font-family:"Bricolage Grotesque",sans-serif;font-size:34px;font-weight:800;color:var(--ink);letter-spacing:-.03em;margin-right:6px}
+.pnote{color:var(--ink-3);font-size:13.5px;margin-top:8px;line-height:1.5}
+.plines{display:grid;gap:10px}
+.pline{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--yellow);border-radius:14px;padding:14px 16px}
+.pline:nth-child(2){border-left-color:var(--pink)}
+.pline:nth-child(3){border-left-color:var(--violet)}
+.pline:nth-child(4){border-left-color:var(--aqua)}
+.pline b{display:block;font-size:16px;margin-bottom:3px}
+.pline span{color:var(--ink-2);font-size:14.5px;line-height:1.5}
+.pinc{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.pinc li{position:relative;padding-left:26px;color:var(--ink-2);font-size:15px}
+.pinc li::before{content:"";position:absolute;left:0;top:7px;width:12px;height:7px;border-left:2.5px solid var(--aqua);border-bottom:2.5px solid var(--aqua);transform:rotate(-45deg)}
+.ptable{width:100%;min-width:0;border-collapse:collapse}   /* the admin tables set min-width:860px; this one must fit a phone */
+.ptable td{padding:13px 0;border-bottom:1px solid var(--line);vertical-align:top;font-size:15.5px}
+.ptable td small{display:block;color:var(--ink-3);font-size:12.5px;margin-top:2px}
+.ptable .pamt{text-align:right;white-space:nowrap;font-weight:700;font-family:"IBM Plex Mono",monospace}
+.ptable .pamt small{font-family:"Instrument Sans",sans-serif;font-weight:400}
+.pcta{margin-top:40px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+.pcta h2{font-size:22px;font-weight:800}
+.pcta p{color:var(--ink-2);margin-top:8px;font-size:15.5px}
+.pcta .actions{margin-top:16px}
+.pfoot{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;color:var(--ink-3);font-size:12.5px}
+@media (max-width:430px){
+  .pwrap{padding:24px 16px 50px}
+  .pcta{padding:18px}
+  .pcta .actions{flex-direction:column;align-items:stretch}
+  .pcta .btn{width:100%;justify-content:center}
+}
+@media print{
+  .pcta .actions{display:none}
+  .pwrap{max-width:none;padding:0}
+  .pline,.pcta{break-inside:avoid}
+}
