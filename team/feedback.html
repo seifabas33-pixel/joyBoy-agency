@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-GtUMjmvf8DljMzzxhYbY0dsO1iCpN2bghe07vh7RoyA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-dAp5LL5urKdqiMoVFyXCuvjCxLqKEfgPyIgCtYW2tPY='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
-<title>Joy Boy Agency — How was your evening?</title>
+<title>Joy Boy Agency — How is your holiday going?</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0D0A14">
 <link rel="icon" type="image/png" sizes="64x64" href="../media/img/favicon-64.png">
@@ -13,8 +13,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609131307">
-<script src="firebase-config.js?v=202609131307"></script>
+<link rel="stylesheet" href="portal.css?v=202609131853">
+<script src="firebase-config.js?v=202609131853"></script>
 </head>
 <body class="guest">
 <main class="gwrap" id="main">
@@ -22,8 +22,8 @@
 
   <section id="s-ask">
     <img class="glogo" src="../media/img/logo.jpg" alt="Joy Boy Agency" width="64" height="64">
-    <h1 id="t-title">How was your evening?</h1>
-    <p class="glead" id="t-lead">Thirty seconds, and it goes straight to the animation team.</p>
+    <h1 id="t-title">How is your holiday going?</h1>
+    <p class="glead" id="t-lead">Thirty seconds on the shows, the daytime and the kids club — it goes straight to the animation team.</p>
     <p class="gwho" id="t-who" hidden></p>
 
     <div class="stars" id="stars" role="radiogroup" aria-label="Rating"></div>
@@ -49,23 +49,23 @@
 </main>
 
 <script type="module">
-import { initGuest, dayKey, esc, toast } from "./portal.js?v=202609131307";
+import { initGuest, dayKey, esc, toast } from "./portal.js?v=202609131853";
 
 const DICT = {
-  en: { lang: "English", title: "How was your evening?", lead: "Thirty seconds, and it goes straight to the animation team.",
+  en: { lang: "English", title: "How is your holiday going?", lead: "Thirty seconds on the shows, the daytime and the kids club — it goes straight to the animation team.",
         who: n => `You are rating <b>${n}</b>`, whoHotel: n => `Animation team at <b>${n}</b>`,
         starhint: "Tap a star", comment: "Anything you want to tell us?", name: "Your name (optional)", send: "Send", sending: "Sending…",
-        thanks: "Thank you!", thanks2: "Your words go to the team tonight.", review: "Share it publicly too", foot: "entertainment &amp; animation",
+        thanks: "Thank you!", thanks2: "Your words reach the team today.", review: "Share it publicly too", foot: "entertainment &amp; animation",
         need: "Please tap a star first.", fail: "Could not send. Please check your connection and try again." },
-  de: { lang: "Deutsch", title: "Wie war Ihr Abend?", lead: "Dreißig Sekunden — und es geht direkt an das Animationsteam.",
+  de: { lang: "Deutsch", title: "Wie gefällt Ihnen Ihr Urlaub?", lead: "Dreißig Sekunden zu Shows, Tagesprogramm und Kinderclub — direkt an das Animationsteam.",
         who: n => `Sie bewerten <b>${n}</b>`, whoHotel: n => `Animationsteam im <b>${n}</b>`,
         starhint: "Tippen Sie auf einen Stern", comment: "Möchten Sie uns etwas sagen?", name: "Ihr Name (freiwillig)", send: "Senden", sending: "Wird gesendet…",
-        thanks: "Vielen Dank!", thanks2: "Ihre Worte erreichen das Team noch heute Abend.", review: "Auch öffentlich teilen", foot: "Entertainment &amp; Animation",
+        thanks: "Vielen Dank!", thanks2: "Ihre Worte erreichen das Team noch heute.", review: "Auch öffentlich teilen", foot: "Entertainment &amp; Animation",
         need: "Bitte tippen Sie zuerst auf einen Stern.", fail: "Konnte nicht gesendet werden. Bitte Verbindung prüfen und erneut versuchen." },
-  it: { lang: "Italiano", title: "Com'è andata la serata?", lead: "Trenta secondi, e arriva dritto al team di animazione.",
+  it: { lang: "Italiano", title: "Come sta andando la vacanza?", lead: "Trenta secondi su spettacoli, attività del giorno e mini club — arrivano dritti al team di animazione.",
         who: n => `Stai valutando <b>${n}</b>`, whoHotel: n => `Team di animazione al <b>${n}</b>`,
         starhint: "Tocca una stella", comment: "Vuoi dirci qualcosa?", name: "Il tuo nome (facoltativo)", send: "Invia", sending: "Invio…",
-        thanks: "Grazie!", thanks2: "Le tue parole arrivano al team stasera.", review: "Condividi anche pubblicamente", foot: "entertainment &amp; animation",
+        thanks: "Grazie!", thanks2: "Le tue parole arrivano al team oggi.", review: "Condividi anche pubblicamente", foot: "entertainment &amp; animation",
         need: "Tocca prima una stella.", fail: "Invio non riuscito. Controlla la connessione e riprova." },
 };
 
