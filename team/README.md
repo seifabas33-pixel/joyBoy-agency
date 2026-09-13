@@ -241,3 +241,13 @@ Cause: `saveRoster` wrote the plan document with `setDoc(..., { merge: true })`.
 Fixed by writing those documents with **`mergeFields`** instead, which replaces the listed fields whole and leaves the rest of the document alone: `saveRoster` (roster), `savePlan` (shift spots), `saveTasks` (programme) and `saveHotel` (`spots` and `shifts` maps — deleting a spot in the hotel editor had the same problem). The day's programme and the spot plan in the same document are untouched by a roster save, as before.
 
 **Rule for anything new**: `merge: true` is only safe for documents of flat fields. The moment a field is a map whose keys can disappear (roster, spots, shifts), use `mergeFields` with the exact list of fields being written. Demo mode replaces the whole field, so a demo test will never show this — reason about the Firestore side.
+
+### Reminders for programme items (2026-09-13)
+
+Besides the shift reminder, `pushTick()` now also reminds the people named on a **programme item** (admin page → Programme) **15 minutes before it starts** (`TASK_BEFORE`).
+
+- Who gets it: the people named on the item; an item ticked **everyone** goes to the hotel's staff who are **scheduled that day**. Anyone marked off is never reminded (`taskPeople`).
+- What it says: `18:00 · Lottery Fame` / "Starts in 15 minutes at the theatre." plus the item's note if there is one. The place comes from the item's own text, or from the hotel spot when the item was pinned to one.
+- Once per item per day, locked in Script Properties (`task_<date>_<hotel>_<taskId>`), same as the shift reminder.
+- **Testing**: Joy Boy menu → **Reminders: test a programme item** (`testTaskPush`). It takes today's next item (or the closest one if the day is over), ignores the clock and the once-a-day lock, and sends the real reminder to exactly the people it would normally reach. The toast names them. If nobody on the item has a phone registered, or nobody on it is scheduled, the toast says which of the two it is instead of failing silently.
+- The script must be **re-pasted into Apps Script** after this change (`SCRIPT_VERSION` in every toast tells you which copy is running).

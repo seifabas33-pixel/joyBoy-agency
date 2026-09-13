@@ -46,9 +46,9 @@ const PROJECT_ID = "joy-boy-agency";
 const DAYS_BACK = 62;                 // how much history to (re)write each run
 const TZ = "Africa/Cairo";
 const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)", REPORT_TAB = "Sync report (portal)";
-const SCRIPT_VERSION = "2026-09-11e";   // shown in every toast, so you can tell which copy the sheet is running
+const SCRIPT_VERSION = "2026-09-13a";   // shown in every toast, so you can tell which copy the sheet is running
 
-function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addSeparator().addItem("Reminders: install (every 15 min)", "installPushTriggers").addItem("Reminders: send a test", "testPush").addToUi(); }
+function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addSeparator().addItem("Reminders: install (every 15 min)", "installPushTriggers").addItem("Reminders: send a test", "testPush").addItem("Reminders: test a programme item", "testTaskPush").addToUi(); }
 function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); note("Done — the sheet now refreshes every hour."); }
 /** Non-blocking confirmation: a toast in the sheet if it is open, otherwise just the log (an alert would wait for a click and time out). */
 function note(msg){ Logger.log(msg); try { SpreadsheetApp.getActive().toast(msg, "Joy Boy", 8); } catch (e) {} }
@@ -284,6 +284,7 @@ const BUILT_IN_ADMINS = ["seifabas33@gmail.com", "seif.abas33@gmail.com", "joybo
 const ADMIN_URL = "https://seifabas33-pixel.github.io/joyBoy-agency/team/admin.html";
 const PORTAL_URL = "https://seifabas33-pixel.github.io/joyBoy-agency/team/";
 const REMIND_BEFORE = 30;             // minutes before a shift starts that the reminder goes out
+const TASK_BEFORE = 15;               // minutes before a programme item starts that the people on it are reminded
 
 /* ───────────────────── push notifications to the staff phones ─────────────────────
  * Firebase Cloud Messaging, sent with your own Google account — no paid plan and no server.
@@ -361,6 +362,21 @@ function pushTick(){
     });
   });
 
+  // 1b. programme items: the people named on an activity are reminded shortly before it starts
+  hotels.filter(h => h.active !== false).forEach(h => {
+    const plan = plans.filter(p => p.hotelId === h.id)[0] || null;
+    (plan && plan.tasks ? plan.tasks : []).forEach(t => {
+      const start = toMin(t.time); if (start === null) return;
+      const mins = start - nowMin;
+      if (mins > TASK_BEFORE + 10 || mins < TASK_BEFORE - 20) return;                  // only the window around "15 minutes before"
+      const key = "task_" + today + "_" + h.id + "_" + (t.id || t.time + "_" + t.title);
+      if (props.getProperty(key)) return;
+      const uids = taskPeople(t, h, plan, employees);
+      if (uids.length) sent += sendPush(devicesOf(uids), taskTitle(t), taskBody(t, h), PORTAL_URL, "task-" + (t.id || t.time));
+      props.setProperty(key, "1");
+    });
+  });
+
   // 2. whatever the office queued from the admin page
   const queue = fetchAll("notify").map(d => ({ id: d.id, ...d.f })).filter(n => !n.sentAt);
   queue.forEach(n => {
@@ -380,6 +396,48 @@ function pushTick(){
 
   if (sent) Logger.log("pushTick sent " + sent + " notifications");
   return sent;
+}
+/** Who a programme item is for: the people named on it, or — when it is marked "everyone" — the staff
+    of that hotel who are actually scheduled today. Someone with the day off is never reminded. */
+function taskPeople(t, h, plan, employees){
+  const mine = employees.filter(e => e.hotelId === h.id);
+  const working = e => scheduledShifts(hotelShifts(h), plan, e.uid).length > 0;
+  if (t.all) return mine.filter(working).map(e => e.uid);
+  const named = (t.uids || []).filter(uid => mine.some(e => e.uid === uid && working(e)));
+  return named;
+}
+function taskTitle(t){ return (t.time || "") + (t.time ? " · " : "") + (t.title || "Your next item"); }
+function taskBody(t, h){
+  const where = t.place || (t.placeKey && h.spots && h.spots[t.placeKey] ? h.spots[t.placeKey].name : "");
+  const parts = ["Starts in " + TASK_BEFORE + " minutes" + (where ? " at " + where : "") + "."];
+  if (t.note) parts.push(String(t.note).slice(0, 120));
+  return parts.join(" ");
+}
+/** Test the programme reminder now: sends the real reminder for today's next item, ignoring the clock
+    and the once-per-day lock, to exactly the people it would normally reach. */
+function testTaskPush(){
+  const today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd"), nowMin = toMin(hhmm(new Date()));
+  const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f })).filter(e => e.status === "approved" && e.hotelId);
+  const hotels = fetchAll("hotels").map(d => ({ id: d.id, ...d.f })).filter(h => h.active !== false);
+  const plans = fetchAll("plans").map(d => ({ id: d.id, ...d.f })).filter(p => p.date === today);
+  let best = null;
+  hotels.forEach(h => {
+    const plan = plans.filter(p => p.hotelId === h.id)[0] || null;
+    (plan && plan.tasks ? plan.tasks : []).forEach(t => {
+      const start = toMin(t.time); if (start === null) return;
+      const late = start < nowMin;                                                     // prefer something still to come
+      const score = (late ? 100000 : 0) + Math.abs(start - nowMin);
+      if (!best || score < best.score) best = { score: score, t: t, h: h, plan: plan };
+    });
+  });
+  if (!best) return note("v" + SCRIPT_VERSION + " · No programme item for today. Put one in the admin page → Programme, then run this again.");
+  const uids = taskPeople(best.t, best.h, best.plan, employees);
+  if (!uids.length) return note("v" + SCRIPT_VERSION + " · \"" + (best.t.title || "item") + "\" has nobody on it who is scheduled today. Name someone on the item (or tick everyone) and run this again.");
+  const devs = devicesOf(uids);
+  const names = employees.filter(e => uids.indexOf(e.uid) >= 0).map(e => (e.preferredName || e.fullName || e.email)).join(", ");
+  if (!devs.length) return note("v" + SCRIPT_VERSION + " · " + names + " is on \"" + (best.t.title || "item") + "\" but has no phone registered. They must open the portal and tap \"Turn on reminders\" first.");
+  const n = sendPush(devs, taskTitle(best.t), taskBody(best.t, best.h), PORTAL_URL, "task-test");
+  note("v" + SCRIPT_VERSION + " · sent \"" + taskTitle(best.t) + "\" to " + n + " of " + devs.length + " phone(s): " + names);
 }
 function installPushTriggers(){
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "pushTick").forEach(t => ScriptApp.deleteTrigger(t));
