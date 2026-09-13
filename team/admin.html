@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-Y+6vzqSwt8/xyhtEjqbNPHxZ7TDnLaHVGbY1H0vBkzk='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-GojHORTVaXREJiAbCggkrC+M+MkoOgA/PNU9LCqJ6z8='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609121050">
-<script src="firebase-config.js?v=202609121050"></script>
+<link rel="stylesheet" href="portal.css?v=202609131307">
+<script src="firebase-config.js?v=202609131307"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 <script>
 (function(){
@@ -78,7 +78,7 @@
 
   <section id="s-admin" hidden>
     <div class="hero" style="padding-top:18px"><span class="eyebrow" id="view-eyebrow">Roster</span><h1 style="font-size:clamp(30px,5vw,48px)" id="view-title">Team <em>registrations</em></h1></div>
-    <div class="tabs" role="tablist"><button class="on" data-view="today" role="tab">Today</button><button data-view="roster" role="tab">Roster</button><button data-view="att" role="tab">Attendance</button><button data-view="sched" role="tab">Schedule</button><button data-view="prog" role="tab">Programme</button><button data-view="pay" role="tab">Pay &amp; sales</button><button data-view="guests" role="tab">Guests</button><button data-view="hotels" role="tab">Hotels &amp; office</button></div>
+    <div class="tabs" role="tablist"><button class="on" data-view="today" role="tab">Today</button><button data-view="roster" role="tab">Roster</button><button data-view="att" role="tab">Attendance</button><button data-view="sched" role="tab">Schedule</button><button data-view="prog" role="tab">Programme</button><button data-view="pay" role="tab">Pay &amp; sales</button><button data-view="guests" role="tab">Guests</button><button data-view="props" role="tab">Proposals</button><button data-view="hotels" role="tab">Hotels &amp; office</button></div>
 
     <div id="v-guests" hidden>
       <div class="toolbar">
@@ -263,6 +263,57 @@
       </div>
     </div>
 
+    <div id="v-props" hidden>
+      <div class="toolbar">
+        <button class="btn small" id="pz-new" type="button">New proposal</button>
+        <span style="flex:1"></span>
+        <button class="btn ghost small" id="pz-refresh" type="button">Refresh</button>
+      </div>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Hotel</th><th>Season</th><th>Link</th><th>Updated</th><th></th></tr></thead>
+        <tbody id="pz-rows"></tbody>
+      </table><div class="empty" id="pz-empty" hidden>No proposal yet. "New proposal" starts one — the hotel only ever sees the link you send.</div></div>
+
+      <div class="card" id="pz-edit" hidden style="margin-top:14px">
+        <h2 style="font-size:20px;font-weight:800" id="pz-title">New proposal</h2>
+        <div class="grid" style="margin-top:12px">
+          <label class="f"><span>Hotel <b class="req">*</b></span><input class="in" id="pz-hotel" placeholder="Sunrise Beach Resort"></label>
+          <label class="f"><span>City</span><input class="in" id="pz-city" placeholder="Marsa Alam"></label>
+          <label class="f"><span>For whom</span><input class="in" id="pz-contact" placeholder="Mr Ahmed, General Manager"></label>
+          <label class="f"><span>Team size</span><input class="in" type="number" min="1" max="60" id="pz-team" placeholder="8"></label>
+          <label class="f"><span>Season from</span><input class="in" type="date" id="pz-from"></label>
+          <label class="f"><span>Season to</span><input class="in" type="date" id="pz-to"></label>
+          <label class="f"><span>Valid until</span><input class="in" type="date" id="pz-valid"></label>
+          <label class="f full"><span>Opening lines</span><textarea class="in" id="pz-intro" rows="3" maxlength="600" placeholder="What you would say in the first minute of the meeting."></textarea></label>
+          <label class="f full"><span>About the team</span><input class="in" id="pz-teamnote" maxlength="200" placeholder="One team leader, two show performers, a kids entertainer, a musician…"></label>
+        </div>
+
+        <h3 class="sub" style="margin-top:18px">What we would run</h3>
+        <div id="pz-prog"></div>
+        <div class="actions"><button class="btn ghost small" id="pz-prog-add" type="button">Add a line</button></div>
+
+        <h3 class="sub" style="margin-top:18px">Included in the engagement</h3>
+        <div class="chips" id="pz-inc"></div>
+
+        <h3 class="sub" style="margin-top:18px">The budget <small class="hint">— this is the only place prices ever appear</small></h3>
+        <div id="pz-prices"></div>
+        <div class="actions"><button class="btn ghost small" id="pz-price-add" type="button">Add a line</button></div>
+        <label class="f full" style="margin-top:10px"><span>Note under the budget</span><input class="in" id="pz-pricenote" maxlength="200" placeholder="Accommodation and full board for the team provided by the hotel."></label>
+        <label class="f full"><span>Office note <b class="hint">(never shown to the hotel)</b></span><input class="in" id="pz-note" maxlength="300" placeholder="Met at the ITB, wants to start in May, has a second property."></label>
+
+        <div class="actions" style="margin-top:16px">
+          <button class="btn small" id="pz-save" type="button">Save</button>
+          <button class="btn ghost small" id="pz-publish" type="button">Save &amp; publish the link</button>
+          <button class="btn ghost small" id="pz-open" type="button" hidden>Open it</button>
+          <button class="btn ghost small" id="pz-copy" type="button" hidden>Copy the link</button>
+          <button class="btn ghost small" id="pz-wa" type="button" hidden>Send on WhatsApp</button>
+          <button class="btn ghost small" id="pz-close" type="button">Close</button>
+        </div>
+        <p class="hint" id="pz-link" style="margin-top:10px;word-break:break-all"></p>
+      </div>
+      <p class="hint" style="margin-top:10px">Each hotel gets its own page on its own long link, and only that hotel's prices are on it. The page is never listed on the website and search engines are told to ignore it. <b>Unpublish</b> in the list kills the link the moment a proposal is off the table.</p>
+    </div>
+
     <div id="v-roster" hidden>
     <div class="stats" id="stats"></div>
     <div class="toolbar">
@@ -298,7 +349,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState } from "./portal.js?v=202609121050";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText } from "./portal.js?v=202609131307";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -375,8 +426,8 @@ $("drawer-bg").addEventListener("click", closeDrawer);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
 
 /* ── views ── */
-const VIEWS = { today: ["Today", "At a <em>glance</em>"], guests: ["Guests", "What the <em>guests</em> say"], roster: ["Roster", "Team <em>registrations</em>"], att: ["Attendance", "Who is <em>on the floor</em>"], sched: ["Schedule", "Who works <em>when</em>"], prog: ["Programme", "What <em>happens</em> today"], pay: ["Pay & sales", "Salaries, <em>sales</em> and payslips"], hotels: ["Hotels & office", "Where the <em>teams</em> work"] };
-function setView(v){ document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === v)); ["today","roster","att","sched","prog","pay","guests","hotels"].forEach(k => show("v-" + k, k === v)); $("view-eyebrow").textContent = VIEWS[v][0]; $("view-title").innerHTML = VIEWS[v][1]; if (v === "today") loadToday(); if (v === "att") loadAtt(); if (v === "sched") loadWeek(); if (v === "prog") loadProg(); if (v === "pay") loadPay(); if (v === "guests") loadGuests(); if (v === "hotels"){ paintHotels(); paintAdmins(); } location.hash = v; }
+const VIEWS = { today: ["Today", "At a <em>glance</em>"], guests: ["Guests", "What the <em>guests</em> say"], roster: ["Roster", "Team <em>registrations</em>"], att: ["Attendance", "Who is <em>on the floor</em>"], sched: ["Schedule", "Who works <em>when</em>"], props: ["Proposals", "Pitch a <em>hotel</em>"], prog: ["Programme", "What <em>happens</em> today"], pay: ["Pay & sales", "Salaries, <em>sales</em> and payslips"], hotels: ["Hotels & office", "Where the <em>teams</em> work"] };
+function setView(v){ document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === v)); ["today","roster","att","sched","prog","pay","guests","props","hotels"].forEach(k => show("v-" + k, k === v)); $("view-eyebrow").textContent = VIEWS[v][0]; $("view-title").innerHTML = VIEWS[v][1]; if (v === "today") loadToday(); if (v === "att") loadAtt(); if (v === "sched") loadWeek(); if (v === "prog") loadProg(); if (v === "pay") loadPay(); if (v === "guests") loadGuests(); if (v === "props") loadProps(); if (v === "hotels"){ paintHotels(); paintAdmins(); } location.hash = v; }
 document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
 
 /* ── hotels ── */
@@ -856,6 +907,112 @@ $("w-copy").addEventListener("click", async () => {
 });
 $("w-reset").addEventListener("click", () => { if (!confirm("Clear this week's schedule so everyone works every shift?")) return; wDays().forEach(d => { if (Object.keys(wRoster[d]).length){ Object.keys(wRoster[d]).forEach(u => wDirty.add(u + "|" + d)); wDirty.add("*|" + d); } wRoster[d] = {}; }); $("w-save").disabled = wDirty.size === 0; paintWeek(); });
 
+/* ── proposals: one page per hotel we are pitching, reachable only by its own link ── */
+let props = [], prEdit = null;
+async function loadProps(){
+  try { props = await be.listProposals(); } catch (ex) { return toast("Could not load the proposals: " + (ex.message || ex)); }
+  paintProps();
+}
+function paintProps(){
+  $("pz-rows").innerHTML = props.map(p => `<tr data-pr="${esc(p.id)}">
+    <td><b>${esc(p.hotel || "Untitled")}</b>${p.city ? `<small>${esc(p.city)}</small>` : ""}</td>
+    <td>${esc(p.from || "—")}${p.to ? " → " + esc(p.to) : ""}</td>
+    <td>${p.token ? `<span class="status approved">live</span>` : `<span class="status pending">not published</span>`}</td>
+    <td>${esc(String(p.updatedAt || "").slice(0, 10))}</td>
+    <td class="right"><button class="linkbtn" data-pedit="${esc(p.id)}" type="button">Open</button>${p.token ? `<button class="linkbtn" data-punpub="${esc(p.id)}" type="button">Unpublish</button>` : ""}<button class="linkbtn" data-pdel="${esc(p.id)}" type="button">Delete</button></td></tr>`).join("");
+  show("pz-empty", props.length === 0);
+  $("pz-rows").querySelectorAll("[data-pedit]").forEach(b => b.onclick = () => openProp(props.find(x => x.id === b.dataset.pedit)));
+  $("pz-rows").querySelectorAll("[data-punpub]").forEach(b => b.onclick = async () => {
+    const p = props.find(x => x.id === b.dataset.punpub); if (!p || !confirm("Kill the link for " + (p.hotel || "this hotel") + "? Anyone holding it stops seeing the proposal.")) return;
+    try { await be.unpublishProposal(p.token); await be.saveProposal(p.id, { ...p, token: "" }); toast("Link killed"); loadProps(); }
+    catch (ex) { toast("Could not unpublish: " + (ex.message || ex)); }
+  });
+  $("pz-rows").querySelectorAll("[data-pdel]").forEach(b => b.onclick = async () => {
+    const p = props.find(x => x.id === b.dataset.pdel); if (!p || !confirm("Delete the proposal for " + (p.hotel || "this hotel") + "?")) return;
+    try { if (p.token) await be.unpublishProposal(p.token).catch(() => {}); await be.deleteProposal(p.id); toast("Deleted"); if (prEdit && prEdit.id === p.id) closeProp(); loadProps(); }
+    catch (ex) { toast("Could not delete: " + (ex.message || ex)); }
+  });
+}
+function blankProp(){
+  return { hotel: "", city: "", contact: "", teamSize: 8, from: "", to: "", validUntil: "", intro: "",
+    teamNote: "", programme: JSON.parse(JSON.stringify(PROPOSAL_PROGRAMME)), included: PROPOSAL_INCLUDED.slice(),
+    prices: [{ label: "Entertainment department, all inclusive", amount: "", currency: "EUR", per: "month", note: "" }], priceNote: "", note: "", token: "" };
+}
+function openProp(p){
+  prEdit = p ? JSON.parse(JSON.stringify(p)) : blankProp();
+  $("pz-title").textContent = p ? "Proposal · " + (p.hotel || "untitled") : "New proposal";
+  ["hotel", "city", "contact", "intro", "teamnote", "pricenote", "note"].forEach(k => { $("pz-" + k).value = prEdit[k === "teamnote" ? "teamNote" : k === "pricenote" ? "priceNote" : k] || ""; });
+  $("pz-team").value = prEdit.teamSize || "";
+  $("pz-from").value = prEdit.from || ""; $("pz-to").value = prEdit.to || ""; $("pz-valid").value = prEdit.validUntil || "";
+  paintPropProg(); paintPropInc(); paintPropPrices(); paintPropLink();
+  show("pz-edit", true); $("pz-edit").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function closeProp(){ prEdit = null; show("pz-edit", false); }
+function paintPropProg(){
+  $("pz-prog").innerHTML = prEdit.programme.map((x, i) => `<div class="grid" style="margin-top:8px">
+    <label class="f"><span>Line</span><input class="in" data-pg="${i}|line" value="${esc(x.line || "")}"></label>
+    <label class="f"><span>Detail</span><input class="in" data-pg="${i}|detail" value="${esc(x.detail || "")}"></label>
+    <div class="f" style="align-self:end"><button class="btn ghost small" data-pgrm="${i}" type="button">Remove</button></div></div>`).join("");
+  $("pz-prog").querySelectorAll("[data-pg]").forEach(inp => inp.oninput = () => { const [i, k] = inp.dataset.pg.split("|"); prEdit.programme[+i][k] = inp.value; });
+  $("pz-prog").querySelectorAll("[data-pgrm]").forEach(b => b.onclick = () => { prEdit.programme.splice(+b.dataset.pgrm, 1); paintPropProg(); });
+}
+function paintPropInc(){
+  $("pz-inc").innerHTML = PROPOSAL_INCLUDED.map((x, i) =>
+    `<label class="chip"><input type="checkbox" data-pinc="${i}" ${prEdit.included.indexOf(x) >= 0 ? "checked" : ""}><span>${esc(x)}</span></label>`).join("");
+  $("pz-inc").querySelectorAll("[data-pinc]").forEach(c => c.onchange = () => {
+    const x = PROPOSAL_INCLUDED[+c.dataset.pinc];
+    if (c.checked){ if (prEdit.included.indexOf(x) < 0) prEdit.included.push(x); }
+    else prEdit.included = prEdit.included.filter(y => y !== x);
+  });
+}
+function paintPropPrices(){
+  $("pz-prices").innerHTML = prEdit.prices.map((r, i) => `<div class="grid" style="margin-top:8px">
+    <label class="f"><span>What</span><input class="in" data-pp="${i}|label" value="${esc(r.label || "")}"></label>
+    <label class="f"><span>Amount</span><input class="in" type="number" min="0" step="1" data-pp="${i}|amount" value="${esc(String(r.amount ?? ""))}"></label>
+    <label class="f"><span>Currency</span><select class="in" data-pp="${i}|currency">${["EUR", "USD", "EGP"].map(c => `<option ${r.currency === c ? "selected" : ""}>${c}</option>`).join("")}</select></label>
+    <label class="f"><span>Per</span><select class="in" data-pp="${i}|per">${Object.keys(PROPOSAL_PER).map(k => `<option value="${k}" ${r.per === k ? "selected" : ""}>${esc(PROPOSAL_PER[k])}</option>`).join("")}</select></label>
+    <label class="f"><span>Small print</span><input class="in" data-pp="${i}|note" value="${esc(r.note || "")}"></label>
+    <div class="f" style="align-self:end"><button class="btn ghost small" data-pprm="${i}" type="button">Remove</button></div></div>`).join("");
+  $("pz-prices").querySelectorAll("[data-pp]").forEach(inp => inp.oninput = inp.onchange = () => { const [i, k] = inp.dataset.pp.split("|"); prEdit.prices[+i][k] = inp.value; });
+  $("pz-prices").querySelectorAll("[data-pprm]").forEach(b => b.onclick = () => { prEdit.prices.splice(+b.dataset.pprm, 1); paintPropPrices(); });
+}
+function propLink(){ return prEdit && prEdit.token ? proposalUrl(prEdit.token, location.origin + location.pathname.replace(/[^/]*$/, "")) : ""; }
+function paintPropLink(){
+  const url = propLink();
+  $("pz-link").textContent = url || "Not published yet — the hotel cannot open anything until you publish.";
+  ["pz-open", "pz-copy", "pz-wa"].forEach(id => show(id, !!url));
+}
+function readProp(){
+  prEdit.hotel = $("pz-hotel").value.trim(); prEdit.city = $("pz-city").value.trim();
+  prEdit.contact = $("pz-contact").value.trim(); prEdit.teamSize = +$("pz-team").value || 0;
+  prEdit.from = $("pz-from").value; prEdit.to = $("pz-to").value; prEdit.validUntil = $("pz-valid").value;
+  prEdit.intro = $("pz-intro").value.trim(); prEdit.teamNote = $("pz-teamnote").value.trim();
+  prEdit.priceNote = $("pz-pricenote").value.trim(); prEdit.note = $("pz-note").value.trim();
+  return prEdit;
+}
+async function saveProp(publish){
+  const p = readProp();
+  if (!p.hotel) return toast("The hotel needs a name");
+  if (publish && !p.token) p.token = proposalToken();
+  try {
+    const id = await be.saveProposal(p.id || "", { ...p, by: user.email });
+    p.id = id; prEdit.id = id;
+    if (p.token) await be.publishProposal(p.token, proposalPublic(p));     // the copy the hotel opens: no office note, ever
+    toast(publish ? "Published — the link is live" : "Saved");
+    paintPropLink(); loadProps();
+  } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
+}
+$("pz-new").addEventListener("click", () => openProp(null));
+$("pz-refresh").addEventListener("click", loadProps);
+$("pz-close").addEventListener("click", closeProp);
+$("pz-save").addEventListener("click", () => saveProp(false));
+$("pz-publish").addEventListener("click", () => saveProp(true));
+$("pz-prog-add").addEventListener("click", () => { prEdit.programme.push({ line: "", detail: "" }); paintPropProg(); });
+$("pz-price-add").addEventListener("click", () => { prEdit.prices.push({ label: "", amount: "", currency: "EUR", per: "month", note: "" }); paintPropPrices(); });
+$("pz-open").addEventListener("click", () => { const u = propLink(); if (u) window.open(u, "_blank", "noopener"); });
+$("pz-copy").addEventListener("click", async () => { const u = propLink(); if (!u) return; try { await navigator.clipboard.writeText(u); toast("Link copied"); } catch { prompt("Copy the link", u); } });
+$("pz-wa").addEventListener("click", () => { const u = propLink(); if (u) window.open("https://wa.me/?text=" + encodeURIComponent(proposalText(prEdit, u)), "_blank", "noopener"); });
+
 /* ── the office's own phone: staff notes and decisions land here ── */
 function paintOfficePush(){
   const ready = be.pushReady && be.pushReady(); show("td-push", !!ready); if (!ready) return;
@@ -998,7 +1155,7 @@ async function drawQr(){
   const hid = $("qr-hotel").value; if (!hid){ $("qr-box").innerHTML = `<p class="hint">Pick a hotel first.</p>`; $("qr-link").textContent = ""; return; }
   const url = feedbackLink(); $("qr-link").textContent = url;
   try {
-    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202609121050"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
+    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202609131307"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
     const q = qrLib(0, "M"); q.addData(url); q.make();
     const who = $("qr-who").selectedOptions[0] ? $("qr-who").selectedOptions[0].textContent : "";
     const hotel = hotels.find(h => h.id === hid) || {};

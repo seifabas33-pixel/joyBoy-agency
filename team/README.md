@@ -261,3 +261,14 @@ Besides the shift reminder, `pushTick()` now also reminds the people named on a 
 - Only check-ins **newer than the previous tick** are sent, tracked by one Script Property (`seenCheckIn`). On the very first run after this update the marker is set to "now" and nothing older is replayed — the office does not get a burst of the whole day.
 - No office phone registered → nothing is sent and nothing fails.
 - Staff phones are never involved here; this goes only to the office.
+
+### Proposals — one page per hotel we pitch (2026-09-13)
+
+Admin page → **Proposals**. Fill in the hotel, the season, the team, what we would run, what is included and the budget, then **Save & publish the link**. The hotel opens `team/proposal.html?p=<token>` on any phone — no account, nothing to install — and finds a branded page ending in "Talk to Moaz on WhatsApp". **Send on WhatsApp** hands you the message with the link already in it.
+
+- **Where the prices live.** Nowhere on the public website, exactly as the house rule says — only in that one hotel's page, behind a 24-character random token (`proposalToken`). Treat the link like the price itself: whoever holds it sees that hotel's budget. **Unpublish** in the list deletes the public copy, and the link dies immediately.
+- **Two documents, not one.** `proposals/{id}` is the working record and is admin-only; `publicProposals/{token}` is the trimmed copy the hotel reads, built by `proposalPublic()` — which copies only the agreed fields, so the **office note never leaves the office** (there is a test for exactly that). Publishing again overwrites the public copy with `mergeFields`.
+- Defaults come from `PROPOSAL_INCLUDED` and `PROPOSAL_PROGRAMME` in portal.js, which are the same promises the public site makes. Change them there and every new proposal starts from the new wording.
+- The page is `noindex, nofollow`, follows the reader's phone for light/dark, prints cleanly (the buttons drop out), and was checked down to 360px wide.
+- **Rules must be re-published**: `proposals` (admin only) and `publicProposals` (`allow read: if true`, admin write).
+- Gotcha for the next person: `portal.css` sets `table{min-width:860px}` for the admin's scrollable tables — any table outside a `.tablewrap` needs `min-width:0` or it will push a phone page sideways.

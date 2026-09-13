@@ -116,6 +116,15 @@ async function firebaseBackend(){
     // the office deleted in the editor would silently come back. Listing the fields replaces them whole.
     saveHotel: async (id, data) => { const ref = id ? F.doc(db, "hotels", id) : F.doc(F.collection(db, "hotels")); const doc = { ...data, updatedAt: ts() }; await F.setDoc(ref, doc, { mergeFields: Object.keys(doc) }); return ref.id; },
     deleteHotel: id => F.deleteDoc(F.doc(db, "hotels", id)),
+    // proposals for a hotel we are pitching. The full record is admin-only; a trimmed copy lives in
+    // publicProposals/{token} so the hotel can open its own link without an account. Prices appear
+    // ONLY in that per-hotel copy — never on the public website.
+    listProposals: async () => { const s = await F.getDocs(F.collection(db, "proposals")); return s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || ""))); },
+    getProposal: async id => { const s = await F.getDoc(F.doc(db, "proposals", id)); return s.exists() ? { id: s.id, ...s.data() } : null; },
+    saveProposal: async (id, data) => { const ref = id ? F.doc(db, "proposals", id) : F.doc(F.collection(db, "proposals")); const doc = { ...data, updatedAt: ts() }; await F.setDoc(ref, doc, { mergeFields: Object.keys(doc) }); return ref.id; },
+    deleteProposal: id => F.deleteDoc(F.doc(db, "proposals", id)),
+    publishProposal: (token, data) => F.setDoc(F.doc(db, "publicProposals", token), { ...data, updatedAt: ts() }, { mergeFields: Object.keys({ ...data, updatedAt: 1 }) }),
+    unpublishProposal: token => F.deleteDoc(F.doc(db, "publicProposals", token)),
     // daily plan: which spot each shift checks in at — plans/{hotelId}_{date}
     getPlan: async (hotelId, date) => { const s = await F.getDoc(F.doc(db, "plans", `${hotelId}_${date}`)); return s.exists() ? att(s) : null; },
     savePlan: (hotelId, date, shifts, by) => F.setDoc(F.doc(db, "plans", `${hotelId}_${date}`), { hotelId, date, shifts, setBy: by, setAt: ts() }, { mergeFields: ["hotelId", "date", "shifts", "setBy", "setAt"] }),
@@ -211,6 +220,12 @@ function demoBackend(){
     getHotel: async id => { const h = (get("hotels") || {})[id]; return h ? { id, ...h } : null; },
     saveHotel: async (id, data) => { const hs = get("hotels") || {}; id = id || "h" + Date.now(); hs[id] = { ...(hs[id] || {}), ...data, updatedAt: now() }; set("hotels", hs); return id; },
     deleteHotel: async id => { const hs = get("hotels") || {}; delete hs[id]; set("hotels", hs); },
+    listProposals: async () => Object.entries(get("props") || {}).map(([id, p]) => ({ id, ...p })).sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || ""))),
+    getProposal: async id => { const p = (get("props") || {})[id]; return p ? { id, ...p } : null; },
+    saveProposal: async (id, data) => { const ps = get("props") || {}; id = id || "p" + Date.now(); ps[id] = { ...(ps[id] || {}), ...data, updatedAt: now() }; set("props", ps); return id; },
+    deleteProposal: async id => { const ps = get("props") || {}; delete ps[id]; set("props", ps); },
+    publishProposal: async (token, data) => { const pp = get("pubprops") || {}; pp[token] = { ...data, updatedAt: now() }; set("pubprops", pp); },
+    unpublishProposal: async token => { const pp = get("pubprops") || {}; delete pp[token]; set("pubprops", pp); },
     getPlan: async (hotelId, date) => { const p = (get("plans") || {})[`${hotelId}_${date}`]; return p ? { id: `${hotelId}_${date}`, ...p } : null; },
     savePlan: async (hotelId, date, shifts, by) => { const ps = get("plans") || {}; ps[`${hotelId}_${date}`] = { ...(ps[`${hotelId}_${date}`] || {}), hotelId, date, shifts, setBy: by, setAt: now() }; set("plans", ps); },
     plansRange: async (from, to) => Object.entries(get("plans") || {}).map(([id, p]) => ({ id, ...p })).filter(p => p.date >= from && p.date <= to),
@@ -267,6 +282,7 @@ export async function initGuest(){
     mode: "demo",
     send: async rec => { const k = "jb-demo-feedback"; const all = JSON.parse(localStorage.getItem(k) || "[]"); all.push({ ...rec, createdAt: new Date().toISOString() }); localStorage.setItem(k, JSON.stringify(all)); },
     publicHotel: async id => ({ name: "Demo Beach Resort", reviewUrl: "" }),
+    publicProposal: async token => (JSON.parse(localStorage.getItem("jb-demo-pubprops") || "null") || {})[token] || null,
   };
   const [{ initializeApp }, A, F] = await Promise.all([import(FB + "firebase-app.js"), import(FB + "firebase-auth.js"), import(FB + "firebase-firestore.js")]);
   const app = initializeApp(cfg), auth = A.getAuth(app), db = F.getFirestore(app);
@@ -275,6 +291,7 @@ export async function initGuest(){
     mode: "firebase",
     send: rec => F.addDoc(F.collection(db, "feedback"), { ...rec, createdAt: F.serverTimestamp() }),
     publicHotel: async id => { const s = await F.getDoc(F.doc(db, "publicHotels", id)); return s.exists() ? s.data() : null; },
+    publicProposal: async token => { const s = await F.getDoc(F.doc(db, "publicProposals", token)); return s.exists() ? s.data() : null; },
   };
 }
 
@@ -463,4 +480,56 @@ export function attStatus(rec, hotel, today = dayKey()){
   if (date > today) return { code: "pending", lateMin: null, auto: true };
   if (date === today && toMin(hhmm(new Date())) <= start + grace) return { code: "pending", lateMin: null, auto: true };
   return { code: "absent", lateMin: null, auto: true };
+}
+
+/* ── proposals ───────────────────────────────────────────────────────────────
+   One page per hotel we are pitching, reachable only by its own long link.
+   The hotel's prices live here and nowhere else — never on the public site. */
+export const PROPOSAL_INCLUDED = [
+  "A resident team that lives at the resort for the season",
+  "An accountable team leader on site",
+  "The weekly action plan with named owners and setup times",
+  "A daily attendance register, kept on the phone",
+  "A published guest programme with a QR schedule",
+  "An evening show every night on a rotating repertoire",
+  "The daytime line, seven days a week",
+  "A dedicated kids club entertainer, not borrowed from the team",
+  "Live music on rotation across the venues",
+  "A monthly report on punctuality, sessions and guest mentions",
+  "Costumes, props and stage kit for the repertoire",
+  "Guest feedback collected by QR and shared with you",
+];
+export const PROPOSAL_PROGRAMME = [
+  { line: "Evening shows", detail: "Seven nights a week on a rotating repertoire — the fire show, the light show, theme nights and the full-evening events." },
+  { line: "Daytime line", detail: "Pool and beach activities, tournaments, dance classes and water games, every day." },
+  { line: "Kids club", detail: "Staffed daily sessions, a nightly Mini Disco and a weekly character event." },
+  { line: "Live music & specials", detail: "Musicians and hosted evenings on rotation across the bars and the beach." },
+];
+export const PROPOSAL_PER = { month: "per month", season: "for the season", once: "one-off", day: "per day" };
+/** A long, unguessable link id — the only thing protecting a hotel's prices. */
+export function proposalToken(){
+  const a = new Uint8Array(16); (self.crypto || {}).getRandomValues ? self.crypto.getRandomValues(a) : a.forEach((_, i) => { a[i] = Math.floor(Math.random() * 256); });
+  return Array.from(a).map(b => b.toString(36).padStart(2, "0")).join("").slice(0, 24);
+}
+export const proposalUrl = (token, base) => (base || location.origin + location.pathname.replace(/[^/]*$/, "")) + "proposal.html?p=" + encodeURIComponent(token);
+/** Only the parts the hotel should see — the internal note never leaves the office. */
+export function proposalPublic(p){
+  return {
+    hotel: p.hotel || "", city: p.city || "", contact: p.contact || "",
+    from: p.from || "", to: p.to || "", validUntil: p.validUntil || "",
+    intro: p.intro || "", teamSize: +p.teamSize || 0, teamNote: p.teamNote || "",
+    programme: (p.programme || []).filter(x => x && x.line),
+    included: (p.included || []).filter(Boolean),
+    prices: (p.prices || []).filter(x => x && x.label),
+    priceNote: p.priceNote || "",
+  };
+}
+/** The message that goes with the link on WhatsApp. */
+export function proposalText(p, url){
+  const lines = ["Joy Boy Agency — proposal for " + (p.hotel || "your resort")];
+  if (p.from) lines.push("Season: " + p.from + (p.to ? " to " + p.to : ""));
+  if (p.teamSize) lines.push("Team: " + p.teamSize + " people living at the resort");
+  lines.push("", "Everything is on this page:", url, "");
+  lines.push("Questions any time — Moaz +20 102 128 1660");
+  return lines.join("\n");
 }

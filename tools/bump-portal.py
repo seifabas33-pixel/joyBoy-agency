@@ -18,7 +18,7 @@ def csp(hashes):
         f"frame-src https://{auth_domain} https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com",
         "manifest-src 'self'", "worker-src 'self'", "base-uri 'self'", "form-action 'self'", "object-src 'none'",
     ])
-for f in ["team/index.html", "team/admin.html", "team/feedback.html"]:
+for f in ["team/index.html", "team/admin.html", "team/feedback.html", "team/proposal.html"]:
     p = root / f; s = p.read_text()
     s = re.sub(r'from "\./portal\.js(\?v=\d+)?"', f'from "./portal.js?v={v}"', s)
     s = re.sub(r'href="portal\.css(\?v=\d+)?"', f'href="portal.css?v={v}"', s)

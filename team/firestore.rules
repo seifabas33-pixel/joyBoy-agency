@@ -62,6 +62,18 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ── Proposals for a hotel we are pitching. The working record, including the office's own notes,
+    // is admin-only. publicProposals/{token} is the copy the hotel opens: readable by anyone who has
+    // the link, because a hotel manager has no account here. The token is 24 random characters, and it
+    // is the only thing guarding that hotel's prices — never put a price anywhere a token does not.
+    match /proposals/{id} {
+      allow read, write: if isAdmin();
+    }
+    match /publicProposals/{token} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // ── Guest feedback from the QR cards. Written by guests (anonymous sign-in), read by the office.
     // Staff may read the feedback that names them, so their card can show their own rating.
     match /feedback/{id} {

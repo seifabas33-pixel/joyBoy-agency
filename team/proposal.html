@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-WW23fDubyECxy+FLrVHW+jrvXY0DCdyrxyimKvj8Ag0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta name="robots" content="noindex, nofollow">
+<title>Joy Boy Agency — proposal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0D0A14">
+<link rel="icon" type="image/png" sizes="64x64" href="../media/img/favicon-64.png">
+<link rel="apple-touch-icon" href="../media/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="portal.css?v=202609131307">
+<script src="firebase-config.js?v=202609131307"></script>
+</head>
+<body class="prop">
+<main class="pwrap" id="main">
+
+  <div class="pload" id="p-load">Opening the proposal…</div>
+
+  <div id="p-bad" hidden>
+    <img class="glogo" src="../media/img/logo.jpg" alt="Joy Boy Agency" width="64" height="64">
+    <h1>This link is not live</h1>
+    <p class="glead">The proposal may have been withdrawn or the link is incomplete. Ask us for a new one — Moaz <a href="https://wa.me/201021281660">+20 102 128 1660</a>.</p>
+  </div>
+
+  <article id="p-doc" hidden>
+    <header class="phead">
+      <img class="plogo" src="../media/img/logo.jpg" alt="Joy Boy Agency" width="56" height="56">
+      <div>
+        <span class="eyebrow">Entertainment &amp; animation · proposal</span>
+        <h1 id="p-hotel">Hotel</h1>
+        <p class="pmeta" id="p-meta"></p>
+      </div>
+    </header>
+
+    <p class="plead" id="p-intro"></p>
+
+    <section class="pblock" id="p-team-b">
+      <h2>The team</h2>
+      <p class="pbig"><b id="p-team">0</b> people, resident at the resort</p>
+      <p class="pnote" id="p-teamnote"></p>
+    </section>
+
+    <section class="pblock">
+      <h2>What we would run</h2>
+      <div class="plines" id="p-programme"></div>
+    </section>
+
+    <section class="pblock">
+      <h2>Included in the engagement</h2>
+      <ul class="pinc" id="p-included"></ul>
+    </section>
+
+    <section class="pblock" id="p-price-b">
+      <h2>The budget</h2>
+      <table class="ptable"><tbody id="p-prices"></tbody></table>
+      <p class="pnote" id="p-pricenote"></p>
+      <p class="pnote" id="p-valid"></p>
+    </section>
+
+    <section class="pcta">
+      <h2>Shall we walk the property?</h2>
+      <p>We take a brief, look at your venues, and adjust this plan to the hotel before anything is signed.</p>
+      <div class="actions">
+        <a class="btn" id="p-wa" href="https://wa.me/201021281660" target="_blank" rel="noopener">Talk to Moaz on WhatsApp</a>
+        <a class="btn ghost" href="mailto:joyboyentertainmentagency@gmail.com">Write to the office</a>
+      </div>
+      <p class="pnote">Moaz Moamen +20 102 128 1660 · Seif Abas +20 100 157 0273 · joyboyentertainmentagency@gmail.com</p>
+    </section>
+
+    <footer class="pfoot">
+      <span>Joy Boy Agency · entertainment &amp; animation · Red Sea, Egypt</span>
+      <span><a href="../">joyboyagency</a> · prepared for you, not for the public</span>
+    </footer>
+  </article>
+</main>
+
+<script type="module">
+import { initGuest, PROPOSAL_PER, esc } from "./portal.js?v=202609131307";
+
+const $ = id => document.getElementById(id);
+const show = (id, on) => { $(id).hidden = !on; };
+const token = new URLSearchParams(location.search).get("p") || "";
+const money = (n, c) => new Intl.NumberFormat("en-GB", { style: "currency", currency: c || "EUR", maximumFractionDigits: 0 }).format(+n || 0);
+const dateText = d => { if (!d) return ""; const x = new Date(d + "T12:00:00Z"); return isNaN(x) ? d : x.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }); };
+
+(async () => {
+  if (!token) return fail();
+  let be, p;
+  try { be = await initGuest(); p = await be.publicProposal(token); }
+  catch (e) { return fail(); }
+  if (!p) return fail();
+
+  document.title = "Joy Boy Agency — proposal for " + (p.hotel || "your resort");
+  $("p-hotel").textContent = p.hotel || "Your resort";
+  const meta = [];
+  if (p.city) meta.push(p.city);
+  if (p.from) meta.push("Season " + dateText(p.from) + (p.to ? " – " + dateText(p.to) : ""));
+  if (p.contact) meta.push("For " + p.contact);
+  $("p-meta").textContent = meta.join(" · ");
+  $("p-intro").textContent = p.intro || "";
+  show("p-intro", !!p.intro);
+
+  $("p-team").textContent = p.teamSize || "—";
+  $("p-teamnote").textContent = p.teamNote || "";
+  show("p-team-b", !!(p.teamSize || p.teamNote));
+
+  $("p-programme").innerHTML = (p.programme || []).map(x =>
+    `<div class="pline"><b>${esc(x.line)}</b><span>${esc(x.detail || "")}</span></div>`).join("");
+
+  $("p-included").innerHTML = (p.included || []).map(x => `<li>${esc(x)}</li>`).join("");
+
+  const rows = p.prices || [];
+  $("p-prices").innerHTML = rows.map(r =>
+    `<tr><td>${esc(r.label)}${r.note ? `<small>${esc(r.note)}</small>` : ""}</td>` +
+    `<td class="pamt">${esc(money(r.amount, r.currency))}<small>${esc(PROPOSAL_PER[r.per] || "")}</small></td></tr>`).join("");
+  $("p-pricenote").textContent = p.priceNote || "";
+  $("p-valid").textContent = p.validUntil ? "This proposal is valid until " + dateText(p.validUntil) + "." : "";
+  show("p-price-b", rows.length > 0);
+
+  $("p-wa").href = "https://wa.me/201021281660?text=" + encodeURIComponent("Hello Moaz, about the Joy Boy proposal for " + (p.hotel || "our resort") + " —");
+
+  show("p-load", false); show("p-doc", true);
+})();
+
+function fail(){ show("p-load", false); show("p-bad", true); }
+</script>
+</body>
+</html>
