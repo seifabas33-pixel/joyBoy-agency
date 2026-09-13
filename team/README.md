@@ -251,3 +251,13 @@ Besides the shift reminder, `pushTick()` now also reminds the people named on a 
 - Once per item per day, locked in Script Properties (`task_<date>_<hotel>_<taskId>`), same as the shift reminder.
 - **Testing**: Joy Boy menu → **Reminders: test a programme item** (`testTaskPush`). It takes today's next item (or the closest one if the day is over), ignores the clock and the once-a-day lock, and sends the real reminder to exactly the people it would normally reach. The toast names them. If nobody on the item has a phone registered, or nobody on it is scheduled, the toast says which of the two it is instead of failing silently.
 - The script must be **re-pasted into Apps Script** after this change (`SCRIPT_VERSION` in every toast tells you which copy is running).
+
+### The office sees check-ins as they happen (2026-09-13)
+
+`pushTick` now tells the **office phones** (the ones registered on the admin page → Today → "Reminders on this phone") whenever someone checks in — so the owner can follow the floor from anywhere.
+
+- One person: *"Checked in: Chocolate — Chocolate · Afternoon · 15:02 · 12 min late"*. Several in the same 15-minute window: *"3 just checked in"* with one line each.
+- "x min late" is counted from the shift start plus that shift's grace, the same rule the Attendance tab uses.
+- Only check-ins **newer than the previous tick** are sent, tracked by one Script Property (`seenCheckIn`). On the very first run after this update the marker is set to "now" and nothing older is replayed — the office does not get a burst of the whole day.
+- No office phone registered → nothing is sent and nothing fails.
+- Staff phones are never involved here; this goes only to the office.

@@ -46,7 +46,7 @@ const PROJECT_ID = "joy-boy-agency";
 const DAYS_BACK = 62;                 // how much history to (re)write each run
 const TZ = "Africa/Cairo";
 const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)", REPORT_TAB = "Sync report (portal)";
-const SCRIPT_VERSION = "2026-09-13a";   // shown in every toast, so you can tell which copy the sheet is running
+const SCRIPT_VERSION = "2026-09-13b";   // shown in every toast, so you can tell which copy the sheet is running
 
 function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addSeparator().addItem("Reminders: install (every 15 min)", "installPushTriggers").addItem("Reminders: send a test", "testPush").addItem("Reminders: test a programme item", "testTaskPush").addToUi(); }
 function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); note("Done — the sheet now refreshes every hour."); }
@@ -386,6 +386,9 @@ function pushTick(){
     restPatch("notify/" + n.id, { sentAt: new Date().toISOString(), sentTo: n2 });
   });
 
+  // 2b. live check-ins: the office sees who arrived, as it happens
+  sent += tellOfficeAboutCheckIns(att, employees, byHotel, props, today);
+
   // 3. a staff member could not check in: tell the office once
   const fresh = fetchAll("requests").map(d => ({ id: d.id, ...d.f })).filter(r => r.status === "open" && !r.notifiedAt);
   if (fresh.length){
@@ -438,6 +441,30 @@ function testTaskPush(){
   if (!devs.length) return note("v" + SCRIPT_VERSION + " · " + names + " is on \"" + (best.t.title || "item") + "\" but has no phone registered. They must open the portal and tap \"Turn on reminders\" first.");
   const n = sendPush(devs, taskTitle(best.t), taskBody(best.t, best.h), PORTAL_URL, "task-test");
   note("v" + SCRIPT_VERSION + " · sent \"" + taskTitle(best.t) + "\" to " + n + " of " + devs.length + " phone(s): " + names);
+}
+/** Tells the office phones who has just checked in. Only check-ins newer than the last tick are sent,
+    and on the very first run nothing old is replayed — the clock starts now. */
+function tellOfficeAboutCheckIns(att, employees, byHotel, props, today){
+  const KEY = "seenCheckIn";
+  const seen = props.getProperty(KEY);
+  if (!seen){ props.setProperty(KEY, new Date().toISOString()); return 0; }   // first run: start from now, do not replay the day
+  const fresh = att.filter(r => r.shift && r.checkInAt && String(r.checkInAt) > seen)
+                   .sort((a, b) => String(a.checkInAt).localeCompare(String(b.checkInAt)));
+  if (!fresh.length) return 0;
+  props.setProperty(KEY, String(fresh[fresh.length - 1].checkInAt));
+  const office = officeDevices();
+  if (!office.length) return 0;
+  const line = r => {
+    const e = employees.filter(x => x.uid === r.uid)[0] || {};
+    const h = byHotel[r.hotelId] || {};
+    const sh = hotelShifts(h).filter(x => x.key === r.shift)[0] || null;
+    const at = hhmm(r.checkInAt);
+    const lateBy = sh ? toMin(at) - (toMin(sh.start) + (sh.graceMin == null ? 5 : +sh.graceMin)) : 0;
+    return (e.preferredName || e.fullName || r.name || r.email) + " · " + (sh ? sh.name : r.shift) + " · " + at + (lateBy > 0 ? " · " + lateBy + " min late" : "");
+  };
+  const title = fresh.length === 1 ? "Checked in: " + line(fresh[0]).split(" · ")[0] : fresh.length + " just checked in";
+  const body = fresh.map(line).join("\n").slice(0, 300);
+  return sendPush(office, title, body, ADMIN_URL, "checkin");
 }
 function installPushTriggers(){
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "pushTick").forEach(t => ScriptApp.deleteTrigger(t));
