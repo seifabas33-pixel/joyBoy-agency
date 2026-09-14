@@ -46,9 +46,9 @@ const PROJECT_ID = "joy-boy-agency";
 const DAYS_BACK = 62;                 // how much history to (re)write each run
 const TZ = "Africa/Cairo";
 const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)", REPORT_TAB = "Sync report (portal)";
-const SCRIPT_VERSION = "2026-09-13b";   // shown in every toast, so you can tell which copy the sheet is running
+const SCRIPT_VERSION = "2026-09-14a";   // shown in every toast, so you can tell which copy the sheet is running
 
-function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addSeparator().addItem("Reminders: install (every 15 min)", "installPushTriggers").addItem("Reminders: send a test", "testPush").addItem("Reminders: test a programme item", "testTaskPush").addToUi(); }
+function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addSeparator().addItem("Reminders: install (every 15 min)", "installPushTriggers").addItem("Reminders: send a test", "testPush").addItem("Reminders: test a programme item", "testTaskPush").addItem("Reminders: check for arrivals now", "checkinTick").addToUi(); }
 function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); note("Done — the sheet now refreshes every hour."); }
 /** Non-blocking confirmation: a toast in the sheet if it is open, otherwise just the log (an alert would wait for a click and time out). */
 function note(msg){ Logger.log(msg); try { SpreadsheetApp.getActive().toast(msg, "Joy Boy", 8); } catch (e) {} }
@@ -136,6 +136,27 @@ function fetchAll(collection){
     token = j.nextPageToken || "";
   } while (token);
   return out;
+}
+/** One field equals one value, straight from Firestore — used by the minute-by-minute check-in watch so it
+    never has to download the whole attendance collection. */
+function queryWhere(collection, field, value){
+  const body = { structuredQuery: { from: [{ collectionId: collection }],
+    where: { fieldFilter: { field: { fieldPath: field }, op: "EQUAL", value: { stringValue: String(value) } } }, limit: 500 } };
+  const res = UrlFetchApp.fetch(`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery`,
+    { method: "post", contentType: "application/json", headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() },
+      payload: JSON.stringify(body), muteHttpExceptions: true });
+  if (res.getResponseCode() >= 300){ Logger.log("query " + collection + ": " + res.getContentText().slice(0, 200)); return []; }
+  return (JSON.parse(res.getContentText() || "[]") || []).filter(r => r.document)
+    .map(r => ({ id: r.document.name.split("/").pop(), ...unwrap(r.document.fields || {}) }));
+}
+/** Hotel names and shift times, kept in Script Properties for half an hour — the fast tick needs them
+    for the "x min late" line and must not fetch the hotels every single minute. */
+function cachedHotels(props){
+  const raw = props.getProperty("hotelsCache");
+  if (raw){ try { const c = JSON.parse(raw); if (new Date().getTime() - c.at < 1800000) return c.hotels; } catch (e) {} }
+  const hotels = fetchAll("hotels").map(d => ({ id: d.id, name: d.f.name, shifts: d.f.shifts || null }));
+  try { props.setProperty("hotelsCache", JSON.stringify({ at: new Date().getTime(), hotels: hotels })); } catch (e) {}
+  return hotels;
 }
 function unwrap(fields){ const o = {}; for (const k in fields) o[k] = val(fields[k]); return o; }
 function val(v){ if ("stringValue" in v) return v.stringValue; if ("integerValue" in v) return +v.integerValue; if ("doubleValue" in v) return v.doubleValue; if ("booleanValue" in v) return v.booleanValue; if ("timestampValue" in v) return v.timestampValue; if ("nullValue" in v) return null; if ("arrayValue" in v) return (v.arrayValue.values || []).map(val); if ("mapValue" in v) return unwrap(v.mapValue.fields || {}); return null; }
@@ -340,7 +361,7 @@ function pushTick(){
   const today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd"), nowMin = toMin(hhmm(new Date()));
   const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f })).filter(e => e.status === "approved" && e.hotelId);
   const hotels = fetchAll("hotels").map(d => ({ id: d.id, ...d.f })), byHotel = {}; hotels.forEach(h => { byHotel[h.id] = h; });
-  const att = fetchAll("attendance").map(d => ({ id: d.id, ...d.f })).filter(r => r.date === today);
+  const att = queryWhere("attendance", "date", today);
   const plans = fetchAll("plans").map(d => ({ id: d.id, ...d.f })).filter(p => p.date === today);
   let sent = 0;
 
@@ -387,7 +408,7 @@ function pushTick(){
   });
 
   // 2b. live check-ins: the office sees who arrived, as it happens
-  sent += tellOfficeAboutCheckIns(att, employees, byHotel, props, today);
+  sent += tellOfficeAboutCheckIns(props, today);
 
   // 3. a staff member could not check in: tell the office once
   const fresh = fetchAll("requests").map(d => ({ id: d.id, ...d.f })).filter(r => r.status === "open" && !r.notifiedAt);
@@ -442,34 +463,44 @@ function testTaskPush(){
   const n = sendPush(devs, taskTitle(best.t), taskBody(best.t, best.h), PORTAL_URL, "task-test");
   note("v" + SCRIPT_VERSION + " · sent \"" + taskTitle(best.t) + "\" to " + n + " of " + devs.length + " phone(s): " + names);
 }
-/** Tells the office phones who has just checked in. Only check-ins newer than the last tick are sent,
-    and on the very first run nothing old is replayed — the clock starts now. */
-function tellOfficeAboutCheckIns(att, employees, byHotel, props, today){
+/** Tells the office phones who has just checked in. Only check-ins newer than the last look are sent,
+    and on the very first run nothing old is replayed — the clock starts now. Runs every minute from
+    checkinTick(), and again inside pushTick() so the office is covered even if the fast trigger is missing;
+    both share the seenCheckIn marker, so a check-in is never announced twice. */
+function tellOfficeAboutCheckIns(props, today){
   const KEY = "seenCheckIn";
   const seen = props.getProperty(KEY);
   if (!seen){ props.setProperty(KEY, new Date().toISOString()); return 0; }   // first run: start from now, do not replay the day
-  const fresh = att.filter(r => r.shift && r.checkInAt && String(r.checkInAt) > seen)
-                   .sort((a, b) => String(a.checkInAt).localeCompare(String(b.checkInAt)));
+  const fresh = queryWhere("attendance", "date", today)
+    .filter(r => r.shift && r.checkInAt && String(r.checkInAt) > seen)
+    .sort((a, b) => String(a.checkInAt).localeCompare(String(b.checkInAt)));
   if (!fresh.length) return 0;
   props.setProperty(KEY, String(fresh[fresh.length - 1].checkInAt));
   const office = officeDevices();
   if (!office.length) return 0;
+  const hotels = cachedHotels(props);
   const line = r => {
-    const e = employees.filter(x => x.uid === r.uid)[0] || {};
-    const h = byHotel[r.hotelId] || {};
+    const h = hotels.filter(x => x.id === r.hotelId)[0] || {};
     const sh = hotelShifts(h).filter(x => x.key === r.shift)[0] || null;
     const at = hhmm(r.checkInAt);
     const lateBy = sh ? toMin(at) - (toMin(sh.start) + (sh.graceMin == null ? 5 : +sh.graceMin)) : 0;
-    return (e.preferredName || e.fullName || r.name || r.email) + " · " + (sh ? sh.name : r.shift) + " · " + at + (lateBy > 0 ? " · " + lateBy + " min late" : "");
+    return (r.name || r.email || "Someone") + " · " + (sh ? sh.name : r.shift) + " · " + at + (lateBy > 0 ? " · " + lateBy + " min late" : "");
   };
-  const title = fresh.length === 1 ? "Checked in: " + line(fresh[0]).split(" · ")[0] : fresh.length + " just checked in";
+  const title = fresh.length === 1 ? "Checked in: " + (fresh[0].name || fresh[0].email || "someone") : fresh.length + " just checked in";
   const body = fresh.map(line).join("\n").slice(0, 300);
   return sendPush(office, title, body, ADMIN_URL, "checkin");
 }
+/** The one-minute job: nothing but the check-in watch, so the office hears about an arrival within a
+    minute instead of waiting for the quarter-hourly round. One filtered read when nobody has arrived. */
+function checkinTick(){
+  const props = PropertiesService.getScriptProperties();
+  return tellOfficeAboutCheckIns(props, Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd"));
+}
 function installPushTriggers(){
-  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "pushTick").forEach(t => ScriptApp.deleteTrigger(t));
-  ScriptApp.newTrigger("pushTick").timeBased().everyMinutes(15).create();
-  note("v" + SCRIPT_VERSION + " · Reminders are live: the script checks every 15 minutes.");
+  ScriptApp.getProjectTriggers().filter(t => ["pushTick", "checkinTick"].indexOf(t.getHandlerFunction()) >= 0).forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger("pushTick").timeBased().everyMinutes(15).create();      // reminders, the office queue, staff notes
+  ScriptApp.newTrigger("checkinTick").timeBased().everyMinutes(1).create();    // "who just walked in", near enough to live
+  note("v" + SCRIPT_VERSION + " · Reminders are live: check-ins every minute, everything else every 15 minutes.");
 }
 /** Send a test to the office phones only — register yours on the admin page, Today tab. The team is never disturbed by this. */
 function testPush(){
@@ -497,7 +528,7 @@ function sendDigest(){
   const today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd"), nowMin = toMin(hhmm(new Date()));
   const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f }));
   const hotels = Object.fromEntries(fetchAll("hotels").map(d => [d.id, d.f]));
-  const att = fetchAll("attendance").map(d => ({ id: d.id, ...d.f })).filter(r => r.date === today);
+  const att = queryWhere("attendance", "date", today);
   const plansToday = fetchAll("plans").map(d => ({ id: d.id, ...d.f })).filter(p => p.date === today);
   const reqs = fetchAll("requests").map(d => ({ id: d.id, ...d.f })).filter(r => r.status === "open");
   const admins = fetchAll("admins").map(d => d.id);
