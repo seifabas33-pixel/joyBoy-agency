@@ -274,3 +274,10 @@ Admin page → **Proposals**. Fill in the hotel, the season, the team, what we w
 - The page is `noindex, nofollow`, follows the reader's phone for light/dark, prints cleanly (the buttons drop out), and was checked down to 360px wide.
 - **Rules must be re-published**: `proposals` (admin only) and `publicProposals` (`allow read: if true`, admin write).
 - Gotcha for the next person: `portal.css` sets `table{min-width:860px}` for the admin's scrollable tables — any table outside a `.tablewrap` needs `min-width:0` or it will push a phone page sideways.
+
+### Two more alerts for the office phone (2026-09-15)
+
+- **An unhappy guest, within the minute.** A rating of **1 or 2 stars** (`BAD_RATING`) is pushed to the office phones as it arrives, with the comment, the guest's name and the staff member it named — because that guest is still at the resort and the evening can still be saved. Four and five stars are never pushed; they are counted in the Guests tab and the digest. Runs inside `checkinTick` (`tellOfficeAboutBadRatings`), tracked by the `seenFeedback` Script Property, which is stamped on the first run so nothing old is replayed. Between midnight and 04:00 it also scans yesterday's date, because a guest's phone may be on another timezone when it writes `date`.
+- **"Who is not on the floor."** At the shift start **plus that shift's grace**, and within `MISSING_WINDOW` (20 minutes) of it, the office gets one message per hotel and shift: *"Afternoon shift · 2 missing — 1 of 3 checked in at True Beach Resort · missing: Nathali, Chocolate"*. People marked sick, on vacation or excused for the day are not counted as missing, and if everybody is in, nothing is sent — silence still means all good. Once per shift per day (`miss_<date>_<hotel>_<shift>`), from `pushTick`, so it lands within a quarter of an hour of the grace running out.
+
+Deliberately **not** pushed: happy ratings, new registrations, payslips marked paid. A phone that buzzes for everything stops being read, and these two are the ones worth reading.

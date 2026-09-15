@@ -46,7 +46,7 @@ const PROJECT_ID = "joy-boy-agency";
 const DAYS_BACK = 62;                 // how much history to (re)write each run
 const TZ = "Africa/Cairo";
 const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)", REPORT_TAB = "Sync report (portal)";
-const SCRIPT_VERSION = "2026-09-14a";   // shown in every toast, so you can tell which copy the sheet is running
+const SCRIPT_VERSION = "2026-09-15a";   // shown in every toast, so you can tell which copy the sheet is running
 
 function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addSeparator().addItem("Reminders: install (every 15 min)", "installPushTriggers").addItem("Reminders: send a test", "testPush").addItem("Reminders: test a programme item", "testTaskPush").addItem("Reminders: check for arrivals now", "checkinTick").addToUi(); }
 function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); note("Done — the sheet now refreshes every hour."); }
@@ -306,6 +306,8 @@ const ADMIN_URL = "https://seifabas33-pixel.github.io/joyBoy-agency/team/admin.h
 const PORTAL_URL = "https://seifabas33-pixel.github.io/joyBoy-agency/team/";
 const REMIND_BEFORE = 30;             // minutes before a shift starts that the reminder goes out
 const TASK_BEFORE = 15;               // minutes before a programme item starts that the people on it are reminded
+const BAD_RATING = 2;                 // a guest rating at or below this reaches the office at once — they are still at the hotel
+const MISSING_WINDOW = 20;            // minutes after a shift start + grace in which the "who is not here" alert goes out
 
 /* ───────────────────── push notifications to the staff phones ─────────────────────
  * Firebase Cloud Messaging, sent with your own Google account — no paid plan and no server.
@@ -395,6 +397,28 @@ function pushTick(){
       const uids = taskPeople(t, h, plan, employees);
       if (uids.length) sent += sendPush(devicesOf(uids), taskTitle(t), taskBody(t, h), PORTAL_URL, "task-" + (t.id || t.time));
       props.setProperty(key, "1");
+    });
+  });
+
+  // 1c. the shift has started and the grace is over: tell the office who is not on the floor
+  hotels.filter(h => h.active !== false).forEach(h => {
+    const plan = plans.filter(p => p.hotelId === h.id)[0] || null;
+    hotelShifts(h).forEach(sh => {
+      const past = nowMin - (toMin(sh.start) + (sh.graceMin == null ? 5 : +sh.graceMin));
+      if (past < 0 || past > MISSING_WINDOW) return;
+      const key = "miss_" + today + "_" + h.id + "_" + sh.key; if (props.getProperty(key)) return;
+      props.setProperty(key, "1");
+      const expected = employees.filter(e => e.hotelId === h.id)
+        .filter(e => scheduledShifts(hotelShifts(h), plan, e.uid).some(s => s.key === sh.key))
+        .filter(e => !att.some(r => r.uid === e.uid && !r.shift && r.override));          // sick, vacation, excused: not missing
+      const missing = expected.filter(e => !att.some(r => r.uid === e.uid && r.shift === sh.key && r.checkInAt));
+      if (!expected.length || !missing.length) return;                                     // everybody in: no news is good news
+      const office = officeDevices();
+      if (!office.length) return;
+      const who = e => e.preferredName || e.fullName || e.email;
+      sent += sendPush(office, sh.name + " shift · " + missing.length + " missing",
+        (expected.length - missing.length) + " of " + expected.length + " checked in at " + (h.name || "the hotel") +
+        " · missing: " + missing.map(who).join(", "), ADMIN_URL + "#att", "missing-" + sh.key);
     });
   });
 
@@ -490,11 +514,37 @@ function tellOfficeAboutCheckIns(props, today){
   const body = fresh.map(line).join("\n").slice(0, 300);
   return sendPush(office, title, body, ADMIN_URL, "checkin");
 }
+/** A guest who gave one or two stars is still at the resort: the office hears about it within the minute,
+    with what they wrote, so the evening can still be rescued. Happy ratings wait for the digest. */
+function tellOfficeAboutBadRatings(props, today){
+  const KEY = "seenFeedback";
+  const seen = props.getProperty(KEY);
+  if (!seen){ props.setProperty(KEY, new Date().toISOString()); return 0; }
+  const hour = +Utilities.formatDate(new Date(), TZ, "HH");
+  const days = hour < 4 ? [today, addDays(today, -1)] : [today];          // a rating just after midnight may carry the guest phone's date
+  let rows = [];
+  days.forEach(d => { rows = rows.concat(queryWhere("feedback", "date", d)); });
+  rows = rows.filter(r => r.createdAt && String(r.createdAt) > seen)
+             .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+  if (!rows.length) return 0;
+  props.setProperty(KEY, String(rows[rows.length - 1].createdAt));
+  const bad = rows.filter(r => +r.rating >= 1 && +r.rating <= BAD_RATING);
+  if (!bad.length) return 0;                                             // good ratings are counted, not pushed
+  const office = officeDevices();
+  if (!office.length) return 0;
+  const line = r => "\u2605".repeat(+r.rating) + " " + (r.staffName ? r.staffName + " · " : "") +
+    (r.comment ? String(r.comment).slice(0, 120) : "no comment") + (r.guestName ? " — " + r.guestName : "");
+  const title = bad.length === 1
+    ? bad[0].rating + "\u2605 from a guest" + (bad[0].hotelName ? " at " + bad[0].hotelName : "")
+    : bad.length + " unhappy guests";
+  return sendPush(office, title, bad.map(line).join("\n").slice(0, 300), ADMIN_URL + "#guests", "badrating");
+}
 /** The one-minute job: nothing but the check-in watch, so the office hears about an arrival within a
     minute instead of waiting for the quarter-hourly round. One filtered read when nobody has arrived. */
 function checkinTick(){
   const props = PropertiesService.getScriptProperties();
-  return tellOfficeAboutCheckIns(props, Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd"));
+  const today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd");
+  return tellOfficeAboutCheckIns(props, today) + tellOfficeAboutBadRatings(props, today);
 }
 function installPushTriggers(){
   ScriptApp.getProjectTriggers().filter(t => ["pushTick", "checkinTick"].indexOf(t.getHandlerFunction()) >= 0).forEach(t => ScriptApp.deleteTrigger(t));
