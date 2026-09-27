@@ -137,6 +137,48 @@ async function firebaseBackend(){
     saveTasks: (hotelId, date, tasks, by) => F.setDoc(F.doc(db, "plans", `${hotelId}_${date}`), { hotelId, date, tasks, tasksBy: by, tasksAt: ts() }, { mergeFields: ["hotelId", "date", "tasks", "tasksBy", "tasksAt"] }),
     // attendance: one document per person, day AND shift, id = uid_YYYY-MM-DD_s1; day marks by the office live in uid_YYYY-MM-DD. The server stamps the time.
     checkIn: async rec => { const id = `${rec.uid}_${rec.date}_${rec.shift}`; await F.setDoc(F.doc(db, "attendance", id), { ...rec, checkInAt: ts() }, { merge: true }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); }, // merge: keeps an office mark (override) that already exists for the shift
+    // After the server refused a check-in: ask the server itself for every fact the rules look at, in the same
+    // order, and say which one failed. Reads bypass the local cache so a stale copy cannot hide the answer.
+    diagnoseCheckIn: async rec => {
+      const out = [], srv = ref => F.getDocFromServer(ref).then(s => ({ ok: true, s })).catch(e => ({ ok: false, e }));
+      const me = await srv(F.doc(db, "employees", rec.uid));
+      if (!me.ok || !me.s.exists()) out.push("The server has no profile for the account you are signed in with. Sign out and sign in with the account you registered with.");
+      else {
+        const e = me.s.data();
+        if (e.status !== "approved") out.push(`On the server your profile is "${e.status || "no status"}", not approved. The office must approve it.`);
+        if (!e.hotelId) out.push("On the server your profile has no hotel. The office must set your hotel in the Roster and press Save.");
+        else if (e.hotelId !== rec.hotelId) out.push("On the server your profile is assigned to a different hotel than the one your phone is checking in at. Sign out and sign in again.");
+      }
+      const hr = await srv(F.doc(db, "hotels", rec.hotelId));
+      const h = hr.ok && hr.s.exists() ? hr.s.data() : null;
+      if (!h) out.push("The server could not read your hotel.");
+      else {
+        if (h.active !== true) out.push("The hotel is marked closed on the server. The office must reopen it in Hotels.");
+        if (h.shifts && !(rec.shift in h.shifts)) out.push(`The hotel has no ${rec.shiftName || rec.shift} shift on the server.`);
+        const pr = await srv(F.doc(db, "plans", `${rec.hotelId}_${rec.date}`));
+        let sk = "";
+        if (!pr.ok) out.push("Your phone is not allowed to read today's plan — that usually means your profile is not approved on the server.");
+        else if (pr.s.exists()) { const pl = pr.s.data(); sk = pl.shifts && pl.shifts[rec.shift] ? (pl.shifts[rec.shift].spot || "") : ""; }
+        if (sk !== (rec.spot || "")) out.push(`The office planned this shift at "${(h.spots && h.spots[sk] && h.spots[sk].name) || sk || "anywhere at the hotel"}", but your phone was checking in for "${rec.spotName || "anywhere at the hotel"}". Close the portal completely and open it again.`);
+        const t = sk && h.spots && h.spots[sk] ? h.spots[sk] : h;
+        if (typeof t.lat !== "number" || typeof t.lng !== "number" || typeof t.cosLat !== "number" || typeof t.radiusM !== "number") out.push(`The pin for ${t === h ? "the hotel" : "the " + (t.name || sk)} is incomplete on the server. The office must fix it in Hotels.`);
+        else {
+          const dx = (rec.lng - t.lng) * t.cosLat * 111320, dy = (rec.lat - t.lat) * 110540, d = Math.round(Math.sqrt(dx * dx + dy * dy));
+          const tol = rec.accuracy > 0 ? Math.min(100, rec.accuracy) : 0;
+          if (d > t.radiusM + tol) out.push(`By the server's measure you are ${d} m from ${t === h ? "the hotel" : "the " + (t.name || sk)}; allowed ${t.radiusM} m + ${tol} m for your GPS.`);
+        }
+      }
+      // A record that does not exist yet cannot be read under the rules either, so a failed read proves nothing:
+      // only report what is actually visible.
+      const ex = await srv(F.doc(db, "attendance", `${rec.uid}_${rec.date}_${rec.shift}`));
+      if (ex.ok && ex.s.exists()){
+        const r = ex.s.data();
+        if (r.checkInAt) out.push("You are already checked in for this shift.");
+        else if (!("shift" in r)) out.push("The office already marked this shift, so a check-in cannot be added on top. Ask the office to decide this shift.");
+      }
+      if (!out.length) out.push("Everything the server checks looks right from your phone. The office should open Attendance and look for an existing mark on this shift — a mark made by the office blocks the check-in.");
+      return out;
+    },
     checkOut: async id => { await F.updateDoc(F.doc(db, "attendance", id), { checkOutAt: ts() }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); },
     myAttendance: async (uid, from) => { const s = await F.getDocs(F.query(F.collection(db, "attendance"), F.where("uid", "==", uid))); return s.docs.map(att).filter(r => !from || r.date >= from).sort((a, b) => b.date.localeCompare(a.date)); },
     attendanceOn: async date => { const s = await F.getDocs(F.query(F.collection(db, "attendance"), F.where("date", "==", date))); return s.docs.map(att); },
@@ -232,6 +274,7 @@ function demoBackend(){
     saveRoster: async (hotelId, date, roster, by) => { const ps = get("plans") || {}; ps[`${hotelId}_${date}`] = { ...(ps[`${hotelId}_${date}`] || {}), hotelId, date, roster, rosterBy: by, rosterAt: now() }; set("plans", ps); },
     saveTasks: async (hotelId, date, tasks, by) => { const ps = get("plans") || {}; ps[`${hotelId}_${date}`] = { ...(ps[`${hotelId}_${date}`] || {}), hotelId, date, tasks, tasksBy: by, tasksAt: now() }; set("plans", ps); },
     checkIn: async rec => { const a = get("att") || {}; const id = `${rec.uid}_${rec.date}_${rec.shift}`; if (a[id] && a[id].checkInAt) throw new Error("Already checked in for this shift"); a[id] = { ...(a[id] || {}), ...rec, checkInAt: now() }; set("att", a); return { id, ...a[id] }; },
+    diagnoseCheckIn: async () => [],
     checkOut: async id => { const a = get("att") || {}; if (!a[id]) throw new Error("No check-in for this shift"); a[id].checkOutAt = now(); set("att", a); return { id, ...a[id] }; },
     myAttendance: async (uid, from) => Object.entries(get("att") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.uid === uid && (!from || r.date >= from)).sort((a, b) => b.date.localeCompare(a.date)),
     attendanceOn: async date => Object.entries(get("att") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date === date),
