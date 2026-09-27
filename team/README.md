@@ -281,3 +281,12 @@ Admin page → **Proposals**. Fill in the hotel, the season, the team, what we w
 - **"Who is not on the floor."** At the shift start **plus that shift's grace**, and within `MISSING_WINDOW` (20 minutes) of it, the office gets one message per hotel and shift: *"Afternoon shift · 2 missing — 1 of 3 checked in at True Beach Resort · missing: Nathali, Chocolate"*. People marked sick, on vacation or excused for the day are not counted as missing, and if everybody is in, nothing is sent — silence still means all good. Once per shift per day (`miss_<date>_<hotel>_<shift>`), from `pushTick`, so it lands within a quarter of an hour of the grace running out.
 
 Deliberately **not** pushed: happy ratings, new registrations, payslips marked paid. A phone that buzzes for everything stops being read, and these two are the ones worth reading.
+
+### "The server refused the check-in" now says why (2026-09-27)
+
+A new animator could not check in while everyone else at the same hotel and shift could: her phone's own distance check passed, the rules refused, and the screen only said "the server refused". The office could not tell which of the rules' conditions had failed.
+
+- On a refusal the page now calls `be.diagnoseCheckIn(attempt)`, which re-reads — **from the server, not the cache** (`getDocFromServer`) — every fact `approvedAt` and `insideFence` look at, in the same order: her profile (exists? approved? which hotel?), the hotel (open? has this shift? complete pin?), today's plan (readable? which spot is planned for this shift, and is it the one her phone sent?), the distance by the server's own formula and tolerance, and an existing record on that shift (already checked in? an office mark without a `shift` field, which blocks the update path?).
+- The first reason is shown on her screen, and **all of them are written into the pre-filled note**, so the office sees the exact cause in the Attendance tab without asking for a screenshot.
+- A failed read of her own attendance record is **not** taken as evidence of an office mark: the rules also deny reading a record that does not exist yet, so only what is actually visible is reported. When nothing on her side is wrong, it says so and points the office at the Attendance tab.
+- The re-read of the plan just before checking in no longer swallows its error silently (it logs it; the diagnosis reports it if it mattered).
