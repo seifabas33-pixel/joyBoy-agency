@@ -290,3 +290,11 @@ A new animator could not check in while everyone else at the same hotel and shif
 - The first reason is shown on her screen, and **all of them are written into the pre-filled note**, so the office sees the exact cause in the Attendance tab without asking for a screenshot.
 - A failed read of her own attendance record is **not** taken as evidence of an office mark: the rules also deny reading a record that does not exist yet, so only what is actually visible is reported. When nothing on her side is wrong, it says so and points the office at the Attendance tab.
 - The re-read of the plan just before checking in no longer swallows its error silently (it logs it; the diagnosis reports it if it mattered).
+
+### Root cause of the "server refused" for the new animator (2026-09-28)
+
+It was **not** the server. Her phone was blocking location for the portal. The browser reports that as *"Location permission was refused"*, and the check-in handler decided "server refusal" with `/permission|denied/i` — the word *permission* matched, so she was shown "The server refused the check-in" for a phone setting. The tell-tale signs, for next time: **no distance numbers in the message and an empty note** — both only exist once the phone has produced a location.
+
+- A server refusal is now recognised only by Firestore's own code (`ex.code === "permission-denied"` / "Missing or insufficient permissions"), never by a word in a message. Location errors carry `locationBlocked`.
+- A blocked location now says where the switch is on that phone — iPhone: *Settings → Privacy & Security → Location Services → Safari Websites → While Using the App*; Android: *lock icon → Permissions → Location → Allow* — and pre-fills the office note with "my phone was blocking location for the portal".
+- Once a site has been refused location on an iPhone, Safari does not ask again; the switch has to be flipped in Settings.
