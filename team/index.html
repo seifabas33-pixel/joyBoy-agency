@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-lUTPa73HRRoBDa75sv+vI5qAwgss2/li01HJ6Gd1JLU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-4DZCljmdaHT4e2ZSymxP03WBKKiuWLD+WD6Ya127aLk='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team portal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,8 +20,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609271919">
-<script src="firebase-config.js?v=202609271919"></script>
+<link rel="stylesheet" href="portal.css?v=202609280721">
+<script src="firebase-config.js?v=202609280721"></script>
 <script>
 (function(){
   var KEY = "jb-theme", ORDER = ["auto", "light", "dark"];
@@ -227,7 +227,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState } from "./portal.js?v=202609271919";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState } from "./portal.js?v=202609280721";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -428,7 +428,11 @@ function paintProg(){
   const tmRows = taskRows(tm, all, false); show("prog-tmrw-wrap", !!tm.length); $("prog-tmrw").innerHTML = tmRows || `<p class="hint">Nothing for you tomorrow yet.</p>`;
 }
 $("prog-all").addEventListener("change", paintProg);
-const geo = () => new Promise((res, rej) => { if (!navigator.geolocation) return rej(new Error("This browser has no location access")); navigator.geolocation.getCurrentPosition(p => res(p.coords), e => rej(new Error(e.code === 1 ? "Location permission was refused. Allow location for this site in your browser settings and try again." : "Could not get your location. Turn on GPS, step outside if you are indoors, and try again.")), { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }); });
+const geo = () => new Promise((res, rej) => { if (!navigator.geolocation) return rej(new Error("This browser has no location access")); navigator.geolocation.getCurrentPosition(p => res(p.coords), e => { const x = new Error(e.code === 1 ? LOC_BLOCKED() : "Could not get your location. Turn on GPS, step outside if you are indoors, and try again."); x.locationBlocked = e.code === 1; rej(x); }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }); });
+// The phone itself refuses to share its location with the portal. Say where the switch is on THIS kind of phone.
+const LOC_BLOCKED = () => /iPhone|iPad|iPod/.test(navigator.userAgent)
+  ? "Your phone is blocking location for the portal. iPhone: Settings → Privacy & Security → Location Services → Safari Websites → While Using the App. Then close the portal and open it again."
+  : "Your phone is blocking location for the portal. Tap the lock icon next to the address → Permissions → Location → Allow. Then reload the page.";
 $("btn-in").addEventListener("click", async () => {
   const b = $("btn-in"); b.disabled = true; b.textContent = "Locating…"; const sh = cur; let attempt = null;
   try {
@@ -450,11 +454,13 @@ $("btn-in").addEventListener("click", async () => {
     paintAtt();
   } catch (ex) {
     const g = lastGeo || {}, where = g.distM != null ? ` (phone: ${g.distM} m from ${g.place}, GPS ±${g.accuracy || "?"} m, allowed ${g.radius} m, ${hhmm(new Date())})` : "";
-    const refused = /permission|denied/i.test(String(ex));
+    // Firestore's own code only: the phone's "location permission refused" once passed for a server refusal here.
+    const refused = !!ex && !ex.locationBlocked && (ex.code === "permission-denied" || /missing or insufficient permissions/i.test(String(ex.message || ex)));
     let why = [];
     if (refused && attempt){ b.textContent = "Checking why…"; try { why = await be.diagnoseCheckIn(attempt); } catch (e2) { console.warn(e2); } }
     toast(refused ? (why.length ? `Check-in refused: ${why[0]}` : `The server refused the check-in${where}. Send the office a note below — the numbers are filled in for them.`) : (ex.message || String(ex)));
     $("reqbox").dataset.open = "1";
+    if (!$("req-reason").value.trim() && ex && ex.locationBlocked) $("req-reason").value = `${sh ? sh.name + " shift: " : ""}could not check in at ${hhmm(new Date())} — my phone was blocking location for the portal. `;
     if (!$("req-reason").value.trim() && g.distM != null) $("req-reason").value = `${sh ? sh.name + " shift: " : ""}check-in refused at ${hhmm(new Date())} — I am at ${g.place} (phone said ${g.distM} m away, GPS ±${g.accuracy || "?"} m).${why.length ? " Server: " + why.join(" ") : ""} `;
     paintAtt(); $("req-reason").focus();
   }
