@@ -46,7 +46,7 @@ const PROJECT_ID = "joy-boy-agency";
 const DAYS_BACK = 62;                 // how much history to (re)write each run
 const TZ = "Africa/Cairo";
 const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)", REPORT_TAB = "Sync report (portal)";
-const SCRIPT_VERSION = "2026-09-15a";   // shown in every toast, so you can tell which copy the sheet is running
+const SCRIPT_VERSION = "2026-09-29a";   // shown in every toast, so you can tell which copy the sheet is running
 
 function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addSeparator().addItem("Reminders: install (every 15 min)", "installPushTriggers").addItem("Reminders: send a test", "testPush").addItem("Reminders: test a programme item", "testTaskPush").addItem("Reminders: check for arrivals now", "checkinTick").addToUi(); }
 function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); note("Done — the sheet now refreshes every hour."); }
@@ -434,13 +434,8 @@ function pushTick(){
   // 2b. live check-ins: the office sees who arrived, as it happens
   sent += tellOfficeAboutCheckIns(props, today);
 
-  // 3. a staff member could not check in: tell the office once
-  const fresh = fetchAll("requests").map(d => ({ id: d.id, ...d.f })).filter(r => r.status === "open" && !r.notifiedAt);
-  if (fresh.length){
-    const office = officeDevices();
-    if (office.length) sent += sendPush(office, fresh.length === 1 ? "Check-in note from " + (fresh[0].name || fresh[0].email) : fresh.length + " check-in notes", fresh.length === 1 ? String(fresh[0].reason || "").slice(0, 120) : "Open the Attendance tab to decide.", ADMIN_URL + "#att", "requests");
-    fresh.forEach(r => restPatch("requests/" + r.id, { notifiedAt: new Date().toISOString() }));
-  }
+  // 3. a staff member could not check in: tell the office once (also runs every minute from checkinTick)
+  sent += tellOfficeAboutNotes();
 
   if (sent) Logger.log("pushTick sent " + sent + " notifications");
   return sent;
@@ -539,12 +534,27 @@ function tellOfficeAboutBadRatings(props, today){
     : bad.length + " unhappy guests";
   return sendPush(office, title, bad.map(line).join("\n").slice(0, 300), ADMIN_URL + "#guests", "badrating");
 }
+/** "I could not check in" notes from staff reach the office within the minute — for a phone that will not give
+    its location this note IS the check-in, so the office should be able to confirm it while the person is there.
+    Marked notifiedAt once sent, so the minute job and the quarter-hour job never both announce the same note. */
+function tellOfficeAboutNotes(){
+  const fresh = queryWhere("requests", "status", "open").filter(r => !r.notifiedAt);
+  if (!fresh.length) return 0;
+  fresh.forEach(r => restPatch("requests/" + r.id, { notifiedAt: new Date().toISOString() }));
+  const office = officeDevices();
+  if (!office.length) return 0;
+  const who = r => (r.name || r.email || "Someone") + (r.shiftName ? " · " + r.shiftName : "");
+  return sendPush(office,
+    fresh.length === 1 ? "Can't check in: " + who(fresh[0]) : fresh.length + " staff can't check in",
+    fresh.length === 1 ? String(fresh[0].reason || "").slice(0, 160) + " — tap to decide." : fresh.map(who).join("\n").slice(0, 300),
+    ADMIN_URL + "#att", "requests");
+}
 /** The one-minute job: nothing but the check-in watch, so the office hears about an arrival within a
     minute instead of waiting for the quarter-hourly round. One filtered read when nobody has arrived. */
 function checkinTick(){
   const props = PropertiesService.getScriptProperties();
   const today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd");
-  return tellOfficeAboutCheckIns(props, today) + tellOfficeAboutBadRatings(props, today);
+  return tellOfficeAboutCheckIns(props, today) + tellOfficeAboutNotes() + tellOfficeAboutBadRatings(props, today);
 }
 function installPushTriggers(){
   ScriptApp.getProjectTriggers().filter(t => ["pushTick", "checkinTick"].indexOf(t.getHandlerFunction()) >= 0).forEach(t => ScriptApp.deleteTrigger(t));

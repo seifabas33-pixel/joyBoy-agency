@@ -298,3 +298,11 @@ It was **not** the server. Her phone was blocking location for the portal. The b
 - A server refusal is now recognised only by Firestore's own code (`ex.code === "permission-denied"` / "Missing or insufficient permissions"), never by a word in a message. Location errors carry `locationBlocked`.
 - A blocked location now says where the switch is on that phone — iPhone: *Settings → Privacy & Security → Location Services → Safari Websites → While Using the App*; Android: *lock icon → Permissions → Location → Allow* — and pre-fills the office note with "my phone was blocking location for the portal".
 - Once a site has been refused location on an iPhone, Safari does not ask again; the switch has to be flipped in Settings.
+
+### When a phone will not give its location: the note is the check-in (2026-09-29)
+
+Some phones cannot be made to share their location with the portal (a Safari or Screen Time restriction the owner can't lift, a damaged GPS). No website can override that. For those people the "Could not check in?" note is the fallback, and it now works like a proper check-in the office confirms:
+
+- The note reaches the office phone **within a minute** (`tellOfficeAboutNotes`, now also on `checkinTick`; `notifiedAt` stops a note being announced twice): *"Can't check in: Hania · Morning — … tap to decide."*
+- Pressing **Present** on the note in the Attendance tab records **the time the note was sent from the hotel as the check-in time** (`checkInAt` = the note's `createdAt`), tagged edited with the reason *"Confirmed by the office from the staff note (no GPS on the phone)"*. An existing check-in is never overwritten. Excused / Absent behave as before.
+- The office keeps control: nothing counts until someone in the office accepts it.
