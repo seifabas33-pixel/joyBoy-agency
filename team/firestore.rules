@@ -200,11 +200,12 @@ service cloud.firestore {
         && approvedAt(request.auth.uid, request.resource.data.hotelId)
         && insideFence(request.resource.data));
       // Owner may (a) check out once, or (b) add their real check-in on a day the office already marked (manual mark / grid import) — once, inside the fence.
+      // A field the office left empty (null) counts as not set: an office edit without a check-out time must not block the person's own checkout.
       allow update: if isAdmin() || (isOwner(resource.data.uid) && (
         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checkOutAt'])
-          && !('checkOutAt' in resource.data)
+          && (!('checkOutAt' in resource.data) || resource.data.checkOutAt == null)
           && request.resource.data.checkOutAt == request.time)
-        || (!('checkInAt' in resource.data) && 'shift' in resource.data
+        || ((!('checkInAt' in resource.data) || resource.data.checkInAt == null) && 'shift' in resource.data
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checkInAt', 'lat', 'lng', 'accuracy', 'distM', 'email', 'name', 'hotelName', 'shiftName', 'spot', 'spotName'])
           && request.resource.data.checkInAt == request.time
           && approvedAt(request.auth.uid, request.resource.data.hotelId)

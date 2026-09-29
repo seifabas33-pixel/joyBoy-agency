@@ -306,3 +306,8 @@ Some phones cannot be made to share their location with the portal (a Safari or 
 - The note reaches the office phone **within a minute** (`tellOfficeAboutNotes`, now also on `checkinTick`; `notifiedAt` stops a note being announced twice): *"Can't check in: Hania · Morning — … tap to decide."*
 - Pressing **Present** on the note in the Attendance tab records **the time the note was sent from the hotel as the check-in time** (`checkInAt` = the note's `createdAt`), tagged edited with the reason *"Confirmed by the office from the staff note (no GPS on the phone)"*. An existing check-in is never overwritten. Excused / Absent behave as before.
 - The office keeps control: nothing counts until someone in the office accepts it.
+
+### Two bugs found through the same animator (2026-09-29)
+
+- **Messages were invisible in daylight.** `.toast` used `color: var(--dark)` on `background: var(--ink)`; since the light theme (2026-09-12) `--ink` is dark in daytime, so every message from 06:00 to 18:00 was near-black on black (contrast 1.05:1) — the "black blob" in the staff screenshots. Now `color: var(--bg)` (16.8:1 light, 18.5:1 dark), a real box up to the screen width instead of a narrow pill, on screen for as long as its length needs (3–15 s, was a flat 2.6 s), and a tap closes it.
+- **Checkout refused after the office marked a check-in by hand.** The ✎ edit wrote `checkOutAt: null` when no check-out time was given, and the rules only allowed a checkout when `checkOutAt` was *absent*. Fixed on both sides: `setAttendance` turns `null` into `deleteField()`, and the rules treat a null `checkOutAt` / `checkInAt` as not set (which also repairs the records already written that way). **Rules must be re-published.**
