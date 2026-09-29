@@ -183,7 +183,9 @@ async function firebaseBackend(){
     myAttendance: async (uid, from) => { const s = await F.getDocs(F.query(F.collection(db, "attendance"), F.where("uid", "==", uid))); return s.docs.map(att).filter(r => !from || r.date >= from).sort((a, b) => b.date.localeCompare(a.date)); },
     attendanceOn: async date => { const s = await F.getDocs(F.query(F.collection(db, "attendance"), F.where("date", "==", date))); return s.docs.map(att); },
     attendanceRange: async (from, to) => { const s = await F.getDocs(F.query(F.collection(db, "attendance"), F.where("date", ">=", from), F.where("date", "<=", to))); return s.docs.map(att).sort((a, b) => a.date.localeCompare(b.date)); },
-    setAttendance: (id, patch) => F.setDoc(F.doc(db, "attendance", id), { ...patch, reviewedAt: ts() }, { merge: true }),
+    // null in an office edit means "not set": remove the field rather than store null, because the rules read
+    // "checkOutAt exists" as "already checked out" — a null left behind blocked the person's own checkout.
+    setAttendance: (id, patch) => F.setDoc(F.doc(db, "attendance", id), { ...Object.fromEntries(Object.entries(patch).map(([k, v]) => [k, v === null ? F.deleteField() : v])), reviewedAt: ts() }, { merge: true }),
     deleteAttendance: id => F.deleteDoc(F.doc(db, "attendance", id)),
     // requests: "I could not check in" — written from anywhere, decided by the office
     sendRequest: async rec => { const id = `${rec.uid}_${rec.date}_${rec.shift}`; await F.setDoc(F.doc(db, "requests", id), { ...rec, status: "open", createdAt: ts() }); const s = await F.getDoc(F.doc(db, "requests", id)); return att(s); },
@@ -312,7 +314,15 @@ export function shrink(file, max = 900, q = .85){
     img.onload = () => { const s = Math.min(1, max / Math.max(img.width, img.height)); const c = document.createElement("canvas"); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s); c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); c.toBlob(b => b ? res(b) : rej(new Error("resize failed")), "image/jpeg", q); };
     img.onerror = () => rej(new Error("not an image")); img.src = url; });
 }
-export function toast(msg){ let t = document.querySelector(".toast"); if (!t){ t = document.createElement("div"); t.className = "toast"; document.body.appendChild(t); } t.textContent = msg; t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 2600); }
+/** A short message at the bottom of the screen. It stays up long enough to read its length (a one-liner ~3 s,
+    a set of instructions up to 15 s) and closes on a tap. */
+export function toast(msg){
+  let t = document.querySelector(".toast");
+  if (!t){ t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); t.addEventListener("click", () => t.classList.remove("show")); document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add("show"); clearTimeout(t._h);
+  const words = String(msg || "").split(/\s+/).length;
+  t._h = setTimeout(() => t.classList.remove("show"), Math.min(15000, Math.max(3000, words * 400)));
+}
 export function waNumber(phone){ let d = String(phone || "").replace(/\D/g, ""); if (!d) return ""; if (d.startsWith("00")) d = d.slice(2); else if (d.startsWith("0") && d.length === 11) d = "20" + d.slice(1); return d.length >= 8 ? d : ""; }
 export const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 export function completeness(p){ const keys = ["photoPath","fullName","gender","dob","nationality","phone","city","emergencyName","emergencyPhone","idType","idNumber","idExpiry","idScanPath","payMethod","skills","experienceYears","availableFrom","contractPref","tshirt","languages"]; const n = keys.filter(k => { const v = p[k]; return Array.isArray(v) ? v.length : (v !== undefined && v !== null && v !== ""); }).length; return Math.round(100 * n / keys.length); }
