@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-5eCsm14NIBYJQxwew3ivHQN0+3w5yPusecVAenbr1wk='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-qFjQ/1OiaE0YMC9EVNzjEYtFP6XmcZBQBnIDDzTAHPE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team portal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,8 +20,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609301336">
-<script src="firebase-config.js?v=202609301336"></script>
+<link rel="stylesheet" href="portal.css?v=202609301805">
+<script src="firebase-config.js?v=202609301805"></script>
 <script>
 (function(){
   var KEY = "jb-theme", ORDER = ["auto", "light", "dark"];
@@ -238,7 +238,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState, hotelSpots } from "./portal.js?v=202609301336";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState, hotelSpots } from "./portal.js?v=202609301805";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -445,6 +445,12 @@ const geo = () => new Promise((res, rej) => { if (!navigator.geolocation) return
 const LOC_BLOCKED = () => /iPhone|iPad|iPod/.test(navigator.userAgent)
   ? "Your phone is blocking location for the portal. iPhone: Settings → Privacy & Security → Location Services → Safari Websites → While Using the App. Then close the portal and open it again."
   : "Your phone is blocking location for the portal. Tap the lock icon next to the address → Permissions → Location → Allow. Then reload the page.";
+// A fix this vague means the phone is sharing only an approximate location (iPhone "Precise Location" off, or Android
+// without Google Location Accuracy): it reads as "1.2 km from the theatre" while the person stands in it (2026-09-30).
+const ROUGH_M = 500;
+const ROUGH_LOC = acc => `Your phone is only sharing a rough location (±${acc >= 1000 ? (acc / 1000).toFixed(1) + " km" : acc + " m"}), so it cannot tell that you are at the hotel. ` + (/iPhone|iPad|iPod/.test(navigator.userAgent)
+  ? "iPhone: Settings → Privacy & Security → Location Services → Safari Websites → turn ON “Precise Location”. Then close the portal completely and open it again."
+  : "Android: Settings → Location → turn on “Google Location Accuracy” (or “Improve accuracy”); in Chrome tap the lock icon next to the address → Permissions → Location → Allow, with precise location. Then reload the page.") + " Until then, ask the office for the hotel code.";
 $("btn-in").addEventListener("click", async () => {
   const b = $("btn-in"); b.disabled = true; b.textContent = "Locating…"; const sh = cur; let attempt = null;
   try {
@@ -457,6 +463,7 @@ $("btn-in").addEventListener("click", async () => {
     let lat = target.lat, lng = target.lng, accuracy = 0;
     try { const c = await geo(); lat = c.latitude; lng = c.longitude; accuracy = Math.round(c.accuracy || 0); } catch (ex) { if (!DEMO || ex.locationBlocked) throw ex; }
     const fence = fenceDistM(lat, lng, target); lastGeo = { lat, lng, accuracy, distM: fence, place, radius };
+    if (accuracy > ROUGH_M && fence > radius + fenceTolM(accuracy) && !DEMO) throw new Error(ROUGH_LOC(accuracy));   // "Precise Location" off: the phone only knows the town, not the hotel
     if (fence > radius + fenceTolM(accuracy) && !DEMO) throw new Error(`You are about ${fence >= 1000 ? (fence / 1000).toFixed(1) + " km" : fence + " m"} from ${place} (your phone's GPS is accurate to about ${accuracy || "?"} m; allowed: ${radius} m). ${sh.name} shift checks in at ${place} today — go there and try again, or send the office a note.`);
     b.textContent = "Saving…";
     attempt = { uid: user.uid, email: user.email, name: profile.fullName || user.name || "", hotelId: hotel.id, hotelName: hotel.name, date: dayKey(), shift: sh.key, shiftName: sh.name, spot: sp ? sp.key : "", spotName: sp ? sp.name : "", lat, lng, accuracy, distM: fence };

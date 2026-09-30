@@ -449,6 +449,10 @@ export function rollState(ans, hotel, roll, nowMs = Date.now()){
   const asked = Date.parse(roll && roll.askedAt), win = ((roll && roll.windowMin) || ROLL_WINDOW_MIN) * 60000;
   if (!ans) return nowMs - asked > win ? { code: "none", label: "No answer" } : { code: "wait", label: "Waiting" };
   const late = Date.parse(ans.answeredAt) - asked > win;
+  // a rough fix (Precise Location off) can put someone standing at the pool a kilometre away: only call it "outside"
+  // when even the near edge of that fix is beyond the hotel
+  const rough = (ans.accuracy || 0) > 500;
+  if (rough && !isOutside((ans.distM || 0) - ans.accuracy, hotel)) return { code: "noloc", label: ans.busy ? "Busy · rough location only" : "Rough location only", late };
   if (isOutside(ans.distM, hotel)) return { code: "out", label: "Outside the hotel", late };
   if (ans.noLocation || ans.distM == null) return { code: "noloc", label: ans.busy ? "Busy · no location" : "No location", late };
   return { code: ans.busy ? "busy" : "in", label: ans.busy ? "Busy · at the hotel" : "At the hotel", late };
