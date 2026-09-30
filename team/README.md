@@ -376,3 +376,11 @@ the old export ignored the Schedule on every day except the one open on screen, 
 short read: one sentence, a card per person with totals and only the unusual days in plain words, and one green
 line for everyone with a normal month. "Open" / "Decide" jumps to that day in Attendance. The files remain as
 "Grid file" and "Details file" for records.
+
+### "You are 1.2 km from the theatre" while standing in it (2026-09-30)
+
+The phone was sharing only an **approximate** location (iPhone: Settings → Privacy & Security → Location Services →
+Safari Websites → *Precise Location* off; Android: Google Location Accuracy off). Its fix is the right town, not the
+right hotel, with an accuracy of 1–3 km. When the phone reports an accuracy worse than 500 m and the check-in would
+fail, the page now says exactly that, with the steps for that phone, and the hotel-code box opens. Roll call shows
+"Rough location only" instead of "Outside the hotel" unless even the near edge of the fix is outside.
