@@ -384,3 +384,9 @@ Safari Websites → *Precise Location* off; Android: Google Location Accuracy of
 right hotel, with an accuracy of 1–3 km. When the phone reports an accuracy worse than 500 m and the check-in would
 fail, the page now says exactly that, with the steps for that phone, and the hotel-code box opens. Roll call shows
 "Rough location only" instead of "Outside the hotel" unless even the near edge of the fix is outside.
+
+**The real cause (same evening):** the owner checked the phone — Precise Location on, Maps showing the right place.
+The portal used `getCurrentPosition`, which returns the phone's *first* answer; many phones first answer with a quick
+Wi-Fi/cell guess 1–2 km off and only seconds later with GPS (Maps never shows this because it keeps listening).
+Check-in now keeps listening (`bestFix`): it stops as soon as the fix is inside the fence or accurate to 30 m, and
+otherwise uses the best reading of ~15 s. Button shows "Locating… (a few seconds)".

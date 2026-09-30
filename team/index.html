@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-qFjQ/1OiaE0YMC9EVNzjEYtFP6XmcZBQBnIDDzTAHPE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-Xu0TqTOOOueIDZpxWPq8fyALo+GwR8lhiNxxCvy+Px8='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team portal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,8 +20,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609301805">
-<script src="firebase-config.js?v=202609301805"></script>
+<link rel="stylesheet" href="portal.css?v=202609301812">
+<script src="firebase-config.js?v=202609301812"></script>
 <script>
 (function(){
   var KEY = "jb-theme", ORDER = ["auto", "light", "dark"];
@@ -238,7 +238,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState, hotelSpots } from "./portal.js?v=202609301805";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState, hotelSpots } from "./portal.js?v=202609301812";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -440,7 +440,8 @@ function paintProg(){
   const tmRows = taskRows(tm, all, false); show("prog-tmrw-wrap", !!tm.length); $("prog-tmrw").innerHTML = tmRows || `<p class="hint">Nothing for you tomorrow yet.</p>`;
 }
 $("prog-all").addEventListener("change", paintProg);
-const geo = () => new Promise((res, rej) => { if (!navigator.geolocation) return rej(new Error("This browser has no location access")); navigator.geolocation.getCurrentPosition(p => res(p.coords), e => { const x = new Error(e.code === 1 ? LOC_BLOCKED() : "Could not get your location. Turn on GPS, step outside if you are indoors, and try again."); x.locationBlocked = e.code === 1; rej(x); }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }); });
+const geoErr = e => { if (e && e.locationBlocked !== undefined) return e; const x = new Error(e && e.code === 1 ? LOC_BLOCKED() : "Could not get your location. Turn on GPS, step outside if you are indoors, and try again."); x.locationBlocked = !!(e && e.code === 1); return x; };
+const geo = () => new Promise((res, rej) => { if (!navigator.geolocation) return rej(new Error("This browser has no location access")); navigator.geolocation.getCurrentPosition(p => res(p.coords), e => rej(geoErr(e)), { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }); });
 // The phone itself refuses to share its location with the portal. Say where the switch is on THIS kind of phone.
 const LOC_BLOCKED = () => /iPhone|iPad|iPod/.test(navigator.userAgent)
   ? "Your phone is blocking location for the portal. iPhone: Settings → Privacy & Security → Location Services → Safari Websites → While Using the App. Then close the portal and open it again."
@@ -461,7 +462,10 @@ $("btn-in").addEventListener("click", async () => {
     const sp = plannedSpot(hotel, plan, sh.key), target = sp || hotel, place = sp ? `the ${sp.name}` : hotel.name, radius = target.radiusM || (sp ? 150 : 300);
     if (sp && (typeof sp.lat !== "number" || typeof sp.lng !== "number" || typeof sp.cosLat !== "number")) throw new Error(`The ${sp.name} spot has no proper pin yet. Ask the office to fix it in Hotels.`);
     let lat = target.lat, lng = target.lng, accuracy = 0;
-    try { const c = await geo(); lat = c.latitude; lng = c.longitude; accuracy = Math.round(c.accuracy || 0); } catch (ex) { if (!DEMO || ex.locationBlocked) throw ex; }
+    // Keep listening: many phones answer first with a rough Wi-Fi/cell guess (1–2 km off) and only seconds later with GPS
+    // (2026-09-30: "1.2 km from the theatre" while standing in it, Precise Location on, Maps fine). Stop as soon as the
+    // fix is inside the fence or accurate to 30 m; otherwise take the best reading of ~15 s.
+    try { b.textContent = "Locating… (a few seconds)"; const c = await bestFix(15000, x => x.accuracy <= 30 || fenceDistM(x.latitude, x.longitude, target) <= radius + fenceTolM(x.accuracy)).catch(e => { throw geoErr(e); }); lat = c.latitude; lng = c.longitude; accuracy = Math.round(c.accuracy || 0); } catch (ex) { if (!DEMO || ex.locationBlocked) throw ex; }
     const fence = fenceDistM(lat, lng, target); lastGeo = { lat, lng, accuracy, distM: fence, place, radius };
     if (accuracy > ROUGH_M && fence > radius + fenceTolM(accuracy) && !DEMO) throw new Error(ROUGH_LOC(accuracy));   // "Precise Location" off: the phone only knows the town, not the hotel
     if (fence > radius + fenceTolM(accuracy) && !DEMO) throw new Error(`You are about ${fence >= 1000 ? (fence / 1000).toFixed(1) + " km" : fence + " m"} from ${place} (your phone's GPS is accurate to about ${accuracy || "?"} m; allowed: ${radius} m). ${sh.name} shift checks in at ${place} today — go there and try again, or send the office a note.`);
@@ -489,12 +493,12 @@ $("btn-in").addEventListener("click", async () => {
 const geoQuick = () => new Promise((res, rej) => { if (!navigator.geolocation) return rej(new Error("no location")); navigator.geolocation.getCurrentPosition(p => res(p.coords), rej, { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }); });
 
 // Watch the position for a few seconds and keep the most accurate reading — indoors a phone's first fix is often its worst.
-const bestFix = (ms = 6000) => new Promise((res, rej) => {
+const bestFix = (ms = 6000, good = c => c.accuracy <= 20) => new Promise((res, rej) => {
   if (!navigator.geolocation) return rej(new Error("no location"));
   let best = null, err = null, over = false, id = null, t = null;
   const done = () => { if (over) return; over = true; clearTimeout(t); if (id != null) navigator.geolocation.clearWatch(id); best ? res(best) : rej(err || new Error("no location")); };
   t = setTimeout(done, ms);
-  id = navigator.geolocation.watchPosition(p => { if (!best || p.coords.accuracy < best.accuracy) best = p.coords; if (best.accuracy <= 20) done(); }, e => { err = e; if (e.code === 1) done(); }, { enableHighAccuracy: true, maximumAge: 0, timeout: ms });
+  id = navigator.geolocation.watchPosition(p => { if (!best || p.coords.accuracy < best.accuracy) best = p.coords; if (good(p.coords)) { best = p.coords; done(); } }, e => { err = e; if (e.code === 1) done(); }, { enableHighAccuracy: true, maximumAge: 0, timeout: ms });
 });
 
 /* ── roll call: the office asks "where is everyone?" during a shift; one answer, one location fix ── */
