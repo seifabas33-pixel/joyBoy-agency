@@ -222,6 +222,25 @@ select.in.tiny{padding:6px 28px 6px 10px;font-size:13px;min-width:0;width:auto}
 .coderow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
 .codein{flex:1 1 150px;min-width:0;font:700 26px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.3em;text-align:center;padding:12px 8px}
 .coderow .btn{flex:1 1 180px}
+/* month check (admin → Attendance → Month check) */
+.mchead{display:flex;align-items:center;gap:10px;margin:6px 0 2px}
+.mchead h2{font-size:20px;font-weight:800;flex:1;text-align:center}
+.mcperson{margin-top:12px}
+.mcperson h3{font-size:17px}
+.mctot{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 4px}
+.mctot span{background:var(--raised);border-radius:10px;padding:6px 9px;font-size:12.5px;color:var(--ink-2)}
+.mctot b{color:var(--ink);font-size:15px;margin-right:3px}
+.mcitem{display:flex;gap:10px;align-items:flex-start;border-top:1px solid var(--line);padding:9px 0;font-size:14px}
+.mcitem .d{flex:none;width:58px;color:var(--ink-3);font-size:12.5px;padding-top:2px}
+.mcitem > div{flex:1;min-width:0}
+.mcitem small{display:block;color:var(--ink-2);margin-top:2px}
+.mcitem .btn{flex:none}
+.mctag{display:inline-block;font-size:11.5px;font-weight:700;border-radius:99px;padding:2px 8px}
+.mctag.warn{background:rgba(255,214,10,.16);color:var(--t-warn)}
+.mctag.bad{background:rgba(255,77,46,.16);color:var(--t-bad)}
+.mctag.info{background:rgba(139,92,246,.18);color:var(--t-violet)}
+.mcfine{margin-top:12px;background:rgba(34,227,192,.1);border:1px solid rgba(34,227,192,.35);border-radius:14px;padding:12px;color:var(--t-ok);font-size:14px;line-height:1.6}
+.mcfine small{color:var(--ink-3)}
 /* roll call: the staff answer box, and the office's map + list */
 .rollbox{margin:10px 0 14px;padding:14px;border-radius:14px;background:var(--raised);border:2px solid var(--aqua)}
 .rollbox .actions{flex-direction:column;align-items:stretch}
