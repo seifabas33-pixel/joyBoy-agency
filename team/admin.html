@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-ikcs/p/yCinkrdMCWwqkvLnYiqG3TjmVPVDibnCyoNo='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-/oQUEJ76AWhsEffSsrqHvkhg9jZqTNXq5/tY6d4wyIs='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609301329">
-<script src="firebase-config.js?v=202609301329"></script>
+<link rel="stylesheet" href="portal.css?v=202609301336">
+<script src="firebase-config.js?v=202609301336"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 <script>
 (function(){
@@ -203,8 +203,9 @@
         <select class="in" id="a-hotel"><option value="">All hotels</option></select>
         <span style="flex:1"></span>
         <button class="btn ghost small" id="a-refresh" type="button">Refresh</button>
-        <button class="btn small" id="a-grid" type="button">Month grid</button>
-        <button class="btn ghost small" id="a-csv" type="button">Shift details</button>
+        <button class="btn small" id="a-check" type="button">Month check</button>
+        <button class="btn ghost small" id="a-grid" type="button">Grid file</button>
+        <button class="btn ghost small" id="a-csv" type="button">Details file</button>
       </div>
       <div class="stats" id="a-stats"></div>
       <div class="card plan" id="a-plan" hidden></div>
@@ -349,6 +350,12 @@
   <button class="btn ghost small" id="cs-stop" type="button">Stop and close</button>
 </div>
 <div class="drawer" id="drawer"><div class="bg" id="drawer-bg"></div><div class="panel" id="panel"></div></div>
+<div class="drawer" id="mcheck"><div class="bg" id="mc-bg"></div><div class="panel">
+  <button class="close" id="mc-close" aria-label="Close">×</button>
+  <p class="eyebrow">Month check · only what needs a look</p>
+  <div class="mchead"><button class="btn ghost small" id="mc-prev" type="button" aria-label="Previous month">‹</button><h2 id="mc-title">Month</h2><button class="btn ghost small" id="mc-next" type="button" aria-label="Next month">›</button></div>
+  <div id="mc-body"><p class="hint">Loading…</p></div>
+</div></div>
 <div class="drawer" id="edit"><div class="bg" id="edit-bg"></div><div class="panel small">
   <button class="close" id="edit-close" aria-label="Close">×</button>
   <p class="eyebrow">Correct a check-in</p><h2 id="e-title" style="font-size:22px;font-weight:800;margin-top:4px"></h2><p class="hint" id="e-sub"></p>
@@ -361,7 +368,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText, newHotelCode, CODE_EVERY_S, ROLL_WINDOW_MIN, rollId, rollState, distText, isOutside } from "./portal.js?v=202609301329";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText, newHotelCode, CODE_EVERY_S, ROLL_WINDOW_MIN, rollId, rollState, distText, isOutside } from "./portal.js?v=202609301336";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -647,8 +654,8 @@ const DAY_LETTER = { present: "P", "half-day": "H", absent: "A", sick: "S", vaca
 const csvCell = v => { let t = String(v ?? ""); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
 const csvLine = arr => arr.map(csvCell).join(",");
 function saveCsv(lines, name){ const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
-async function monthData(){
-  const from = attDay.slice(0, 8) + "01", to = addDays(addDays(from, 32).slice(0, 8) + "01", -1), today = dayKey(), hf = $("a-hotel").value;
+async function monthData(start = attDay){
+  const from = start.slice(0, 8) + "01", to = addDays(addDays(from, 32).slice(0, 8) + "01", -1), today = dayKey(), hf = $("a-hotel").value;
   // the Schedule for the whole month: without it a day off would read as "absent" (the old export had that bug)
   const [recs, plans] = await Promise.all([be.attendanceRange(from, to), be.plansRange(from, to)]);
   const planMap = d => Object.fromEntries(plans.filter(p => p.date === d).map(p => [p.hotelId, p]));
@@ -657,6 +664,56 @@ async function monthData(){
   const rowsOf = d => d > today ? [] : attRows(d, recs.filter(r => r.date === d), planMap(d)).filter(x => !hf || x.hotelId === hf);
   return { from, to, today, days, month, hotelLabel: hf ? hotelName(hf) : "All hotels", rowsOf };
 }
+/* ── Month check: the month as a short read — one sentence, then a card per person with only the unusual days,
+   everyone with a normal month on one green line. "Open" jumps to that day in Attendance to correct it. ── */
+let mcMonth = null;
+async function openMonthCheck(start){
+  mcMonth = (start || attDay).slice(0, 8) + "01"; $("mcheck").classList.add("open");
+  $("mc-body").innerHTML = `<p class="hint">Loading…</p>`;
+  let m; try { m = await monthData(mcMonth); } catch (ex) { $("mc-body").innerHTML = `<p class="hint">Could not load the month: ${esc(ex.message || ex)}</p>`; return; }
+  $("mc-title").textContent = `${m.month} · ${m.hotelLabel}`;
+  const people = new Map(), dayName = d => new Date(d + "T12:00:00Z").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", timeZone: "UTC" });
+  const lastDay = m.today > m.to ? m.to : addDays(m.today, -1);   // today is still running: it is on the Today tab
+  m.days.filter(d => d <= lastDay).forEach(d => m.rowsOf(d).forEach(x => {
+    const k = x.p.uid; if (!people.has(k)) people.set(k, { name: x.p.fullName || x.p.email || "—", hotel: x.hotel.name || hotelName(x.hotelId), n: {}, late: 0, items: [] });
+    const e = people.get(k), add = (tag, cls, text, btn) => e.items.push({ d, tag, cls, text, btn });
+    const worked = (x.srecs || []).filter(r => r.checkInAt);
+    if (x.day.code === "off" && worked.length){ e.n.offWorked = (e.n.offWorked || 0) + 1; add("Came on a day off", "info", `The Schedule says day off, but checked in ${worked.length === 1 ? "1 shift" : worked.length + " shifts"}. Covering for someone? Fix the Schedule so it counts.`, "Open"); return; }
+    e.n[x.day.code] = (e.n[x.day.code] || 0) + 1;
+    if (x.dayRec && x.dayRec.override) return;                          // sick / vacation / off / … marked by the office: counted above
+    const ys = x.day.shifts || [];
+    if (ys.length && ys.every(y => y.st.code === "absent" && !(y.rec && y.rec.override))) { add("Absent", "bad", "No check-in on any shift.", "Open"); return; }
+    ys.forEach(y => { const r = y.rec, nm = y.shift.name;
+      if (y.st.lateMin > (y.shift.graceMin != null ? +y.shift.graceMin : 5) && r && r.checkInAt) e.late++;
+      if (y.st.review) add("Late · you decide", "warn", `${nm}: came ${hhmm(r.checkInAt)} (${y.st.lateMin} min late)`, "Decide");
+      else if (y.st.code === "absent" && !(r && r.override)) add("Missed a shift", "bad", `${nm}: no check-in`, "Open");
+      else if (r && r.override && !r.checkInAt) add(`Office: ${ATT_LABEL[r.override] || r.override}`, "info", `${nm}: decided by ${r.overrideBy || "the office"}`, "");
+      else if (r && r.override && y.st.lateMin > 5) add(`Late ${y.st.lateMin} min`, "info", `${nm}: came ${hhmm(r.checkInAt)} · decided ${ATT_LABEL[r.override] || r.override}`, "");
+      if (r && r.checkOutAt){ const f = []; const early = shiftEnd(y.shift) - toMin(hhmm(r.checkOutAt)); const h = hotels.find(z => z.id === r.hotelId) || x.hotel || {};
+        if (early > 10) f.push(`out ${hhmm(r.checkOutAt)} (${early} min early)`); if (isOutside(r.outDistM, h)) f.push(`${distText(r.outDistM)} from the hotel`);
+        if (f.length) add(early > 10 ? "Left early" : "Checked out far away", "warn", `${nm}: ${f.join(", ")}`, "Open"); }
+      else if (r && r.checkInAt) add("No check-out", "info", `${nm}: checked in ${hhmm(r.checkInAt)}, never checked out`, "Open");
+      if (r && r.method === "code") add("Hotel code", "info", `${nm}: checked in with the hotel code (no GPS)`, "");
+      if (r && r.editedBy) add("Changed by the office", "info", `${nm}: ${r.editReason || "edited"} (${r.editedBy})`, "Open");
+    });
+  }));
+  const all = [...people.values()].sort((a, b) => b.items.length - a.items.length || a.name.localeCompare(b.name));
+  const look = all.filter(e => e.items.length), fine = all.filter(e => !e.items.length);
+  const tot = e => [["present", "present"], ["half-day", "half day"], ["absent", "absent"], ["sick", "sick"], ["vacation", "vacation"], ["excused", "excused"], ["off", "days off"]].filter(([k]) => e.n[k]).map(([k, l]) => `<span><b>${e.n[k]}</b>${l}</span>`).join("") + (e.late ? `<span><b>${e.late}</b>late</span>` : "") + (e.n.offWorked ? `<span><b>${e.n.offWorked}</b>came on a day off</span>` : "");
+  $("mc-body").innerHTML = !all.length ? `<p class="hint" style="margin-top:12px">Nothing recorded for this month yet.</p>`
+    : `<div class="card" style="margin-top:12px"><p style="font-size:16px">${fine.length ? `<b>${fine.length} ${fine.length === 1 ? "person" : "people"}</b> had a normal month. ` : ""}${look.length ? `<b>${look.length} ${look.length === 1 ? "person has" : "people have"}</b> things to look at.` : "Nothing to look at."}</p><p class="hint" style="margin-top:4px">Up to ${new Date(lastDay + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "long", timeZone: "UTC" })}${m.today <= m.to ? " — today is on the Today tab" : ""}.</p></div>`
+    + look.map(e => `<div class="card mcperson"><h3>${esc(e.name)}${hotels.length > 1 ? ` <small class="hint">${esc(e.hotel)}</small>` : ""}</h3><div class="mctot">${tot(e)}</div>${e.items.map(i => `<div class="mcitem"><span class="d">${esc(dayName(i.d))}</span><div><span class="mctag ${i.cls}">${esc(i.tag)}</span><small>${esc(i.text)}</small></div>${i.btn ? `<button class="btn ghost small" type="button" data-day="${i.d}">${esc(i.btn)}</button>` : ""}</div>`).join("")}</div>`).join("")
+    + (fine.length ? `<div class="mcfine">✓ Normal month: ${fine.map(e => `${esc(e.name)} <small>(${e.n.present || 0} present${e.n.off ? `, ${e.n.off} off` : ""}${e.n.sick ? `, ${e.n.sick} sick` : ""}${e.n.vacation ? `, ${e.n.vacation} vacation` : ""})</small>`).join(" · ")}</div>` : "");
+  $("mc-body").querySelectorAll("[data-day]").forEach(b => b.onclick = () => { $("mcheck").classList.remove("open"); setDay(b.dataset.day); });
+}
+const monthShift = n => { const d = new Date(mcMonth + "T12:00:00Z"); d.setUTCMonth(d.getUTCMonth() + n); return d.toISOString().slice(0, 10); };
+$("a-check").addEventListener("click", () => openMonthCheck());
+$("mc-prev").addEventListener("click", () => openMonthCheck(monthShift(-1)));
+$("mc-next").addEventListener("click", () => openMonthCheck(monthShift(1)));
+const closeMc = () => $("mcheck").classList.remove("open");
+$("mc-bg").addEventListener("click", closeMc); $("mc-close").addEventListener("click", closeMc);
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("mcheck").classList.contains("open")) closeMc(); });
+
 $("a-grid").addEventListener("click", async () => {
   let m; try { m = await monthData(); } catch (ex) { return toast("Could not load the month: " + (ex.message || ex)); }
   const people = new Map();   // uid → { name, hotel, byDay: {date: letter}, n: counts }
@@ -1339,7 +1396,7 @@ async function drawQr(){
   const hid = $("qr-hotel").value; if (!hid){ $("qr-box").innerHTML = `<p class="hint">Pick a hotel first.</p>`; $("qr-link").textContent = ""; return; }
   const url = feedbackLink(); $("qr-link").textContent = url;
   try {
-    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202609301329"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
+    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202609301336"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
     const q = qrLib(0, "M"); q.addData(url); q.make();
     const who = $("qr-who").selectedOptions[0] ? $("qr-who").selectedOptions[0].textContent : "";
     const hotel = hotels.find(h => h.id === hid) || {};

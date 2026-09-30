@@ -371,3 +371,8 @@ Attendance tab → **Month grid** (one row per person, one letter per day, total
 off, `L?` = late and not decided) and **Shift details** (one line per person and shift with times, lateness, how
 they checked in and the result). Both follow the hotel filter and the month of the date shown. Fixed on the way:
 the old export ignored the Schedule on every day except the one open on screen, so a day off showed as Absent.
+
+**Month check (same day):** the files were still too much to read, so Attendance → **Month check** shows the month as a
+short read: one sentence, a card per person with totals and only the unusual days in plain words, and one green
+line for everyone with a normal month. "Open" / "Decide" jumps to that day in Attendance. The files remain as
+"Grid file" and "Details file" for records.
