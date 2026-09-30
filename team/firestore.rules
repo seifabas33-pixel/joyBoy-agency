@@ -220,10 +220,10 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'hotelId', 'hotelName', 'date', 'shift', 'shiftName', 'spot', 'spotName', 'checkInAt', 'lat', 'lng', 'accuracy', 'distM', 'method', 'code'])
         && approvedAt(request.auth.uid, request.resource.data.hotelId)
         && atHotel(request.resource.data));
-      // Owner may (a) check out once, or (b) add their real check-in on a day the office already marked (manual mark / grid import) — once, inside the fence or with the hotel code.
+      // Owner may (a) check out once (with where they were, if the phone gave it), or (b) add their real check-in on a day the office already marked (manual mark / grid import) — once, inside the fence or with the hotel code.
       // A field the office left empty (null) counts as not set: an office edit without a check-out time must not block the person's own checkout.
       allow update: if isAdmin() || (isOwner(resource.data.uid) && (
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checkOutAt'])
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checkOutAt', 'outLat', 'outLng', 'outAccuracy', 'outDistM'])
           && (!('checkOutAt' in resource.data) || resource.data.checkOutAt == null)
           && request.resource.data.checkOutAt == request.time)
         || ((!('checkInAt' in resource.data) || resource.data.checkInAt == null) && 'shift' in resource.data
@@ -232,6 +232,34 @@ service cloud.firestore {
           && approvedAt(request.auth.uid, request.resource.data.hotelId)
           && atHotel(request.resource.data))));
       allow delete: if isAdmin();
+    }
+
+    // ── Roll call ("Where is everyone?"): the office asks the people on the current shift where they are. ──
+    // rollcalls/{rollId} is the office's record; rollcallNow/{hotelId} points at the latest one so a staff phone can find it
+    // with one read. Each person answers once (spot or "busy", plus one location fix if the phone gives it).
+    match /rollcalls/{rollId} {
+      allow read, write: if isAdmin();
+    }
+    match /rollcallNow/{hotelId} {
+      allow get: if isAdmin() || (signedIn() && approvedAt(request.auth.uid, hotelId));
+      allow write: if isAdmin();
+    }
+    function rollOpen(d) {
+      let r = get(/databases/$(database)/documents/rollcallNow/$(d.hotelId)).data;
+      return r.id == d.rollId && request.auth.uid in r.uids && request.time < r.askedAt + duration.value(120, 'm');
+    }
+    match /rollcallAnswers/{id} {
+      allow get: if isAdmin() || (signedIn() && id.matches('.+_' + request.auth.uid));
+      allow list: if isAdmin();
+      allow create: if isOwner(request.resource.data.uid)
+        && id == request.resource.data.rollId + '_' + request.auth.uid
+        && request.resource.data.answeredAt == request.time
+        && request.resource.data.busy is bool
+        && request.resource.data.spot is string && request.resource.data.spot.size() <= 40
+        && request.resource.data.spotName is string && request.resource.data.spotName.size() <= 60
+        && request.resource.data.keys().hasOnly(['rollId', 'uid', 'name', 'hotelId', 'busy', 'spot', 'spotName', 'lat', 'lng', 'accuracy', 'distM', 'noLocation', 'answeredAt'])
+        && rollOpen(request.resource.data);
+      allow update, delete: if isAdmin();
     }
 
     // ── Requests: "I could not check in" notes, sent from anywhere; the office decides. One per person, day and shift. ──

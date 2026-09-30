@@ -46,7 +46,7 @@ const PROJECT_ID = "joy-boy-agency";
 const DAYS_BACK = 62;                 // how much history to (re)write each run
 const TZ = "Africa/Cairo";
 const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)", REPORT_TAB = "Sync report (portal)";
-const SCRIPT_VERSION = "2026-09-30a";   // shown in every toast, so you can tell which copy the sheet is running
+const SCRIPT_VERSION = "2026-09-30b";   // shown in every toast, so you can tell which copy the sheet is running
 
 function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addSeparator().addItem("Reminders: install (every 15 min)", "installPushTriggers").addItem("Reminders: send a test", "testPush").addItem("Reminders: test a programme item", "testTaskPush").addItem("Reminders: check for arrivals now", "checkinTick").addToUi(); }
 function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); note("Done — the sheet now refreshes every hour."); }
@@ -423,7 +423,8 @@ function pushTick(){
   });
 
   // 2. whatever the office queued from the admin page
-  const queue = fetchAll("notify").map(d => ({ id: d.id, ...d.f })).filter(n => !n.sentAt);
+  // (lane "now" is sent by the one-minute job; picked up here only if that job has not run for 5 minutes)
+  const queue = fetchAll("notify").map(d => ({ id: d.id, ...d.f })).filter(n => !n.sentAt && !(n.lane === "now" && new Date().getTime() - new Date(n.createdAt).getTime() < 300000));
   queue.forEach(n => {
     const uids = (n.uids && n.uids.length) ? n.uids : employees.filter(e => !n.hotelId || e.hotelId === n.hotelId).map(e => e.uid);
     const n2 = sendPush(devicesOf(uids), n.title || "Joy Boy", n.body || "", n.url || PORTAL_URL, n.tag || "office");
@@ -549,18 +550,58 @@ function tellOfficeAboutNotes(){
     fresh.length === 1 ? String(fresh[0].reason || "").slice(0, 160) + " — tap to decide." : fresh.map(who).join("\n").slice(0, 300),
     ADMIN_URL + "#att", "requests");
 }
+/** Office messages (Today → Send a message, roll calls, programme changes, payslips) go out within the minute.
+    Marked sent before sending, so a slow run can never deliver the same message twice. */
+function sendQueuedNow(){
+  const queue = queryWhere("notify", "lane", "now").filter(n => !n.sentAt);
+  if (!queue.length) return 0;
+  let employees = null, sent = 0;
+  queue.forEach(n => {
+    restPatch("notify/" + n.id, { lane: "sent", sentAt: new Date().toISOString() });
+    let uids = (n.uids && n.uids.length) ? n.uids : null;
+    if (!uids){ employees = employees || fetchAll("employees").map(d => ({ uid: d.id, ...d.f })).filter(e => e.status === "approved" && e.hotelId); uids = employees.filter(e => !n.hotelId || e.hotelId === n.hotelId).map(e => e.uid); }
+    const k = sendPush(devicesOf(uids), n.title || "Joy Boy", n.body || "", n.url || PORTAL_URL, n.tag || "office");
+    restPatch("notify/" + n.id, { sentTo: k }); sent += k;
+  });
+  return sent;
+}
+/** When a roll call's answer time is over, the office phones get one summary: who is outside the hotel, who did not answer. */
+function tellOfficeAboutRollCalls(){
+  const due = queryWhere("rollcalls", "status", "open").filter(r => new Date().getTime() - new Date(r.askedAt).getTime() >= (Number(r.windowMin) || 10) * 60000);
+  if (!due.length) return 0;
+  const office = officeDevices(); let sent = 0;
+  due.forEach(r => {
+    restPatch("rollcalls/" + r.id, { status: "closed", closedAt: new Date().toISOString() });
+    const ans = queryWhere("rollcallAnswers", "rollId", r.id), names = r.names || {}, radius = Number(r.radiusM) || 300;
+    const nm = uid => String(names[uid] || "?").split(" ")[0], km = m => m >= 1000 ? (m / 1000).toFixed(1) + " km" : m + " m";
+    const outside = [], none = [], noloc = []; let inside = 0;
+    (r.uids || []).forEach(uid => {
+      const a = ans.filter(x => x.uid === uid)[0];
+      if (!a) return none.push(nm(uid));
+      const tol = a.accuracy > 0 ? Math.min(100, a.accuracy) : 0;
+      if (a.distM != null && a.distM > radius + tol) outside.push(nm(uid) + " (" + km(a.distM) + ")");
+      else if (a.noLocation || a.distM == null) noloc.push(nm(uid));
+      else inside++;
+    });
+    const missing = outside.length + none.length;
+    const title = "📍 Roll call " + (r.shiftName || "") + ": " + (missing ? missing + " not at the hotel" : "everyone is at the hotel");
+    const body = [inside + " at the hotel", outside.length ? "outside: " + outside.join(", ") : "", none.length ? "no answer: " + none.join(", ") : "", noloc.length ? "no location: " + noloc.join(", ") : ""].filter(String).join(" · ");
+    if (office.length) sent += sendPush(office, title, body.slice(0, 300), ADMIN_URL, "rollcall-" + r.id);
+  });
+  return sent;
+}
 /** The one-minute job: nothing but the check-in watch, so the office hears about an arrival within a
     minute instead of waiting for the quarter-hourly round. One filtered read when nobody has arrived. */
 function checkinTick(){
   const props = PropertiesService.getScriptProperties();
   const today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd");
-  return tellOfficeAboutCheckIns(props, today) + tellOfficeAboutNotes() + tellOfficeAboutBadRatings(props, today);
+  return tellOfficeAboutCheckIns(props, today) + tellOfficeAboutNotes() + tellOfficeAboutBadRatings(props, today) + sendQueuedNow() + tellOfficeAboutRollCalls();
 }
 function installPushTriggers(){
   ScriptApp.getProjectTriggers().filter(t => ["pushTick", "checkinTick"].indexOf(t.getHandlerFunction()) >= 0).forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger("pushTick").timeBased().everyMinutes(15).create();      // reminders, the office queue, staff notes
   ScriptApp.newTrigger("checkinTick").timeBased().everyMinutes(1).create();    // "who just walked in", near enough to live
-  note("v" + SCRIPT_VERSION + " · Reminders are live: check-ins every minute, everything else every 15 minutes.");
+  note("v" + SCRIPT_VERSION + " · Reminders are live: check-ins, office messages and roll calls every minute, shift reminders every 15 minutes.");
 }
 /** Send a test to the office phones only — register yours on the admin page, Today tab. The team is never disturbed by this. */
 function testPush(){

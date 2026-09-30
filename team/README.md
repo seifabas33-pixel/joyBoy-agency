@@ -330,3 +330,29 @@ button, they type the code and are checked in (the time is the server's, as alwa
 - Only admins can show a code (owner, 2026-09-30: no team-leader role yet). Adding one later = a staff flag the
   rules check on `checkinCodes` writes.
 - **Rules must be re-published** after this change, or the code screen says "Could not set the code".
+
+### Roll call — "Where is everyone?" (2026-09-30)
+
+The owner wanted to know where staff are during a shift (some disappear without permission). A website cannot
+track a phone in the background, and GPS inside a hotel is ±50–100 m, so this is an on-demand roll call, not live tracking.
+
+- **Admin → Today → 📍 Where is everyone?** (choose the hotel first if there are several): everyone scheduled on
+  the hotel's current shift, minus people with a day mark (sick/vacation/…), gets a push (`notify` lane "now",
+  tag `rollcall`, link `team/?rc=1`). Writes `rollcalls/{rollId}` (admin record: uids, names, windowMin 10,
+  radiusM, askedBy, status open/closed) and `rollcallNow/{hotelId}` (the pointer staff phones read with one get;
+  rule: approved and assigned to that hotel).
+- **Staff card:** a highlighted box "Roll call from the office" with the hotel's **spots** (from Hotels) + "Somewhere
+  else in the hotel", **I'm here** or **Busy — in a show / with guests**. One GPS fix is taken with the answer
+  (none if the phone blocks location → "no location"). `rollcallAnswers/{rollId}_{uid}`: created once, only while
+  that roll call is the hotel's current one and < 120 min old, only by someone it was sent to.
+- **Office card** (Today): counts, a drawn plan around the hotel pin (hotel circle, spots, one dot per answer —
+  no map tiles, nothing leaves the page), and a list: At the hotel / Busy / Outside the hotel (distance) / No
+  answer after 10 min / No location. Refreshes itself every 15 s while answers are open.
+- **Summary push:** `tellOfficeAboutRollCalls` (one-minute job) closes each roll call after its 10 minutes and sends
+  the office phones one line: who is outside, who did not answer.
+- **Check-out location:** check-out now takes one quick fix (never blocks the check-out) → `outLat/outLng/outAccuracy/outDistM`.
+  Attendance flags "left N min early" and "checked out X km from the hotel".
+- **Office messages now go out within a minute:** every `notify` doc is written with `lane: "now"` and sent by
+  `sendQueuedNow` on the one-minute trigger (`pushTick` only picks them up if that job has been silent for 5 minutes).
+- Privacy policy (staff section) says roll calls exist and that location is never read outside the person's shifts.
+- **Re-publish the rules and re-paste the script** (`2026-09-30b`) after this change.
