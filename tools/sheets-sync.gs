@@ -46,7 +46,7 @@ const PROJECT_ID = "joy-boy-agency";
 const DAYS_BACK = 62;                 // how much history to (re)write each run
 const TZ = "Africa/Cairo";
 const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)", REPORT_TAB = "Sync report (portal)";
-const SCRIPT_VERSION = "2026-09-30b";   // shown in every toast, so you can tell which copy the sheet is running
+const SCRIPT_VERSION = "2026-09-30c";   // shown in every toast, so you can tell which copy the sheet is running
 
 function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addSeparator().addItem("Reminders: install (every 15 min)", "installPushTriggers").addItem("Reminders: send a test", "testPush").addItem("Reminders: test a programme item", "testTaskPush").addItem("Reminders: check for arrivals now", "checkinTick").addToUi(); }
 function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); note("Done — the sheet now refreshes every hour."); }
@@ -578,8 +578,8 @@ function tellOfficeAboutRollCalls(){
     (r.uids || []).forEach(uid => {
       const a = ans.filter(x => x.uid === uid)[0];
       if (!a) return none.push(nm(uid));
-      const tol = a.accuracy > 0 ? Math.min(100, a.accuracy) : 0;
-      if (a.distM != null && a.distM > radius + tol) outside.push(nm(uid) + " (" + km(a.distM) + ")");
+      if (a.distM != null && a.distM > radius + 300) outside.push(   // 300 m beyond the radius = OUT_MARGIN_M in portal.js: indoor GPS wanders ~200 m
+        nm(uid) + " (" + km(a.distM) + ")");
       else if (a.noLocation || a.distM == null) noloc.push(nm(uid));
       else inside++;
     });

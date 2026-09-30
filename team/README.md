@@ -346,7 +346,7 @@ track a phone in the background, and GPS inside a hotel is ±50–100 m, so this
   (none if the phone blocks location → "no location"). `rollcallAnswers/{rollId}_{uid}`: created once, only while
   that roll call is the hotel's current one and < 120 min old, only by someone it was sent to.
 - **Office card** (Today): counts, a **board** with one tile per hotel spot and the names of who chose it (plus
-  Outside the hotel / No answer / Busy tiles; ⚠ = GPS far from the chosen spot), and a list: At the hotel / Busy / Outside the hotel (distance) / No
+  Outside the hotel / No answer / Busy tiles), and a list: At the hotel / Busy / Outside the hotel (distance) / No
   answer after 10 min / No location. Refreshes itself every 15 s while answers are open.
 - **Summary push:** `tellOfficeAboutRollCalls` (one-minute job) closes each roll call after its 10 minutes and sends
   the office phones one line: who is outside, who did not answer.
@@ -360,3 +360,7 @@ track a phone in the background, and GPS inside a hotel is ±50–100 m, so this
   *2026-09-30, after the first real roll call:* the first version drew a map from the GPS fixes. At True Beach it
   misled the owner (spots 20–40 m apart, ±50–100 m indoor GPS: dots on top of spots, labels pushed off, one person
   pushed across the hotel line). Replaced by the board; the GPS fix is only used for "outside the hotel" and the ⚠ check.
+  *Later the same day:* the owner stood with five staff at the main pool; their phones reported fixes up to ~200 m
+  apart. So GPS now decides only "outside the hotel" (more than `OUT_MARGIN_M` = 300 m beyond the hotel radius —
+  still catches someone in town), the ⚠ spot check was removed, and roll-call answers use `bestFix()` (the most
+  accurate of ~6 s of readings). Script 2026-09-30c uses the same 300 m margin in the summary.
