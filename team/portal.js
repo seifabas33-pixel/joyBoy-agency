@@ -439,12 +439,17 @@ export const dayLabelShort = key => { const d = new Date(key + "T12:00:00Z"); re
 /** Minutes before a shift starts that the check-in button opens, and after it ends that check-in/out is still possible. */
 // Roll call: how long staff have to answer before they count as "no answer", and how one answer reads for the office.
 export const ROLL_WINDOW_MIN = 10;
+// Phone GPS inside the hotel wanders: at True Beach five phones standing together at the main pool reported fixes
+// up to ~200 m apart (2026-09-30). So a fix only counts as "outside" when it is this far beyond the hotel radius —
+// that still catches someone who went to town, never someone at the pool.
+export const OUT_MARGIN_M = 300;
+export const isOutside = (distM, hotel) => distM != null && distM > ((hotel && hotel.radiusM) || 300) + OUT_MARGIN_M;
 export const rollId = hotelId => `${hotelId}-${Date.now().toString(36)}`;
 export function rollState(ans, hotel, roll, nowMs = Date.now()){
   const asked = Date.parse(roll && roll.askedAt), win = ((roll && roll.windowMin) || ROLL_WINDOW_MIN) * 60000;
   if (!ans) return nowMs - asked > win ? { code: "none", label: "No answer" } : { code: "wait", label: "Waiting" };
-  const late = Date.parse(ans.answeredAt) - asked > win, tol = fenceTolM(ans.accuracy || 0), r = (hotel && hotel.radiusM) || 300;
-  if (ans.distM != null && ans.distM > r + tol) return { code: "out", label: "Outside the hotel", late };
+  const late = Date.parse(ans.answeredAt) - asked > win;
+  if (isOutside(ans.distM, hotel)) return { code: "out", label: "Outside the hotel", late };
   if (ans.noLocation || ans.distM == null) return { code: "noloc", label: ans.busy ? "Busy · no location" : "No location", late };
   return { code: ans.busy ? "busy" : "in", label: ans.busy ? "Busy · at the hotel" : "At the hotel", late };
 }
