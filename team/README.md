@@ -345,8 +345,8 @@ track a phone in the background, and GPS inside a hotel is ±50–100 m, so this
   else in the hotel", **I'm here** or **Busy — in a show / with guests**. One GPS fix is taken with the answer
   (none if the phone blocks location → "no location"). `rollcallAnswers/{rollId}_{uid}`: created once, only while
   that roll call is the hotel's current one and < 120 min old, only by someone it was sent to.
-- **Office card** (Today): counts, a drawn plan around the hotel pin (hotel circle, spots, one dot per answer —
-  no map tiles, nothing leaves the page), and a list: At the hotel / Busy / Outside the hotel (distance) / No
+- **Office card** (Today): counts, a **board** with one tile per hotel spot and the names of who chose it (plus
+  Outside the hotel / No answer / Busy tiles; ⚠ = GPS far from the chosen spot), and a list: At the hotel / Busy / Outside the hotel (distance) / No
   answer after 10 min / No location. Refreshes itself every 15 s while answers are open.
 - **Summary push:** `tellOfficeAboutRollCalls` (one-minute job) closes each roll call after its 10 minutes and sends
   the office phones one line: who is outside, who did not answer.
@@ -356,3 +356,7 @@ track a phone in the background, and GPS inside a hotel is ±50–100 m, so this
   `sendQueuedNow` on the one-minute trigger (`pushTick` only picks them up if that job has been silent for 5 minutes).
 - Privacy policy (staff section) says roll calls exist and that location is never read outside the person's shifts.
 - **Re-publish the rules and re-paste the script** (`2026-09-30b`) after this change.
+
+  *2026-09-30, after the first real roll call:* the first version drew a map from the GPS fixes. At True Beach it
+  misled the owner (spots 20–40 m apart, ±50–100 m indoor GPS: dots on top of spots, labels pushed off, one person
+  pushed across the hotel line). Replaced by the board; the GPS fix is only used for "outside the hotel" and the ⚠ check.
