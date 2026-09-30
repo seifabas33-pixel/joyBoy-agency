@@ -50,7 +50,7 @@ async function firebaseBackend(){
     const token = await step("the notification service refused (close the app completely and open it again, so it picks up the newest version)", () => M.getToken(messaging, { vapidKey: cfg.vapidKey, serviceWorkerRegistration: reg }));
     if (!token) throw new Error("The browser did not give a reminder token. Try again in a moment.");
     await F.setDoc(ref, { token, ua: String(navigator.userAgent).slice(0, 300), updatedAt: ts(), ...(extra || {}) }, { merge: true });
-    M.onMessage(messaging, p => { const d = (p && p.data) || {}, n = (p && p.notification) || {}; const t = n.title || d.title; if (t) toast(t + (n.body || d.body ? " — " + (n.body || d.body) : "")); });
+    M.onMessage(messaging, p => { const d = (p && p.data) || {}, n = (p && p.notification) || {}; const t = n.title || d.title; if (t) toast(t + (n.body || d.body ? " — " + (n.body || d.body) : "")); try { window.dispatchEvent(new CustomEvent("jb-push", { detail: d })); } catch {} });
     try { localStorage.setItem("jb-push", "on"); } catch {}
     return token;
   }
@@ -89,7 +89,7 @@ async function firebaseBackend(){
     // the office's own phone: decisions, staff notes and the test message
     enableOfficePush: email => registerPush(F.doc(db, "officeDevices", deviceKey()), { email: String(email || "") }),
     disableOfficePush: async () => { try { localStorage.setItem("jb-push", "off"); } catch {} try { await F.deleteDoc(F.doc(db, "officeDevices", deviceKey())); } catch {} },
-    queueNotification: rec => F.setDoc(F.doc(F.collection(db, "notify")), { ...rec, createdAt: ts() }),
+    queueNotification: rec => F.setDoc(F.doc(F.collection(db, "notify")), { lane: "now", ...rec, createdAt: ts() }),   // lane "now": the one-minute job sends it
     // guest feedback
     feedbackRange: async (from, to) => { const s = await F.getDocs(F.query(F.collection(db, "feedback"), F.where("date", ">=", from), F.where("date", "<=", to))); return s.docs.map(att); },
     myFeedback: async (uid, from) => { const s = await F.getDocs(F.query(F.collection(db, "feedback"), F.where("staffUid", "==", uid))); return s.docs.map(att).filter(r => !from || r.date >= from); },
@@ -185,7 +185,19 @@ async function firebaseBackend(){
       if (!out.length) out.push("Everything the server checks looks right from your phone. The office should open Attendance and look for an existing mark on this shift — a mark made by the office blocks the check-in.");
       return out;
     },
-    checkOut: async id => { await F.updateDoc(F.doc(db, "attendance", id), { checkOutAt: ts() }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); },
+    checkOut: async (id, where) => { await F.updateDoc(F.doc(db, "attendance", id), { checkOutAt: ts(), ...(where || {}) }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); },   // where = {outLat, outLng, outAccuracy, outDistM} when the phone gave a fix
+    // Roll call ("Where is everyone?"): the office's record, a pointer per hotel that staff phones read, one answer per person.
+    startRollCall: async roll => {
+      const b = F.writeBatch(db);
+      b.set(F.doc(db, "rollcalls", roll.id), { ...roll, askedAt: ts(), status: "open" });
+      b.set(F.doc(db, "rollcallNow", roll.hotelId), { id: roll.id, hotelId: roll.hotelId, date: roll.date, shift: roll.shift, shiftName: roll.shiftName, uids: roll.uids, windowMin: roll.windowMin, askedAt: ts() });
+      await b.commit(); return att(await F.getDoc(F.doc(db, "rollcalls", roll.id)));
+    },
+    rollCallsOn: async date => { const s = await F.getDocs(F.query(F.collection(db, "rollcalls"), F.where("date", "==", date))); return s.docs.map(att).sort((a, b) => String(b.askedAt).localeCompare(String(a.askedAt))); },
+    rollAnswers: async rollId => { const s = await F.getDocs(F.query(F.collection(db, "rollcallAnswers"), F.where("rollId", "==", rollId))); return s.docs.map(att); },
+    rollNow: async hotelId => { try { const s = await F.getDoc(F.doc(db, "rollcallNow", hotelId)); return s.exists() ? att(s) : null; } catch (e) { return null; } },
+    myRollAnswer: async (rollId, uid) => { try { const s = await F.getDoc(F.doc(db, "rollcallAnswers", `${rollId}_${uid}`)); return s.exists() ? att(s) : null; } catch (e) { return null; } },
+    answerRoll: async rec => { const id = `${rec.rollId}_${rec.uid}`; await F.setDoc(F.doc(db, "rollcallAnswers", id), { ...rec, answeredAt: ts() }); return att(await F.getDoc(F.doc(db, "rollcallAnswers", id))); },
     myAttendance: async (uid, from) => { const s = await F.getDocs(F.query(F.collection(db, "attendance"), F.where("uid", "==", uid))); return s.docs.map(att).filter(r => !from || r.date >= from).sort((a, b) => b.date.localeCompare(a.date)); },
     attendanceOn: async date => { const s = await F.getDocs(F.query(F.collection(db, "attendance"), F.where("date", "==", date))); return s.docs.map(att); },
     attendanceRange: async (from, to) => { const s = await F.getDocs(F.query(F.collection(db, "attendance"), F.where("date", ">=", from), F.where("date", "<=", to))); return s.docs.map(att).sort((a, b) => a.date.localeCompare(b.date)); },
@@ -248,7 +260,7 @@ function demoBackend(){
     disablePush: async uid => { localStorage.removeItem(K + "dev-" + uid); try { localStorage.setItem("jb-push", "off"); } catch {} },
     enableOfficePush: async email => { set("officedev", { token: "demo-office-" + deviceKey(), email, updatedAt: now() }); try { localStorage.setItem("jb-push", "on"); } catch {} return "ok"; },
     disableOfficePush: async () => { localStorage.removeItem(K + "officedev"); try { localStorage.setItem("jb-push", "off"); } catch {} },
-    queueNotification: async rec => { const n = get("notify") || {}; n["n" + Date.now()] = { ...rec, createdAt: now() }; set("notify", n); },
+    queueNotification: async rec => { const n = get("notify") || {}; n["n" + Date.now()] = { lane: "now", ...rec, createdAt: now() }; set("notify", n); },
     feedbackRange: async (from, to) => JSON.parse(localStorage.getItem("jb-demo-feedback") || "[]").map((r, i) => ({ id: "f" + i, ...r })).filter(r => r.date >= from && r.date <= to),
     myFeedback: async (uid, from) => JSON.parse(localStorage.getItem("jb-demo-feedback") || "[]").map((r, i) => ({ id: "f" + i, ...r })).filter(r => r.staffUid === uid && (!from || r.date >= from)),
     deleteFeedback: async id => { const all = JSON.parse(localStorage.getItem("jb-demo-feedback") || "[]"); all.splice(+String(id).slice(1), 1); localStorage.setItem("jb-demo-feedback", JSON.stringify(all)); },
@@ -286,7 +298,13 @@ function demoBackend(){
     checkIn: async rec => { const a = get("att") || {}; const id = `${rec.uid}_${rec.date}_${rec.shift}`; if (a[id] && a[id].checkInAt) throw new Error("Already checked in for this shift");
       if (rec.method === "code"){ const c = (get("codes") || {})[rec.hotelId], age = c ? Date.now() - Date.parse(c.setAt) : Infinity; if (!c || !((rec.code === c.code && age < 90000) || (rec.code === c.prev && age < 30000))){ const e = new Error("Missing or insufficient permissions."); e.code = "permission-denied"; throw e; } } a[id] = { ...(a[id] || {}), ...rec, checkInAt: now() }; set("att", a); return { id, ...a[id] }; },
     diagnoseCheckIn: async () => [],
-    checkOut: async id => { const a = get("att") || {}; if (!a[id]) throw new Error("No check-in for this shift"); a[id].checkOutAt = now(); set("att", a); return { id, ...a[id] }; },
+    checkOut: async (id, where) => { const a = get("att") || {}; if (!a[id]) throw new Error("No check-in for this shift"); a[id] = { ...a[id], checkOutAt: now(), ...(where || {}) }; set("att", a); return { id, ...a[id] }; },
+    startRollCall: async roll => { const r = get("rolls") || {}; r[roll.id] = { ...roll, askedAt: now(), status: "open" }; set("rolls", r); const n = get("rollnow") || {}; n[roll.hotelId] = { id: roll.id, hotelId: roll.hotelId, date: roll.date, shift: roll.shift, shiftName: roll.shiftName, uids: roll.uids, windowMin: roll.windowMin, askedAt: r[roll.id].askedAt }; set("rollnow", n); return { id: roll.id, ...r[roll.id] }; },
+    rollCallsOn: async date => Object.entries(get("rolls") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date === date).sort((a, b) => String(b.askedAt).localeCompare(String(a.askedAt))),
+    rollAnswers: async rollId => Object.entries(get("rollans") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.rollId === rollId),
+    rollNow: async hotelId => { const n = (get("rollnow") || {})[hotelId]; return n ? { ...n } : null; },
+    myRollAnswer: async (rollId, uid) => { const a = (get("rollans") || {})[`${rollId}_${uid}`]; return a ? { ...a } : null; },
+    answerRoll: async rec => { const a = get("rollans") || {}, id = `${rec.rollId}_${rec.uid}`, n = (get("rollnow") || {})[rec.hotelId]; if (a[id]) throw new Error("You already answered this roll call"); if (!n || n.id !== rec.rollId || !(n.uids || []).includes(rec.uid)) { const e = new Error("Missing or insufficient permissions."); e.code = "permission-denied"; throw e; } a[id] = { ...rec, answeredAt: now() }; set("rollans", a); return { id, ...a[id] }; },
     myAttendance: async (uid, from) => Object.entries(get("att") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.uid === uid && (!from || r.date >= from)).sort((a, b) => b.date.localeCompare(a.date)),
     attendanceOn: async date => Object.entries(get("att") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date === date),
     attendanceRange: async (from, to) => Object.entries(get("att") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date >= from && r.date <= to).sort((a, b) => a.date.localeCompare(b.date)),
@@ -419,6 +437,19 @@ export function weekStart(key){ const d = new Date(key + "T12:00:00Z"), dow = (d
 export const DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 export const dayLabelShort = key => { const d = new Date(key + "T12:00:00Z"); return `${DOW[(d.getUTCDay() + 6) % 7]} ${key.slice(8)}`; };
 /** Minutes before a shift starts that the check-in button opens, and after it ends that check-in/out is still possible. */
+// Roll call: how long staff have to answer before they count as "no answer", and how one answer reads for the office.
+export const ROLL_WINDOW_MIN = 10;
+export const rollId = hotelId => `${hotelId}-${Date.now().toString(36)}`;
+export function rollState(ans, hotel, roll, nowMs = Date.now()){
+  const asked = Date.parse(roll && roll.askedAt), win = ((roll && roll.windowMin) || ROLL_WINDOW_MIN) * 60000;
+  if (!ans) return nowMs - asked > win ? { code: "none", label: "No answer" } : { code: "wait", label: "Waiting" };
+  const late = Date.parse(ans.answeredAt) - asked > win, tol = fenceTolM(ans.accuracy || 0), r = (hotel && hotel.radiusM) || 300;
+  if (ans.distM != null && ans.distM > r + tol) return { code: "out", label: "Outside the hotel", late };
+  if (ans.noLocation || ans.distM == null) return { code: "noloc", label: ans.busy ? "Busy · no location" : "No location", late };
+  return { code: ans.busy ? "busy" : "in", label: ans.busy ? "Busy · at the hotel" : "At the hotel", late };
+}
+export const distText = m => m == null ? "" : m >= 1000 ? (m / 1000).toFixed(1) + " km" : m + " m";
+
 // Hotel code: six random digits, never the same as the one before. A new one every CODE_EVERY_S seconds while the office screen is open.
 export const CODE_EVERY_S = 60;
 export function newHotelCode(prev){ const a = new Uint32Array(1); let c; do { crypto.getRandomValues(a); c = String(a[0] % 1000000).padStart(6, "0"); } while (c === prev); return c; }

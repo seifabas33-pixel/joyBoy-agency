@@ -222,6 +222,27 @@ select.in.tiny{padding:6px 28px 6px 10px;font-size:13px;min-width:0;width:auto}
 .coderow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
 .codein{flex:1 1 150px;min-width:0;font:700 26px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.3em;text-align:center;padding:12px 8px}
 .coderow .btn{flex:1 1 180px}
+/* roll call: the staff answer box, and the office's map + list */
+.rollbox{margin:10px 0 14px;padding:14px;border-radius:14px;background:var(--raised);border:2px solid var(--aqua)}
+.rollbox .actions{flex-direction:column;align-items:stretch}
+.rollbox .actions .btn{width:100%}
+.spotchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.spotchips button{padding:9px 13px;border-radius:99px;border:1px solid var(--line-2);background:transparent;color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
+.spotchips button.on{background:var(--aqua);border-color:var(--aqua);color:#0D0A14;font-weight:700}
+.rcmap{margin-top:10px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--field)}
+.rcmap svg{display:block;width:100%;height:auto}
+.rcrow{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;border-bottom:1px solid var(--line);padding:9px 2px;font-size:14px}
+.rcrow:last-child{border:0}
+.rcrow small{color:var(--ink-3)}
+.rcst{font-weight:700;font-size:12px;border-radius:99px;padding:3px 10px;white-space:nowrap}
+.rcst.in,.rcst.busy{background:rgba(34,227,192,.15);color:var(--t-ok)}
+.rcst.out,.rcst.none{background:rgba(255,77,46,.16);color:var(--t-bad)}
+.rcst.wait,.rcst.noloc{background:rgba(255,214,10,.15);color:var(--t-warn)}
+.rcstats{display:flex;gap:8px;margin-top:10px}
+.rcstats div{flex:1;background:var(--raised);border-radius:12px;padding:8px;text-align:center;font-size:12px;color:var(--ink-2)}
+.rcstats b{display:block;font-size:20px;color:var(--ink)}
+.rcstats .bad b{color:var(--t-bad)}
+.rcstats .ok b{color:var(--t-ok)}
 /* office screen that shows the hotel code (admin → Today → Hotel code) */
 .codescreen{position:fixed;inset:0;z-index:150;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px 16px;text-align:center}
 .codescreen select{max-width:320px}

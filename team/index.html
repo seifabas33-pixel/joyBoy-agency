@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-HAr52RQLwSQS+1RTgb25B41LjXLbUjsofpsOJPx5P1U='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-0pZppgZs80vYZ6xM27wd2tN2mcYdoLeCCK1cYJEYsWg='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team portal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,8 +20,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609300813">
-<script src="firebase-config.js?v=202609300813"></script>
+<link rel="stylesheet" href="portal.css?v=202609300834">
+<script src="firebase-config.js?v=202609300834"></script>
 <script>
 (function(){
   var KEY = "jb-theme", ORDER = ["auto", "light", "dark"];
@@ -181,6 +181,13 @@
     <div class="hero" style="padding-top:18px"><span class="eyebrow">Your profile</span><h1 style="font-size:clamp(30px,5vw,44px)">Thanks, <em id="p-first">you</em>.</h1></div>
     <div class="card att" id="att" hidden>
       <p class="eyebrow">Today · <span id="att-hotel"></span> · <span id="att-date"></span></p>
+      <div class="rollbox" id="rollbox" hidden>
+        <p class="att-line"><b>📍 Roll call from the office</b> <span class="hint" id="rc-when"></span></p>
+        <p class="att-line" style="margin-top:6px">Where are you right now?</p>
+        <div class="spotchips" id="rc-spots"></div>
+        <div class="actions" style="margin:12px 0 0"><button class="btn" id="rc-here" type="button">I'm here</button><button class="btn ghost" id="rc-busy" type="button">Busy — in a show / with guests</button></div>
+        <p class="hint" style="margin-top:8px">Your location is sent once, only now. The office can ask this only during your shift.</p>
+      </div>
       <div class="att-now" id="att-body"></div>
       <div class="shifts" id="att-shifts"></div>
       <div class="week" id="att-week"></div>
@@ -231,7 +238,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState } from "./portal.js?v=202609300813";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState, hotelSpots } from "./portal.js?v=202609300834";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -367,7 +374,7 @@ async function loadAttendance(){
   shifts = scheduledShifts(allShifts, plan, user.uid);
   dayRec = hist.find(r => r.date === today && !r.shift) || null; recs = hist.filter(r => r.date === today && r.shift);
   $("att-hotel").textContent = hotel.name; $("att-date").textContent = today; show("att", true); paintAtt(); paintProg(); paintPush();
-  loadPay();
+  loadPay(); loadRoll();
 }
 const whereText = k => { const sp = plannedSpot(hotel, plan, k); return sp ? `at the <b>${esc(sp.name)}</b>` : `anywhere at ${esc(hotel.name)}`; };
 function paintAtt(){
@@ -388,7 +395,7 @@ function paintAtt(){
   if (cur){ bi.disabled = tooEarly || tooLate; bi.textContent = tooEarly ? `${cur.name} check-in opens at ${String(Math.floor(opens / 60)).padStart(2, "0")}:${String(opens % 60).padStart(2, "0")}` : tooLate ? `${cur.name} shift is over` : `Check in · ${cur.name}`; bo.textContent = `Check out · ${cur.name}`; }
   show("reqbox", !!cur && (!r || !r.checkInAt) && !(q && q.status === "open") && ($("reqbox").dataset.open === "1" || tooLate));
   show("codebox", !!cur && (!r || !r.checkInAt) && !tooEarly && !tooLate && $("codebox").dataset.open === "1");
-  $("att-hint").textContent = `Check-in uses your phone's location once, at the place shown for the shift (within ${cur && plannedSpot(hotel, plan, cur.key) ? (plannedSpot(hotel, plan, cur.key).radiusM || 150) + " m of the " + plannedSpot(hotel, plan, cur.key).name : (hotel.radiusM || 300) + " m of the hotel"}). Arriving later than the start plus ${cur ? cur.graceMin : 5} minutes is marked late and the office decides. Missed a check-in? Send the office a note.`;
+  $("att-hint").textContent = `Check-in uses your phone's location once, at the place shown for the shift (within ${cur && plannedSpot(hotel, plan, cur.key) ? (plannedSpot(hotel, plan, cur.key).radiusM || 150) + " m of the " + plannedSpot(hotel, plan, cur.key).name : (hotel.radiusM || 300) + " m of the hotel"}). Arriving later than the start plus ${cur ? cur.graceMin : 5} minutes is marked late and the office decides. Check-out also notes where you are, if your phone allows it. Missed a check-in? Send the office a note.`;
   const days = []; for (let i = 1; i <= 14; i++) days.push(addDays(today, -i));
   $("att-hist").innerHTML = `<table class="mini"><tbody>${days.map(d => {
     const dr = hist.find(x => x.date === d && !x.shift) || null, srs = hist.filter(x => x.date === d && x.shift), ds = dayStatus(dr, srs, shifts, hotel, d, today);
@@ -472,6 +479,49 @@ $("btn-in").addEventListener("click", async () => {
   }
   finally { b.disabled = false; if (!b.hidden && /Locating|Saving/.test(b.textContent)) paintAtt(); }
 });
+const geoQuick = () => new Promise((res, rej) => { if (!navigator.geolocation) return rej(new Error("no location")); navigator.geolocation.getCurrentPosition(p => res(p.coords), rej, { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }); });
+
+/* ── roll call: the office asks "where is everyone?" during a shift; one answer, one location fix ── */
+let roll = null, rollAns = null, rcSpot = null;
+async function loadRoll(){
+  if (!hotel || !be.rollNow) return;
+  const r = await be.rollNow(hotel.id);
+  roll = r && r.date === dayKey() && (r.uids || []).includes(user.uid) && Date.now() - Date.parse(r.askedAt) < 120 * 60000 ? r : null;
+  rollAns = roll ? await be.myRollAnswer(roll.id, user.uid) : null;
+  paintRoll();
+  if (roll && !rollAns && new URLSearchParams(location.search).has("rc")) $("rollbox").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+const rollSpots = () => hotelSpots(hotel).map(s => ({ key: s.key, name: s.name })).concat([{ key: "other", name: "Somewhere else in the hotel" }]);
+function paintRoll(){
+  const open = !!roll && !rollAns; show("rollbox", open); if (!open) return;
+  const mins = Math.floor((Date.now() - Date.parse(roll.askedAt)) / 60000), left = (roll.windowMin || 10) - mins;
+  $("rc-when").textContent = `· asked ${hhmm(roll.askedAt)} · ${left > 0 ? `answer within ${left} min` : "late — answer now anyway"}`;
+  $("rc-spots").innerHTML = rollSpots().map(sp => `<button type="button" class="${rcSpot === sp.key ? "on" : ""}" data-k="${esc(sp.key)}">${esc(sp.name)}</button>`).join("");
+  $("rc-spots").querySelectorAll("button").forEach(x => x.onclick = () => { rcSpot = x.dataset.k; paintRoll(); });
+}
+async function sendRoll(busy){
+  if (!roll) return;
+  if (!busy && !rcSpot) return toast("Tap where you are first, then “I'm here”.");
+  const bh = $("rc-here"), bb = $("rc-busy"); bh.disabled = bb.disabled = true; (busy ? bb : bh).textContent = "Locating…";
+  try {
+    let lat = null, lng = null, accuracy = null, distM = null, noLocation = false;
+    try { const c = await geo(); lat = c.latitude; lng = c.longitude; accuracy = Math.round(c.accuracy || 0); distM = typeof hotel.lat === "number" ? fenceDistM(lat, lng, hotel) : null; } catch (e) { noLocation = true; }
+    const sp = rollSpots().find(x => x.key === rcSpot);
+    rollAns = await be.answerRoll({ rollId: roll.id, uid: user.uid, name: profile.fullName || user.name || "", hotelId: hotel.id, busy: !!busy, spot: sp ? sp.key : "", spotName: sp ? sp.name : "", lat, lng, accuracy, distM, noLocation });
+    toast(noLocation ? "Sent — but your phone gave no location, so the office sees “no location”." : "Sent ✓ Thank you!");
+    rcSpot = null; paintRoll();
+  } catch (ex) {
+    const denied = ex && (ex.code === "permission-denied" || /insufficient permissions/i.test(String(ex.message || ex)));
+    toast(denied ? "This roll call is closed or was not for you — nothing to do." : "Could not send: " + (ex.message || ex));
+    if (denied){ roll = null; paintRoll(); }
+  } finally { bh.disabled = bb.disabled = false; bh.textContent = "I'm here"; bb.textContent = "Busy — in a show / with guests"; }
+}
+$("rc-here").addEventListener("click", () => sendRoll(false));
+$("rc-busy").addEventListener("click", () => sendRoll(true));
+window.addEventListener("jb-push", e => { if (e.detail && e.detail.tag === "rollcall") loadRoll(); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && hotel) loadRoll().catch(() => {}); });
+setInterval(() => { if (roll && !rollAns) paintRoll(); }, 30000);
+
 // Backup for a phone whose location fails: the office shows a 6-digit code that changes every minute; the server checks it.
 $("code-in").addEventListener("input", () => { const v = $("code-in").value.replace(/\D/g, "").slice(0, 6); if (v !== $("code-in").value) $("code-in").value = v; });
 $("code-in").addEventListener("keydown", e => { if (e.key === "Enter") $("code-go").click(); });
@@ -509,8 +559,11 @@ $("req-send").addEventListener("click", async () => {
 });
 $("btn-out").addEventListener("click", async () => {
   const b = $("btn-out"); b.disabled = true; const r = cur ? recOf(cur.key) : null;
-  try { if (!r) throw new Error("No check-in for this shift"); const rec = await be.checkOut(r.id); recs = recs.map(x => x.id === rec.id ? rec : x); hist = hist.map(x => x.id === rec.id ? rec : x); toast(`Checked out at ${hhmm(rec.checkOutAt)} — see you at the next shift.`); paintAtt(); }
-  catch (ex) { toast("Could not check out: " + (ex.message || ex)); } finally { b.disabled = false; }
+  try { if (!r) throw new Error("No check-in for this shift"); b.textContent = "Checking out…";
+    // where they leave from — a quick fix, never a reason to refuse the check-out (a phone with location blocked still checks out)
+    let where = null; try { const c = await geoQuick(); where = { outLat: c.latitude, outLng: c.longitude, outAccuracy: Math.round(c.accuracy || 0), outDistM: typeof hotel.lat === "number" ? fenceDistM(c.latitude, c.longitude, hotel) : null }; } catch (e) { /* no location: check out anyway */ }
+    const rec = await be.checkOut(r.id, where); recs = recs.map(x => x.id === rec.id ? rec : x); hist = hist.map(x => x.id === rec.id ? rec : x); toast(`Checked out at ${hhmm(rec.checkOutAt)} — see you at the next shift.`); paintAtt(); }
+  catch (ex) { toast("Could not check out: " + (ex.message || ex)); } finally { b.disabled = false; paintAtt(); }
 });
 
 $("edit").addEventListener("click", () => { fill(profile); $("form-eyebrow").textContent = "Edit your profile"; step = 1; paint(); show("s-profile", false); show("s-form", true); });
