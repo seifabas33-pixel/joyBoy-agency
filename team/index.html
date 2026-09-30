@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-0CVV198qOv8tkeQmNGFBhmf5eDfwkkks7Cq+kRVj5x0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-HAr52RQLwSQS+1RTgb25B41LjXLbUjsofpsOJPx5P1U='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team portal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,8 +20,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609290812">
-<script src="firebase-config.js?v=202609290812"></script>
+<link rel="stylesheet" href="portal.css?v=202609300813">
+<script src="firebase-config.js?v=202609300813"></script>
 <script>
 (function(){
   var KEY = "jb-theme", ORDER = ["auto", "light", "dark"];
@@ -186,6 +186,10 @@
       <div class="week" id="att-week"></div>
       <div class="pushrow" id="pushrow" hidden><button class="btn ghost small" id="btn-push" type="button">Turn on reminders</button><span class="hint" id="push-hint"></span></div>
       <div class="actions" style="margin:14px 0 6px"><button class="btn" id="btn-in" type="button">Check in now</button><button class="btn ghost" id="btn-out" type="button" hidden>Check out</button></div>
+      <div class="codebox" id="codebox" hidden>
+        <p class="att-line"><b>Location not working?</b> Ask the office to show you the hotel code, stand next to them and type it here.</p>
+        <div class="coderow"><input class="in codein" id="code-in" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" placeholder="––––––" aria-label="Hotel code, 6 digits"><button class="btn" id="code-go" type="button">Check in with the code</button></div>
+      </div>
       <div class="reqbox" id="reqbox" hidden>
         <p class="att-line"><b>Could not check in?</b> Tell the office what happened and they decide this shift.</p>
         <textarea class="in" id="req-reason" maxlength="300" placeholder="e.g. GPS refused me at the staff gate at 09:40 / I was at the pool bar setting up / traffic, arrived 10:05"></textarea>
@@ -227,7 +231,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState } from "./portal.js?v=202609290812";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState } from "./portal.js?v=202609300813";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -374,7 +378,7 @@ function paintAtt(){
   $("att-week").innerHTML = weekPlans.some(p => p.roster) ? `<span class="hint">This week</span>` + Array.from({ length: 7 }, (_, i) => { const d = addDays(today, i), p = weekPlans.find(x => x.date === d), sh = scheduledShifts(allShifts, p, user.uid), isOff = isOffDay(p, user.uid); return `<span class="wd ${isOff ? "off" : ""} ${i === 0 ? "now" : ""}"><b>${dayLabelShort(d)}</b><i>${isOff ? "off" : esc(sh.map(s => s.name[0]).join(" "))}</i></span>`; }).join("") : "";
   $("att-shifts").innerHTML = shifts.map(sh => {
     const r = recOf(sh.key), q = reqOf(sh.key), st = shiftStatus(r, sh, today, today, now), isCur = cur && cur.key === sh.key;
-    const times = r && r.checkInAt ? `in ${hhmm(r.checkInAt)}${r.checkOutAt ? ` · out ${hhmm(r.checkOutAt)}` : ""}${st.lateMin ? ` · ${st.lateMin} min late` : ""}${st.review ? " · office decides" : ""}` : q ? (q.status === "open" ? `note sent ${hhmm(q.createdAt)} · waiting for the office` : `office decided: ${ATT_LABEL[q.decision] || q.decision}`) : "";
+    const times = r && r.checkInAt ? `in ${hhmm(r.checkInAt)}${r.method === "code" ? " (hotel code)" : ""}${r.checkOutAt ? ` · out ${hhmm(r.checkOutAt)}` : ""}${st.lateMin ? ` · ${st.lateMin} min late` : ""}${st.review ? " · office decides" : ""}` : q ? (q.status === "open" ? `note sent ${hhmm(q.createdAt)} · waiting for the office` : `office decided: ${ATT_LABEL[q.decision] || q.decision}`) : "";
     return `<div class="shift ${isCur ? "now" : ""}"><div><b>${esc(sh.name)}</b><small>${esc(sh.start)}–${esc(sh.end || "?")} · <span class="where">${whereText(sh.key)}</span></small></div><span class="status att-${st.review ? "review" : q && q.status === "open" && !r ? "review" : st.code}">${st.review ? "Late" : q && q.status === "open" && !r ? "Waiting" : ATT_LABEL[st.code]}</span>${times ? `<span class="t">${times}</span>` : ""}</div>`;
   }).join("");
   const r = cur ? recOf(cur.key) : null, q = cur ? reqOf(cur.key) : null;
@@ -383,6 +387,7 @@ function paintAtt(){
   show("btn-in", !!cur && (!r || !r.checkInAt)); show("btn-out", !!r && !!r.checkInAt && !r.checkOutAt);
   if (cur){ bi.disabled = tooEarly || tooLate; bi.textContent = tooEarly ? `${cur.name} check-in opens at ${String(Math.floor(opens / 60)).padStart(2, "0")}:${String(opens % 60).padStart(2, "0")}` : tooLate ? `${cur.name} shift is over` : `Check in · ${cur.name}`; bo.textContent = `Check out · ${cur.name}`; }
   show("reqbox", !!cur && (!r || !r.checkInAt) && !(q && q.status === "open") && ($("reqbox").dataset.open === "1" || tooLate));
+  show("codebox", !!cur && (!r || !r.checkInAt) && !tooEarly && !tooLate && $("codebox").dataset.open === "1");
   $("att-hint").textContent = `Check-in uses your phone's location once, at the place shown for the shift (within ${cur && plannedSpot(hotel, plan, cur.key) ? (plannedSpot(hotel, plan, cur.key).radiusM || 150) + " m of the " + plannedSpot(hotel, plan, cur.key).name : (hotel.radiusM || 300) + " m of the hotel"}). Arriving later than the start plus ${cur ? cur.graceMin : 5} minutes is marked late and the office decides. Missed a check-in? Send the office a note.`;
   const days = []; for (let i = 1; i <= 14; i++) days.push(addDays(today, -i));
   $("att-hist").innerHTML = `<table class="mini"><tbody>${days.map(d => {
@@ -443,7 +448,7 @@ $("btn-in").addEventListener("click", async () => {
     const sp = plannedSpot(hotel, plan, sh.key), target = sp || hotel, place = sp ? `the ${sp.name}` : hotel.name, radius = target.radiusM || (sp ? 150 : 300);
     if (sp && (typeof sp.lat !== "number" || typeof sp.lng !== "number" || typeof sp.cosLat !== "number")) throw new Error(`The ${sp.name} spot has no proper pin yet. Ask the office to fix it in Hotels.`);
     let lat = target.lat, lng = target.lng, accuracy = 0;
-    try { const c = await geo(); lat = c.latitude; lng = c.longitude; accuracy = Math.round(c.accuracy || 0); } catch (ex) { if (!DEMO) throw ex; }
+    try { const c = await geo(); lat = c.latitude; lng = c.longitude; accuracy = Math.round(c.accuracy || 0); } catch (ex) { if (!DEMO || ex.locationBlocked) throw ex; }
     const fence = fenceDistM(lat, lng, target); lastGeo = { lat, lng, accuracy, distM: fence, place, radius };
     if (fence > radius + fenceTolM(accuracy) && !DEMO) throw new Error(`You are about ${fence >= 1000 ? (fence / 1000).toFixed(1) + " km" : fence + " m"} from ${place} (your phone's GPS is accurate to about ${accuracy || "?"} m; allowed: ${radius} m). ${sh.name} shift checks in at ${place} today — go there and try again, or send the office a note.`);
     b.textContent = "Saving…";
@@ -460,11 +465,38 @@ $("btn-in").addEventListener("click", async () => {
     if (refused && attempt){ b.textContent = "Checking why…"; try { why = await be.diagnoseCheckIn(attempt); } catch (e2) { console.warn(e2); } }
     toast(refused ? (why.length ? `Check-in refused: ${why[0]}` : `The server refused the check-in${where}. Send the office a note below — the numbers are filled in for them.`) : (ex.message || String(ex)));
     $("reqbox").dataset.open = "1";
+    if (ex && (ex.locationBlocked || refused || g.distM != null || /location|GPS/i.test(String(ex.message || "")))) $("codebox").dataset.open = "1";   // GPS let them down: offer the hotel code
     if (!$("req-reason").value.trim() && ex && ex.locationBlocked) $("req-reason").value = `${sh ? sh.name + " shift: " : ""}could not check in at ${hhmm(new Date())} — my phone was blocking location for the portal. `;
     if (!$("req-reason").value.trim() && g.distM != null) $("req-reason").value = `${sh ? sh.name + " shift: " : ""}check-in refused at ${hhmm(new Date())} — I am at ${g.place} (phone said ${g.distM} m away, GPS ±${g.accuracy || "?"} m).${why.length ? " Server: " + why.join(" ") : ""} `;
-    paintAtt(); $("req-reason").focus();
+    paintAtt(); if ($("codebox").dataset.open !== "1") $("req-reason").focus();   // with the code box open, keep the keyboard down so the message stays readable
   }
   finally { b.disabled = false; if (!b.hidden && /Locating|Saving/.test(b.textContent)) paintAtt(); }
+});
+// Backup for a phone whose location fails: the office shows a 6-digit code that changes every minute; the server checks it.
+$("code-in").addEventListener("input", () => { const v = $("code-in").value.replace(/\D/g, "").slice(0, 6); if (v !== $("code-in").value) $("code-in").value = v; });
+$("code-in").addEventListener("keydown", e => { if (e.key === "Enter") $("code-go").click(); });
+$("code-go").addEventListener("click", async () => {
+  const code = $("code-in").value.replace(/\D/g, ""), sh = cur, b = $("code-go");
+  if (code.length !== 6) return toast("Type the 6 digits shown on the office screen.");
+  if (!sh) return toast("No shift to check in for right now.");
+  if (profile.status !== "approved") return toast("Your profile is not approved yet, so check-in is not open for you. Ask the office.");
+  b.disabled = true; b.textContent = "Checking…"; let attempt = null;
+  try {
+    try { plan = await be.getPlan(hotel.id, dayKey()); } catch (ex) { console.warn("plan re-read failed", ex); }
+    const sp = plannedSpot(hotel, plan, sh.key);
+    attempt = { uid: user.uid, email: user.email, name: profile.fullName || user.name || "", hotelId: hotel.id, hotelName: hotel.name, date: dayKey(), shift: sh.key, shiftName: sh.name, spot: sp ? sp.key : "", spotName: sp ? sp.name : "", method: "code", code };
+    const rec = await be.checkIn(attempt);
+    recs = [rec, ...recs.filter(r => r.shift !== rec.shift)]; hist = [rec, ...hist.filter(r => r.id !== rec.id)];
+    $("code-in").value = ""; $("codebox").dataset.open = "0"; $("reqbox").dataset.open = "0";
+    const st = shiftStatus(rec, sh, dayKey()); toast(st.code === "present" ? `Checked in for the ${sh.name.toLowerCase()} shift with the hotel code — on time. Have a great one!` : `Checked in with the hotel code — ${st.lateMin} min late. The office will confirm this shift.`);
+  } catch (ex) {
+    const refused = !!ex && (ex.code === "permission-denied" || /missing or insufficient permissions/i.test(String(ex.message || ex)));
+    let why = [];
+    if (refused && attempt){ b.textContent = "Checking why…"; try { why = await be.diagnoseCheckIn(attempt); } catch (e2) { console.warn(e2); } }
+    toast(refused ? `Check-in refused: ${why[0] || "the hotel code was wrong or has already changed. Type the code on the office screen right now."}` : (ex.message || String(ex)));
+    $("code-in").select();
+  }
+  finally { b.disabled = false; b.textContent = "Check in with the code"; paintAtt(); }
 });
 $("req-send").addEventListener("click", async () => {
   const reason = $("req-reason").value.trim(); if (reason.length < 5) return toast("Write a short reason first");

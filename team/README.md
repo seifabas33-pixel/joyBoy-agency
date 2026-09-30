@@ -311,3 +311,22 @@ Some phones cannot be made to share their location with the portal (a Safari or 
 
 - **Messages were invisible in daylight.** `.toast` used `color: var(--dark)` on `background: var(--ink)`; since the light theme (2026-09-12) `--ink` is dark in daytime, so every message from 06:00 to 18:00 was near-black on black (contrast 1.05:1) — the "black blob" in the staff screenshots. Now `color: var(--bg)` (16.8:1 light, 18.5:1 dark), a real box up to the screen width instead of a narrow pill, on screen for as long as its length needs (3–15 s, was a flat 2.6 s), and a tap closes it.
 - **Checkout refused after the office marked a check-in by hand.** The ✎ edit wrote `checkOutAt: null` when no check-out time was given, and the rules only allowed a checkout when `checkOutAt` was *absent*. Fixed on both sides: `setAttendance` turns `null` into `deleteField()`, and the rules treat a null `checkOutAt` / `checkInAt` as not set (which also repairs the records already written that way). **Rules must be re-published.**
+
+### Hotel code — check in without GPS (2026-09-30)
+
+For a phone whose location will not work (the case above). **Admin → Today → Hotel code** turns the office phone
+into a code screen: a 6-digit code, a new one every 60 seconds, the screen stays on. The staff member stands next
+to the office phone; after their GPS check-in fails, a **"Location not working?"** box appears under the check-in
+button, they type the code and are checked in (the time is the server's, as always).
+
+- `checkinCodes/{hotelId}` {code, prev, hotelId, hotelName, setBy, setAt = server time} — **admin only**. Staff never
+  read it; the rules compare the typed code with `get()` (`codeOk`): the current code works for 90 s after `setAt`,
+  the previous one for 30 s more (so a code typed just as it changes still counts). **Stop and close** deletes the
+  doc, so no code works while the screen is off — that also limits guessing to the minutes the screen is open.
+- The attendance record carries `method: "code"` and `code`; `atHotel()` in the rules takes the code path instead
+  of the geofence (hotel open + shift exists + approved + assigned + first check-in still apply). The planned spot
+  is not required with a code. Shown as "hotel code" in Attendance, in the edit panel, on the staff card and in the
+  office check-in alert (`tellOfficeAboutCheckIns`, script 2026-09-30a).
+- Only admins can show a code (owner, 2026-09-30: no team-leader role yet). Adding one later = a staff flag the
+  rules check on `checkinCodes` writes.
+- **Rules must be re-published** after this change, or the code screen says "Could not set the code".

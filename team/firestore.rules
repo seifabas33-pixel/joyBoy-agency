@@ -189,6 +189,27 @@ service cloud.firestore {
         && d.spot == sk
         && dx * dx + dy * dy <= r * r;
     }
+    // Hotel code: the backup when a phone's location fails. The office shows a 6-digit code on its own phone and
+    // writes it here every minute (admin page → Today → Hotel code); staff never read it, the rules below do.
+    // A code works 90 s from when it was set, the one before it 30 s more; closing the screen deletes the doc.
+    match /checkinCodes/{hotelId} {
+      allow read, write: if isAdmin();
+    }
+    function codeOk(d) {
+      let p = /databases/$(database)/documents/checkinCodes/$(d.hotelId);
+      let c = exists(p) ? get(p).data : {};
+      return d.code is string && d.code.matches('[0-9]{6}') && 'setAt' in c
+        && ((d.code == c.code && request.time < c.setAt + duration.value(90, 's'))
+          || (d.code == c.get('prev', '') && request.time < c.setAt + duration.value(30, 's')));
+    }
+    function shiftExists(d) {
+      let h = get(/databases/$(database)/documents/hotels/$(d.hotelId)).data;
+      return h.active == true && (('shifts' in h) ? (d.shift in h.shifts) : (d.shift in ['s1', 's2', 's3']));
+    }
+    // GPS (the normal way) or the hotel code shown by the office.
+    function atHotel(d) {
+      return d.get('method', 'gps') == 'code' ? (codeOk(d) && shiftExists(d)) : insideFence(d);
+    }
     match /attendance/{id} {
       allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
       allow create: if isAdmin() || (isOwner(request.resource.data.uid)
@@ -196,20 +217,20 @@ service cloud.firestore {
         && request.resource.data.date.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
         && request.resource.data.shift.matches('s[1-4]')
         && request.resource.data.checkInAt == request.time
-        && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'hotelId', 'hotelName', 'date', 'shift', 'shiftName', 'spot', 'spotName', 'checkInAt', 'lat', 'lng', 'accuracy', 'distM'])
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'hotelId', 'hotelName', 'date', 'shift', 'shiftName', 'spot', 'spotName', 'checkInAt', 'lat', 'lng', 'accuracy', 'distM', 'method', 'code'])
         && approvedAt(request.auth.uid, request.resource.data.hotelId)
-        && insideFence(request.resource.data));
-      // Owner may (a) check out once, or (b) add their real check-in on a day the office already marked (manual mark / grid import) — once, inside the fence.
+        && atHotel(request.resource.data));
+      // Owner may (a) check out once, or (b) add their real check-in on a day the office already marked (manual mark / grid import) — once, inside the fence or with the hotel code.
       // A field the office left empty (null) counts as not set: an office edit without a check-out time must not block the person's own checkout.
       allow update: if isAdmin() || (isOwner(resource.data.uid) && (
         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checkOutAt'])
           && (!('checkOutAt' in resource.data) || resource.data.checkOutAt == null)
           && request.resource.data.checkOutAt == request.time)
         || ((!('checkInAt' in resource.data) || resource.data.checkInAt == null) && 'shift' in resource.data
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checkInAt', 'lat', 'lng', 'accuracy', 'distM', 'email', 'name', 'hotelName', 'shiftName', 'spot', 'spotName'])
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checkInAt', 'lat', 'lng', 'accuracy', 'distM', 'email', 'name', 'hotelName', 'shiftName', 'spot', 'spotName', 'method', 'code'])
           && request.resource.data.checkInAt == request.time
           && approvedAt(request.auth.uid, request.resource.data.hotelId)
-          && insideFence(request.resource.data))));
+          && atHotel(request.resource.data))));
       allow delete: if isAdmin();
     }
 

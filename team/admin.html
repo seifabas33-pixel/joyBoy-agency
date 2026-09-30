@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-MIdrWMSZfHfAglef5nA4Wgj22ep9O045P1k+H7OTsDk='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-NsuxzZE2lbxOdgJHkZlMvpjMhY66mvoDDhiSiqrhRyM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609290812">
-<script src="firebase-config.js?v=202609290812"></script>
+<link rel="stylesheet" href="portal.css?v=202609300813">
+<script src="firebase-config.js?v=202609300813"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 <script>
 (function(){
@@ -251,7 +251,7 @@
     </div>
 
     <div id="v-today" hidden>
-      <div class="toolbar"><select class="in" id="td-hotel"><option value="">All hotels</option></select><span class="hint" id="td-when"></span><span style="flex:1"></span><button class="btn ghost small" id="td-push" type="button" hidden>Reminders on this phone</button><button class="btn ghost small" id="td-refresh" type="button">Refresh</button></div>
+      <div class="toolbar"><select class="in" id="td-hotel"><option value="">All hotels</option></select><span class="hint" id="td-when"></span><span style="flex:1"></span><button class="btn ghost small" id="td-code" type="button">Hotel code</button><button class="btn ghost small" id="td-push" type="button" hidden>Reminders on this phone</button><button class="btn ghost small" id="td-refresh" type="button">Refresh</button></div>
       <div class="stats" id="td-stats"></div>
       <div class="decide" id="td-decide"></div>
       <div class="todaygrid" id="td-hotels"></div>
@@ -336,6 +336,16 @@
   </section>
 </main>
 
+<div class="codescreen" id="codescreen" hidden role="dialog" aria-modal="true" aria-labelledby="cs-title">
+  <p class="eyebrow" id="cs-title">Hotel code · check-in without GPS</p>
+  <select class="in" id="cs-hotel" aria-label="Hotel"></select>
+  <p class="hint" id="cs-shift"></p>
+  <div class="bigcode wait" id="cs-code" aria-live="polite">······</div>
+  <div class="cbar" aria-hidden="true"><i id="cs-bar"></i></div>
+  <p class="hint" id="cs-left"></p>
+  <p class="hint">Show it only to a colleague standing next to you whose location is not working. They type it under “Check in” on their phone. A new code comes every minute; closing this screen switches the code off.</p>
+  <button class="btn ghost small" id="cs-stop" type="button">Stop and close</button>
+</div>
 <div class="drawer" id="drawer"><div class="bg" id="drawer-bg"></div><div class="panel" id="panel"></div></div>
 <div class="drawer" id="edit"><div class="bg" id="edit-bg"></div><div class="panel small">
   <button class="close" id="edit-close" aria-label="Close">×</button>
@@ -349,7 +359,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText } from "./portal.js?v=202609290812";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText, newHotelCode, CODE_EVERY_S } from "./portal.js?v=202609300813";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -598,7 +608,7 @@ function paintAttInner(){
   $("a-stats").innerHTML = [["Expected", rows.filter(x => x.shifts.length || (x.dayRec && x.dayRec.override)).length], ["Off today", rows.filter(x => !x.shifts.length && !(x.dayRec && x.dayRec.override)).length], ["Present", n("present")], ["Half day", n("half-day")], ["Absent", n("absent")], ["Needs decision", openReqs.length + lateShifts.length + lateDays.length], ["Sick / vacation / off", n("sick") + n("vacation") + n("excused") + n("off")]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
   const btns = (uid, sk, rid) => `<span class="acts">${SHIFT_DECISIONS.map(c => `<button class="btn small ${c === "present" ? "ok" : c === "absent" ? "danger" : "ghost"}" data-dec="${c}" data-uid="${esc(uid)}" data-sk="${esc(sk)}" ${rid ? `data-req="${esc(rid)}"` : ""}>${ATT_LABEL[c]}</button>`).join("")}</span>`;
   const dbtns = uid => `<span class="acts">${["present","half-day","absent"].map(c => `<button class="btn small ${c === "present" ? "ok" : c === "absent" ? "danger" : "ghost"}" data-ddec="${c}" data-uid="${esc(uid)}">${ATT_LABEL[c]}</button>`).join("")}</span>`;
-  $("a-decide").innerHTML = lateShifts.map(({ x, y }) => `<div class="d"><div><b>${esc(x.p.fullName || x.p.email)}</b><br><small>${esc(x.hotel.name || "")} · ${esc(y.shift.name)} · checked in ${hhmm(y.rec.checkInAt)} · ${y.st.lateMin} min late${y.rec.spotName ? ` · at the ${esc(y.rec.spotName)}` : ""}${y.rec.distM != null ? ` · ${y.rec.distM} m from the pin` : ""}</small></div><span class="why">Late check-in — decide this shift.</span>${btns(x.p.uid, y.shift.key)}</div>`).join("")
+  $("a-decide").innerHTML = lateShifts.map(({ x, y }) => `<div class="d"><div><b>${esc(x.p.fullName || x.p.email)}</b><br><small>${esc(x.hotel.name || "")} · ${esc(y.shift.name)} · checked in ${hhmm(y.rec.checkInAt)} · ${y.st.lateMin} min late${y.rec.spotName ? ` · at the ${esc(y.rec.spotName)}` : ""}${y.rec.method === "code" ? " · with the hotel code" : y.rec.distM != null ? ` · ${y.rec.distM} m from the pin` : ""}</small></div><span class="why">Late check-in — decide this shift.</span>${btns(x.p.uid, y.shift.key)}</div>`).join("")
     + lateDays.map(x => `<div class="d"><div><b>${esc(x.p.fullName || x.p.email)}</b><br><small>${esc(x.hotel.name || "")} · checked in ${hhmm(x.dayRec.checkInAt)} (old day format)</small></div><span class="why">Late check-in — decide the day.</span>${dbtns(x.p.uid)}</div>`).join("")
     + openReqs.map(r => `<div class="d"><div><b>${esc(r.name || r.email)}</b><br><small>${esc(r.hotelName || hotelName(r.hotelId))}${r.shiftName ? ` · ${esc(r.shiftName)}` : ""} · sent ${hhmm(r.createdAt)}${r.distM != null ? ` · was ${r.distM >= 1000 ? (r.distM / 1000).toFixed(1) + " km" : r.distM + " m"} from the pin (±${r.accuracy || "?"} m)` : ""}</small></div><span class="why">“${esc(r.reason || "")}”</span>${r.shift ? btns(r.uid, r.shift, r.id) : dbtns(r.uid)}</div>`).join("");
   $("a-decide").querySelectorAll("[data-dec]").forEach(b => b.onclick = () => decide(b.dataset.uid, b.dataset.sk, b.dataset.dec, b.dataset.req ? attReqs.find(r => r.id === b.dataset.req) : null));
@@ -607,7 +617,7 @@ function paintAttInner(){
   const maxS = Math.max(0, ...rows.map(x => x.allShifts.length)), names = (rows[0] ? rows[0].allShifts : []).map(x => x.name), same = rows.every(x => x.allShifts.map(y => y.name).join("|") === names.join("|"));
   $("a-head").innerHTML = `<tr><th>Person</th><th>Hotel</th>${Array.from({ length: maxS }, (_, i) => `<th>${same && names[i] ? esc(names[i]) : "Shift " + (i + 1)}</th>`).join("")}<th>Day</th><th>Day mark</th></tr>`;
   const pen = (uid, sh) => `<button class="lnk pen" type="button" data-tedit="${esc(uid)}|${sh.key}" title="Correct the times">✎</button>`;
-  const cell = (y, sh, uid) => !y ? (sh ? `<td class="cell-shift dim">off ${pen(uid, sh)}</td>` : "<td>—</td>") : `<td class="cell-shift">${y.rec && y.rec.checkInAt ? `${hhmm(y.rec.checkInAt)}${y.rec.checkOutAt ? " → " + hhmm(y.rec.checkOutAt) : ""}` : "—"} ${pen(uid, sh)}<br><span class="status att-${y.st.review ? "review" : y.st.code}">${y.st.review ? "Late" : ATT_LABEL[y.st.code]}</span>${y.st.auto ? "" : " <small class='hint'>manual</small>"}${y.rec && y.rec.editedBy ? ` <small class='hint' title='${esc(y.rec.editReason || "")}'>edited</small>` : ""}${y.rec && (y.rec.spotName || y.rec.distM != null) ? `<small>${esc(y.rec.spotName || "")}${y.rec.distM != null ? ` ${y.rec.distM} m` : ""}</small>` : ""}</td>`;
+  const cell = (y, sh, uid) => !y ? (sh ? `<td class="cell-shift dim">off ${pen(uid, sh)}</td>` : "<td>—</td>") : `<td class="cell-shift">${y.rec && y.rec.checkInAt ? `${hhmm(y.rec.checkInAt)}${y.rec.checkOutAt ? " → " + hhmm(y.rec.checkOutAt) : ""}` : "—"} ${pen(uid, sh)}<br><span class="status att-${y.st.review ? "review" : y.st.code}">${y.st.review ? "Late" : ATT_LABEL[y.st.code]}</span>${y.st.auto ? "" : " <small class='hint'>manual</small>"}${y.rec && y.rec.editedBy ? ` <small class='hint' title='${esc(y.rec.editReason || "")}'>edited</small>` : ""}${y.rec && y.rec.method === "code" ? `<small>hotel code</small>` : y.rec && (y.rec.spotName || y.rec.distM != null) ? `<small>${esc(y.rec.spotName || "")}${y.rec.distM != null ? ` ${y.rec.distM} m` : ""}</small>` : ""}</td>`;
   $("a-rows").innerHTML = rows.map(x => `<tr data-uid="${esc(x.p.uid)}" style="cursor:default">
     <td><div class="who"><img src="${esc(x.p.photoThumb || "../media/img/logo.jpg")}" alt=""><div><b>${esc(x.p.fullName || x.p.email || "—")}</b><small>${esc(x.p.email || "")}</small></div></div></td>
     <td>${esc(x.hotel.name || hotelName(x.hotelId))}</td>${Array.from({ length: maxS }, (_, i) => { const sh = x.allShifts[i]; return cell(sh ? (x.day.shifts || []).find(y => y.shift.key === sh.key) : null, sh, x.p.uid); }).join("")}
@@ -1028,6 +1038,49 @@ $("td-push").addEventListener("click", async () => {
   catch (ex) { toast(ex.message || String(ex)); } finally { b.disabled = false; paintOfficePush(); }
 });
 
+/* ── hotel code: the backup check-in for a phone whose location fails. This screen writes a new code every
+   minute (checkinCodes/{hotelId}, read only by the rules); closing it deletes the code so it stops working at once. ── */
+const cs = { hotelId: "", code: "", at: 0, busy: false, timer: 0, lock: null };
+const csHotels = () => hotels.filter(h => h.active !== false);
+function openCodeScreen(){
+  const hs = csHotels(); if (!hs.length) return toast("Add a hotel first (Hotels & office).");
+  $("cs-hotel").innerHTML = hs.map(h => `<option value="${esc(h.id)}">${esc(h.name)}</option>`).join("");
+  const pick = $("td-hotel").value; if (hs.some(h => h.id === pick)) $("cs-hotel").value = pick;
+  show("cs-hotel", hs.length > 1); show("codescreen", true); document.body.style.overflow = "hidden";
+  cs.code = ""; cs.at = 0; csWake(); csRotate(); clearInterval(cs.timer); cs.timer = setInterval(csTick, 1000);
+}
+async function closeCodeScreen(){
+  clearInterval(cs.timer); show("codescreen", false); document.body.style.overflow = "";
+  try { if (cs.lock) await cs.lock.release(); } catch {} cs.lock = null;
+  const id = cs.hotelId; cs.hotelId = ""; cs.code = ""; cs.at = 0;
+  if (id) try { await be.stopHotelCode(id); toast("Hotel code switched off."); } catch (ex) { toast("Closed. The last code stops working by itself within 2 minutes."); }
+}
+async function csWake(){ try { if (navigator.wakeLock && !$("codescreen").hidden) cs.lock = await navigator.wakeLock.request("screen"); } catch {} }   // keep the screen on while it is shown
+async function csRotate(){
+  const h = hotels.find(x => x.id === $("cs-hotel").value); if (!h || cs.busy) return;
+  cs.busy = true; const same = cs.hotelId === h.id, code = newHotelCode(same ? cs.code : "");
+  try {
+    if (cs.hotelId && !same) await be.stopHotelCode(cs.hotelId).catch(() => {});
+    await be.setHotelCode(h.id, h.name || "", code, same ? cs.code : "", user.email);
+    cs.hotelId = h.id; cs.code = code; cs.at = Date.now();
+  } catch (ex) { cs.code = ""; cs.at = 0; toast("Could not set the code: " + (ex.message || ex) + " — are the new rules published?"); }
+  finally { cs.busy = false; csPaint(); }
+}
+function csPaint(){
+  const h = hotels.find(x => x.id === $("cs-hotel").value), sh = h ? currentShift(hotelShifts(h), toMin(hhmm(new Date()))) : null;
+  const left = cs.at ? Math.max(0, CODE_EVERY_S - Math.floor((Date.now() - cs.at) / 1000)) : 0, live = !!cs.code && left > 0;
+  $("cs-shift").textContent = h ? `${h.name}${sh ? ` · ${sh.name} shift ${sh.start}–${sh.end || "?"}` : " · no shift open right now"}` : "";
+  $("cs-code").textContent = live ? cs.code.slice(0, 3) + " " + cs.code.slice(3) : "··· ···"; $("cs-code").classList.toggle("wait", !live);
+  $("cs-bar").style.transform = `scaleX(${live ? left / CODE_EVERY_S : 0})`;
+  $("cs-left").textContent = live ? `New code in 0:${String(left).padStart(2, "0")}` : cs.busy ? "Making a code…" : "No code right now";
+}
+function csTick(){ if ($("codescreen").hidden) return; if (!cs.busy && (!cs.at || Date.now() - cs.at >= CODE_EVERY_S * 1000)) csRotate(); else csPaint(); }
+$("td-code").addEventListener("click", openCodeScreen);
+$("cs-stop").addEventListener("click", closeCodeScreen);
+$("cs-hotel").addEventListener("change", () => { cs.at = 0; csRotate(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("codescreen").hidden) closeCodeScreen(); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && !$("codescreen").hidden){ csWake(); csTick(); } });
+
 /* ── push a short message to the team's phones (the sheet script delivers it) ── */
 function paintNotifyWho(){
   const keep = $("nt-who").value;
@@ -1055,7 +1108,7 @@ function openEdit(uid, shiftKey){
   $("e-title").textContent = `${x.p.fullName || x.p.email} · ${sh.name}`; $("e-sub").textContent = `${attDay} · ${x.hotel.name || ""} · shift ${sh.start}–${sh.end || "?"}`;
   $("e-in").value = rec && rec.checkInAt ? hhmm(rec.checkInAt) : ""; $("e-out").value = rec && rec.checkOutAt ? hhmm(rec.checkOutAt) : ""; $("e-why").value = "";
   show("e-del", !!(rec && rec.checkInAt));
-  $("e-hist").textContent = rec && rec.editedBy ? `Last edited by ${rec.editedBy}${rec.editedAt ? " at " + hhmm(rec.editedAt) : ""}: ${rec.editReason || ""}` : rec && rec.checkInAt ? `Recorded from the phone${rec.spotName ? " at the " + rec.spotName : ""}${rec.distM != null ? `, ${rec.distM} m from the pin` : ""}.` : "No check-in recorded for this shift. Set the times to add one by hand.";
+  $("e-hist").textContent = rec && rec.editedBy ? `Last edited by ${rec.editedBy}${rec.editedAt ? " at " + hhmm(rec.editedAt) : ""}: ${rec.editReason || ""}` : rec && rec.checkInAt && rec.method === "code" ? "Recorded from the phone with the hotel code shown by the office." : rec && rec.checkInAt ? `Recorded from the phone${rec.spotName ? " at the " + rec.spotName : ""}${rec.distM != null ? `, ${rec.distM} m from the pin` : ""}.` : "No check-in recorded for this shift. Set the times to add one by hand.";
   $("edit").classList.add("open"); $("e-in").focus();
 }
 const closeEdit = () => { $("edit").classList.remove("open"); editCtx = null; };
@@ -1158,7 +1211,7 @@ async function drawQr(){
   const hid = $("qr-hotel").value; if (!hid){ $("qr-box").innerHTML = `<p class="hint">Pick a hotel first.</p>`; $("qr-link").textContent = ""; return; }
   const url = feedbackLink(); $("qr-link").textContent = url;
   try {
-    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202609290812"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
+    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202609300813"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
     const q = qrLib(0, "M"); q.addData(url); q.make();
     const who = $("qr-who").selectedOptions[0] ? $("qr-who").selectedOptions[0].textContent : "";
     const hotel = hotels.find(h => h.id === hid) || {};
