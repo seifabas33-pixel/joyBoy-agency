@@ -218,6 +218,18 @@ select.in.tiny{padding:6px 28px 6px 10px;font-size:13px;min-width:0;width:auto}
 .status.att-review{color:var(--t-orange);border-color:rgba(255,170,70,.55);background:rgba(255,170,70,.12)}
 .reqbox{margin-top:12px;padding:14px;border-radius:14px;background:var(--raised);border:1px dashed var(--line-2)}
 .reqbox textarea{min-height:76px;margin-top:8px}
+.codebox{margin-top:12px;padding:14px;border-radius:14px;background:var(--raised);border:1px solid var(--line-2)}
+.coderow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.codein{flex:1 1 150px;min-width:0;font:700 26px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.3em;text-align:center;padding:12px 8px}
+.coderow .btn{flex:1 1 180px}
+/* office screen that shows the hotel code (admin → Today → Hotel code) */
+.codescreen{position:fixed;inset:0;z-index:150;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px 16px;text-align:center}
+.codescreen select{max-width:320px}
+.codescreen .bigcode{font:800 clamp(56px,19vw,132px)/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.06em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin:6px 0}
+.codescreen .bigcode.wait{background:none;color:var(--ink-3)}
+.codescreen .cbar{width:min(340px,80vw);height:8px;border-radius:9px;background:var(--raised);overflow:hidden}
+.codescreen .cbar i{display:block;height:100%;width:100%;background:var(--aqua);transform-origin:left;transition:transform 1s linear}
+.codescreen .hint{max-width:420px}
 .req-note{color:var(--t-orange);font-size:13.5px}
 .decide{display:grid;gap:10px;margin-bottom:16px}
 .decide .d{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;background:var(--surface);border:1px solid rgba(255,170,70,.45);border-left:4px solid #FFAA46;border-radius:14px;padding:12px 14px}

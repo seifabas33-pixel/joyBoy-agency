@@ -137,6 +137,9 @@ async function firebaseBackend(){
     saveTasks: (hotelId, date, tasks, by) => F.setDoc(F.doc(db, "plans", `${hotelId}_${date}`), { hotelId, date, tasks, tasksBy: by, tasksAt: ts() }, { mergeFields: ["hotelId", "date", "tasks", "tasksBy", "tasksAt"] }),
     // attendance: one document per person, day AND shift, id = uid_YYYY-MM-DD_s1; day marks by the office live in uid_YYYY-MM-DD. The server stamps the time.
     checkIn: async rec => { const id = `${rec.uid}_${rec.date}_${rec.shift}`; await F.setDoc(F.doc(db, "attendance", id), { ...rec, checkInAt: ts() }, { merge: true }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); }, // merge: keeps an office mark (override) that already exists for the shift
+    // Hotel code (backup when a phone's location fails): admin-only doc, read by the rules. Deleting it kills the code at once.
+    setHotelCode: (hotelId, hotelName, code, prev, by) => F.setDoc(F.doc(db, "checkinCodes", hotelId), { hotelId, hotelName, code, prev: prev || "", setBy: by, setAt: ts() }),
+    stopHotelCode: hotelId => F.deleteDoc(F.doc(db, "checkinCodes", hotelId)),
     // After the server refused a check-in: ask the server itself for every fact the rules look at, in the same
     // order, and say which one failed. Reads bypass the local cache so a stale copy cannot hide the answer.
     diagnoseCheckIn: async rec => {
@@ -159,9 +162,10 @@ async function firebaseBackend(){
         let sk = "";
         if (!pr.ok) out.push("Your phone is not allowed to read today's plan — that usually means your profile is not approved on the server.");
         else if (pr.s.exists()) { const pl = pr.s.data(); sk = pl.shifts && pl.shifts[rec.shift] ? (pl.shifts[rec.shift].spot || "") : ""; }
-        if (sk !== (rec.spot || "")) out.push(`The office planned this shift at "${(h.spots && h.spots[sk] && h.spots[sk].name) || sk || "anywhere at the hotel"}", but your phone was checking in for "${rec.spotName || "anywhere at the hotel"}". Close the portal completely and open it again.`);
+        if (rec.method !== "code" && sk !== (rec.spot || "")) out.push(`The office planned this shift at "${(h.spots && h.spots[sk] && h.spots[sk].name) || sk || "anywhere at the hotel"}", but your phone was checking in for "${rec.spotName || "anywhere at the hotel"}". Close the portal completely and open it again.`);
         const t = sk && h.spots && h.spots[sk] ? h.spots[sk] : h;
-        if (typeof t.lat !== "number" || typeof t.lng !== "number" || typeof t.cosLat !== "number" || typeof t.radiusM !== "number") out.push(`The pin for ${t === h ? "the hotel" : "the " + (t.name || sk)} is incomplete on the server. The office must fix it in Hotels.`);
+        if (rec.method === "code") {}   // no pin needed; the code itself is checked below
+        else if (typeof t.lat !== "number" || typeof t.lng !== "number" || typeof t.cosLat !== "number" || typeof t.radiusM !== "number") out.push(`The pin for ${t === h ? "the hotel" : "the " + (t.name || sk)} is incomplete on the server. The office must fix it in Hotels.`);
         else {
           const dx = (rec.lng - t.lng) * t.cosLat * 111320, dy = (rec.lat - t.lat) * 110540, d = Math.round(Math.sqrt(dx * dx + dy * dy));
           const tol = rec.accuracy > 0 ? Math.min(100, rec.accuracy) : 0;
@@ -176,6 +180,8 @@ async function firebaseBackend(){
         if (r.checkInAt) out.push("You are already checked in for this shift.");
         else if (!("shift" in r)) out.push("The office already marked this shift, so a check-in cannot be added on top. Ask the office to decide this shift.");
       }
+      // staff cannot read the code, so when nothing else is wrong the code is what failed
+      if (!out.length && rec.method === "code") out.push("The hotel code was wrong or has already changed. Look at the code on the office screen right now and type it again.");
       if (!out.length) out.push("Everything the server checks looks right from your phone. The office should open Attendance and look for an existing mark on this shift — a mark made by the office blocks the check-in.");
       return out;
     },
@@ -275,7 +281,10 @@ function demoBackend(){
     plansRange: async (from, to) => Object.entries(get("plans") || {}).map(([id, p]) => ({ id, ...p })).filter(p => p.date >= from && p.date <= to),
     saveRoster: async (hotelId, date, roster, by) => { const ps = get("plans") || {}; ps[`${hotelId}_${date}`] = { ...(ps[`${hotelId}_${date}`] || {}), hotelId, date, roster, rosterBy: by, rosterAt: now() }; set("plans", ps); },
     saveTasks: async (hotelId, date, tasks, by) => { const ps = get("plans") || {}; ps[`${hotelId}_${date}`] = { ...(ps[`${hotelId}_${date}`] || {}), hotelId, date, tasks, tasksBy: by, tasksAt: now() }; set("plans", ps); },
-    checkIn: async rec => { const a = get("att") || {}; const id = `${rec.uid}_${rec.date}_${rec.shift}`; if (a[id] && a[id].checkInAt) throw new Error("Already checked in for this shift"); a[id] = { ...(a[id] || {}), ...rec, checkInAt: now() }; set("att", a); return { id, ...a[id] }; },
+    setHotelCode: async (hotelId, hotelName, code, prev, by) => { const c = get("codes") || {}; c[hotelId] = { hotelId, hotelName, code, prev: prev || "", setBy: by, setAt: now() }; set("codes", c); },
+    stopHotelCode: async hotelId => { const c = get("codes") || {}; delete c[hotelId]; set("codes", c); },
+    checkIn: async rec => { const a = get("att") || {}; const id = `${rec.uid}_${rec.date}_${rec.shift}`; if (a[id] && a[id].checkInAt) throw new Error("Already checked in for this shift");
+      if (rec.method === "code"){ const c = (get("codes") || {})[rec.hotelId], age = c ? Date.now() - Date.parse(c.setAt) : Infinity; if (!c || !((rec.code === c.code && age < 90000) || (rec.code === c.prev && age < 30000))){ const e = new Error("Missing or insufficient permissions."); e.code = "permission-denied"; throw e; } } a[id] = { ...(a[id] || {}), ...rec, checkInAt: now() }; set("att", a); return { id, ...a[id] }; },
     diagnoseCheckIn: async () => [],
     checkOut: async id => { const a = get("att") || {}; if (!a[id]) throw new Error("No check-in for this shift"); a[id].checkOutAt = now(); set("att", a); return { id, ...a[id] }; },
     myAttendance: async (uid, from) => Object.entries(get("att") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.uid === uid && (!from || r.date >= from)).sort((a, b) => b.date.localeCompare(a.date)),
@@ -410,6 +419,10 @@ export function weekStart(key){ const d = new Date(key + "T12:00:00Z"), dow = (d
 export const DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 export const dayLabelShort = key => { const d = new Date(key + "T12:00:00Z"); return `${DOW[(d.getUTCDay() + 6) % 7]} ${key.slice(8)}`; };
 /** Minutes before a shift starts that the check-in button opens, and after it ends that check-in/out is still possible. */
+// Hotel code: six random digits, never the same as the one before. A new one every CODE_EVERY_S seconds while the office screen is open.
+export const CODE_EVERY_S = 60;
+export function newHotelCode(prev){ const a = new Uint32Array(1); let c; do { crypto.getRandomValues(a); c = String(a[0] % 1000000).padStart(6, "0"); } while (c === prev); return c; }
+
 export const SHIFT_OPEN_MIN = 90, SHIFT_CLOSE_MIN = 30;
 export const shiftEndMin = s => toMin(s.end) ?? (toMin(s.start) + 180);
 /** The shift the buttons are for right now: the one whose window is open, else the next one today, else the last. */
