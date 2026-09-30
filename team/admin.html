@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-FkHECiG13msz1QcsJGKcWGXwq2GYm4Yh5cBWXNuT7E0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-ikcs/p/yCinkrdMCWwqkvLnYiqG3TjmVPVDibnCyoNo='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609301310">
-<script src="firebase-config.js?v=202609301310"></script>
+<link rel="stylesheet" href="portal.css?v=202609301329">
+<script src="firebase-config.js?v=202609301329"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 <script>
 (function(){
@@ -203,7 +203,8 @@
         <select class="in" id="a-hotel"><option value="">All hotels</option></select>
         <span style="flex:1"></span>
         <button class="btn ghost small" id="a-refresh" type="button">Refresh</button>
-        <button class="btn small" id="a-csv" type="button">Export month CSV</button>
+        <button class="btn small" id="a-grid" type="button">Month grid</button>
+        <button class="btn ghost small" id="a-csv" type="button">Shift details</button>
       </div>
       <div class="stats" id="a-stats"></div>
       <div class="card plan" id="a-plan" hidden></div>
@@ -360,7 +361,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText, newHotelCode, CODE_EVERY_S, ROLL_WINDOW_MIN, rollId, rollState, distText, isOutside } from "./portal.js?v=202609301310";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText, newHotelCode, CODE_EVERY_S, ROLL_WINDOW_MIN, rollId, rollState, distText, isOutside } from "./portal.js?v=202609301329";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -639,17 +640,67 @@ function paintAttInner(){
     } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
   });
 }
+/* ── month exports, written to be READ by the office (and checked against what really happened) ──
+   Month grid: one row per person, one letter per day — the same layout as the office's own attendance sheet.
+   Shift details: one plain line per person and shift, saying when, how (GPS / hotel code / office) and the result. */
+const DAY_LETTER = { present: "P", "half-day": "H", absent: "A", sick: "S", vacation: "V", off: "O", excused: "E" };
+const csvCell = v => { let t = String(v ?? ""); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
+const csvLine = arr => arr.map(csvCell).join(",");
+function saveCsv(lines, name){ const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+async function monthData(){
+  const from = attDay.slice(0, 8) + "01", to = addDays(addDays(from, 32).slice(0, 8) + "01", -1), today = dayKey(), hf = $("a-hotel").value;
+  // the Schedule for the whole month: without it a day off would read as "absent" (the old export had that bug)
+  const [recs, plans] = await Promise.all([be.attendanceRange(from, to), be.plansRange(from, to)]);
+  const planMap = d => Object.fromEntries(plans.filter(p => p.date === d).map(p => [p.hotelId, p]));
+  const days = []; for (let d = from; d <= to; d = addDays(d, 1)) days.push(d);
+  const month = new Date(from + "T12:00:00Z").toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
+  const rowsOf = d => d > today ? [] : attRows(d, recs.filter(r => r.date === d), planMap(d)).filter(x => !hf || x.hotelId === hf);
+  return { from, to, today, days, month, hotelLabel: hf ? hotelName(hf) : "All hotels", rowsOf };
+}
+$("a-grid").addEventListener("click", async () => {
+  let m; try { m = await monthData(); } catch (ex) { return toast("Could not load the month: " + (ex.message || ex)); }
+  const people = new Map();   // uid → { name, hotel, byDay: {date: letter}, n: counts }
+  m.days.forEach(d => m.rowsOf(d).forEach(x => {
+    const k = x.p.uid; if (!people.has(k)) people.set(k, { name: x.p.fullName || x.p.email || "—", hotel: x.hotel.name || hotelName(x.hotelId), byDay: {}, n: {} });
+    const offButWorked = x.day.code === "off" && (x.srecs || []).some(r => r.checkInAt);   // the Schedule says off, the phone says they came
+    const e = people.get(k), letter = offButWorked ? "O*" : x.day.review ? "L?" : x.day.code === "pending" ? (d === m.today ? "…" : "") : (DAY_LETTER[x.day.code] || x.day.code);
+    e.byDay[d] = letter; if (letter) e.n[letter] = (e.n[letter] || 0) + 1;
+  }));
+  const dow = d => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date(d + "T12:00:00Z").getUTCDay()];
+  const lines = [csvLine([`Joy Boy attendance · ${m.month} · ${m.hotelLabel}`]), ""];
+  lines.push(csvLine(["Name", "Hotel", ...m.days.map(d => `${+d.slice(8)} ${dow(d)}`), "Present", "Half day", "Absent", "Sick", "Vacation", "Day off", "Excused", "Late · to decide", "Came on a day off"]));
+  [...people.values()].sort((a, b) => a.hotel.localeCompare(b.hotel) || a.name.localeCompare(b.name)).forEach(e =>
+    lines.push(csvLine([e.name, e.hotel, ...m.days.map(d => e.byDay[d] || ""), ...["P", "H", "A", "S", "V", "O", "E", "L?"].map(l => e.n[l] || 0), e.n["O*"] || 0])));
+  lines.push("", csvLine(["P = present (all shifts) · H = half day (some shifts) · A = absent · S = sick · V = vacation · O = day off · E = excused · L? = came late, the office has not decided yet · O* = the Schedule says day off but they checked in (covering for someone? fix the Schedule) · … = today, not finished"]));
+  lines.push(csvLine([`Made by the team portal on ${m.today} at ${hhmm(new Date())}. For the times of each shift use "Shift details".`]));
+  saveCsv(lines, `joyboy-attendance-${m.from.slice(0, 7)}-grid.csv`);
+});
 $("a-csv").addEventListener("click", async () => {
-  const from = attDay.slice(0, 8) + "01", to = addDays(addDays(from, 32).slice(0, 8) + "01", -1), today = dayKey();
-  let recs = []; try { recs = await be.attendanceRange(from, to); } catch (ex) { return toast("Could not load the month: " + (ex.message || ex)); }
-  const maxS = Math.max(1, ...hotels.map(h => hotelShifts(h).length));
-  const cols = ["date","name","email","hotel"].concat(...Array.from({ length: maxS }, (_, i) => [`shift${i + 1}`, `shift${i + 1}_in`, `shift${i + 1}_out`, `shift${i + 1}_status`, `shift${i + 1}_late_min`]), ["day_status","day_mark","mark_by"]), lines = [cols.join(",")];
-  const cell = v => { let t = String(v ?? ""); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
-  for (let d = from; d <= to && d <= today; d = addDays(d, 1)) for (const x of attRows(d, recs.filter(r => r.date === d))){
-    const sc = Array.from({ length: maxS }, (_, i) => { const y = (x.day.shifts || [])[i]; return y ? [y.shift.name, y.rec && y.rec.checkInAt ? hhmm(y.rec.checkInAt) : "", y.rec && y.rec.checkOutAt ? hhmm(y.rec.checkOutAt) : "", y.st.review ? "Late (undecided)" : ATT_LABEL[y.st.code], y.st.lateMin ?? ""] : ["", "", "", "", ""]; }).flat();
-    lines.push([d, x.p.fullName || x.p.email, x.p.email, x.hotel.name || hotelName(x.hotelId), ...sc, x.day.review ? "Late (undecided)" : ATT_LABEL[x.day.code] || x.day.code, x.dayRec && x.dayRec.override ? x.dayRec.override : "", x.dayRec && x.dayRec.override && x.dayRec.overrideBy ? x.dayRec.overrideBy : ""].map(cell).join(","));
-  }
-  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" })); a.download = `joyboy-attendance-${from.slice(0, 7)}.csv`; a.click(); URL.revokeObjectURL(a.href);
+  let m; try { m = await monthData(); } catch (ex) { return toast("Could not load the month: " + (ex.message || ex)); }
+  const how = (r, x) => { if (!r || !r.checkInAt) return ""; const h = hotels.find(z => z.id === r.hotelId) || x.hotel || {};
+    if (r.editedBy) return `Office (${r.editReason || "edited"})`;
+    if (r.method === "code") return "Hotel code";
+    if (r.source === "manual" || r.source === "request" || r.source === "decision") return "Office";
+    return r.distM != null ? `GPS · ${r.distM} m from ${r.spotName || "the hotel pin"}` : "GPS"; };
+  const outNote = (r, sh, x) => { if (!r || !r.checkOutAt) return ""; const h = hotels.find(z => z.id === r.hotelId) || x.hotel || {}, f = [], early = shiftEnd(sh) - toMin(hhmm(r.checkOutAt));
+    if (early > 10) f.push(`left ${early} min early`); if (isOutside(r.outDistM, h)) f.push(`checked out ${distText(r.outDistM)} from the hotel`); return f.join(" · "); };
+  const lines = [csvLine([`Joy Boy attendance · every shift · ${m.month} · ${m.hotelLabel}`]), ""];
+  lines.push(csvLine(["Date", "Day", "Name", "Hotel", "Shift", "Shift time", "Checked in", "Checked out", "Minutes late", "How", "Result", "Check-out note", "Office mark for the day"]));
+  const dow = d => new Date(d + "T12:00:00Z").toLocaleDateString("en-GB", { weekday: "short", timeZone: "UTC" });
+  m.days.forEach(d => m.rowsOf(d).forEach(x => {
+    const base = [d, dow(d), x.p.fullName || x.p.email || "—", x.hotel.name || hotelName(x.hotelId)];
+    const mark = x.dayRec && x.dayRec.override ? `${ATT_LABEL[x.dayRec.override] || x.dayRec.override}${x.dayRec.overrideBy ? " (by " + x.dayRec.overrideBy + ")" : ""}` : "";
+    const ys = x.day.shifts || [];
+    const extra = !ys.length ? (x.srecs || []).filter(r => r.checkInAt) : [];   // checked in on a day the Schedule says off
+    if (extra.length){ extra.forEach(r => { const sh = (x.allShifts || []).find(z => z.key === r.shift) || { name: r.shiftName || r.shift, start: "", end: "" };
+      lines.push(csvLine([...base, sh.name, sh.start ? `${sh.start}–${sh.end || "?"}` : "", hhmm(r.checkInAt), r.checkOutAt ? hhmm(r.checkOutAt) : "", "", how(r, x), "Came on a day off (Schedule says off)", sh.start ? outNote(r, sh, x) : "", mark])); }); return; }
+    if (!ys.length){ lines.push(csvLine([...base, "—", "", "", "", "", "", mark ? "" : ATT_LABEL[x.day.code] || x.day.code, "", mark])); return; }
+    ys.forEach(y => { const r = y.rec;
+      lines.push(csvLine([...base, y.shift.name, `${y.shift.start}–${y.shift.end || "?"}`, r && r.checkInAt ? hhmm(r.checkInAt) : "", r && r.checkOutAt ? hhmm(r.checkOutAt) : "",
+        y.st.lateMin > 0 ? y.st.lateMin : "", how(r, x), y.st.review ? "Late · office to decide" : y.st.code === "pending" ? "Not yet" : ATT_LABEL[y.st.code] || y.st.code, outNote(r, y.shift, x), mark])); });
+  }));
+  lines.push("", csvLine([`Made by the team portal on ${m.today} at ${hhmm(new Date())}. "How": GPS = the phone's location at check-in; Hotel code = the code shown by the office; Office = marked or corrected by the office.`]));
+  saveCsv(lines, `joyboy-attendance-${m.from.slice(0, 7)}-shifts.csv`);
 });
 
 /* ── programme: the day's activities per hotel, stored in the plan document ── */
@@ -1288,7 +1339,7 @@ async function drawQr(){
   const hid = $("qr-hotel").value; if (!hid){ $("qr-box").innerHTML = `<p class="hint">Pick a hotel first.</p>`; $("qr-link").textContent = ""; return; }
   const url = feedbackLink(); $("qr-link").textContent = url;
   try {
-    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202609301310"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
+    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202609301329"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
     const q = qrLib(0, "M"); q.addData(url); q.make();
     const who = $("qr-who").selectedOptions[0] ? $("qr-who").selectedOptions[0].textContent : "";
     const hotel = hotels.find(h => h.id === hid) || {};

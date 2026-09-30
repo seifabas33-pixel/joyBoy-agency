@@ -364,3 +364,10 @@ track a phone in the background, and GPS inside a hotel is ±50–100 m, so this
   apart. So GPS now decides only "outside the hotel" (more than `OUT_MARGIN_M` = 300 m beyond the hotel radius —
   still catches someone in town), the ⚠ spot check was removed, and roll-call answers use `bestFix()` (the most
   accurate of ~6 s of readings). Script 2026-09-30c uses the same 300 m margin in the summary.
+
+### Attendance exports you can read (2026-09-30)
+
+Attendance tab → **Month grid** (one row per person, one letter per day, totals; `O*` = worked on a scheduled day
+off, `L?` = late and not decided) and **Shift details** (one line per person and shift with times, lateness, how
+they checked in and the result). Both follow the hotel filter and the month of the date shown. Fixed on the way:
+the old export ignored the Schedule on every day except the one open on screen, so a day off showed as Absent.
