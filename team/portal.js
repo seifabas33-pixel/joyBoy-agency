@@ -186,6 +186,11 @@ async function firebaseBackend(){
       return out;
     },
     checkOut: async (id, where) => { await F.updateDoc(F.doc(db, "attendance", id), { checkOutAt: ts(), ...(where || {}) }); const s = await F.getDoc(F.doc(db, "attendance", id)); return att(s); },   // where = {outLat, outLng, outAccuracy, outDistM} when the phone gave a fix
+    // Guest page ("What's on today?"): the trimmed public copy of the day's programme, and the sign-ups (first names only).
+    // mergeFields: re-saving the programme never touches the live counts the guests raise.
+    savePublicProgramme: (hotelId, hotelName, date, items) => F.setDoc(F.doc(db, "publicProgramme", `${hotelId}_${date}`), { hotelId, hotelName, date, items, updatedAt: ts() }, { mergeFields: ["hotelId", "hotelName", "date", "items", "updatedAt"] }),
+    signupsOn: async date => { const s = await F.getDocs(F.query(F.collection(db, "signups"), F.where("date", "==", date))); return s.docs.map(att); },
+    cleanupSignups: async before => { const s = await F.getDocs(F.query(F.collection(db, "signups"), F.where("date", "<", before))); await Promise.all(s.docs.map(d => F.deleteDoc(d.ref))); return s.size; },
     // Roll call ("Where is everyone?"): the office's record, a pointer per hotel that staff phones read, one answer per person.
     startRollCall: async roll => {
       const b = F.writeBatch(db);
@@ -299,6 +304,9 @@ function demoBackend(){
       if (rec.method === "code"){ const c = (get("codes") || {})[rec.hotelId], age = c ? Date.now() - Date.parse(c.setAt) : Infinity; if (!c || !((rec.code === c.code && age < 90000) || (rec.code === c.prev && age < 30000))){ const e = new Error("Missing or insufficient permissions."); e.code = "permission-denied"; throw e; } } a[id] = { ...(a[id] || {}), ...rec, checkInAt: now() }; set("att", a); return { id, ...a[id] }; },
     diagnoseCheckIn: async () => [],
     checkOut: async (id, where) => { const a = get("att") || {}; if (!a[id]) throw new Error("No check-in for this shift"); a[id] = { ...a[id], checkOutAt: now(), ...(where || {}) }; set("att", a); return { id, ...a[id] }; },
+    savePublicProgramme: async (hotelId, hotelName, date, items) => { const pp = get("pubprog") || {}, id = `${hotelId}_${date}`; pp[id] = { ...(pp[id] || {}), hotelId, hotelName, date, items, updatedAt: now() }; set("pubprog", pp); },
+    signupsOn: async date => (get("signups") || []).filter(r => r.date === date),
+    cleanupSignups: async before => { const l = get("signups") || [], keep = l.filter(r => r.date >= before); set("signups", keep); return l.length - keep.length; },
     startRollCall: async roll => { const r = get("rolls") || {}; r[roll.id] = { ...roll, askedAt: now(), status: "open" }; set("rolls", r); const n = get("rollnow") || {}; n[roll.hotelId] = { id: roll.id, hotelId: roll.hotelId, date: roll.date, shift: roll.shift, shiftName: roll.shiftName, uids: roll.uids, windowMin: roll.windowMin, askedAt: r[roll.id].askedAt }; set("rollnow", n); return { id: roll.id, ...r[roll.id] }; },
     rollCallsOn: async date => Object.entries(get("rolls") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date === date).sort((a, b) => String(b.askedAt).localeCompare(String(a.askedAt))),
     rollAnswers: async rollId => Object.entries(get("rollans") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.rollId === rollId),
@@ -363,6 +371,14 @@ export async function initGuest(){
     send: async rec => { const k = "jb-demo-feedback"; const all = JSON.parse(localStorage.getItem(k) || "[]"); all.push({ ...rec, createdAt: new Date().toISOString() }); localStorage.setItem(k, JSON.stringify(all)); },
     publicHotel: async id => ({ name: "Demo Beach Resort", reviewUrl: "" }),
     publicProposal: async token => (JSON.parse(localStorage.getItem("jb-demo-pubprops") || "null") || {})[token] || null,
+    programme: async (hotelId, date) => (JSON.parse(localStorage.getItem("jb-demo-pubprog") || "null") || {})[`${hotelId}_${date}`] || null,
+    signUp: async rec => {
+      const pp = JSON.parse(localStorage.getItem("jb-demo-pubprog") || "{}"), id = `${rec.hotelId}_${rec.date}`, p = pp[id], it = p && p.items && p.items[rec.taskId];
+      const c = { ...((p && p.counts) || {}) }; if (!it || !(it.places > 0) || (c[rec.taskId] || 0) + rec.count > it.places) { const e = new Error("Missing or insufficient permissions."); e.code = "permission-denied"; throw e; }
+      c[rec.taskId] = (c[rec.taskId] || 0) + rec.count; p.counts = c; localStorage.setItem("jb-demo-pubprog", JSON.stringify(pp));
+      const l = JSON.parse(localStorage.getItem("jb-demo-signups") || "[]"); l.push({ id: "s" + Date.now(), ...rec, createdAt: new Date().toISOString() }); localStorage.setItem("jb-demo-signups", JSON.stringify(l));
+      return c[rec.taskId];
+    },
   };
   const [{ initializeApp }, A, F] = await Promise.all([import(FB + "firebase-app.js"), import(FB + "firebase-auth.js"), import(FB + "firebase-firestore.js")]);
   const app = initializeApp(cfg), auth = A.getAuth(app), db = F.getFirestore(app);
@@ -372,6 +388,14 @@ export async function initGuest(){
     send: rec => F.addDoc(F.collection(db, "feedback"), { ...rec, createdAt: F.serverTimestamp() }),
     publicHotel: async id => { const s = await F.getDoc(F.doc(db, "publicHotels", id)); return s.exists() ? s.data() : null; },
     publicProposal: async token => { const s = await F.getDoc(F.doc(db, "publicProposals", token)); return s.exists() ? s.data() : null; },
+    programme: async (hotelId, date) => { const s = await F.getDoc(F.doc(db, "publicProgramme", `${hotelId}_${date}`)); return s.exists() ? s.data() : null; },
+    // one batch: the sign-up + the activity's count raised by exactly its people (the rules check both together)
+    signUp: async rec => {
+      const ref = F.doc(F.collection(db, "signups")), pref = F.doc(db, "publicProgramme", `${rec.hotelId}_${rec.date}`), b = F.writeBatch(db);
+      b.set(ref, { ...rec, createdAt: F.serverTimestamp() });
+      b.update(pref, { ["counts." + rec.taskId]: F.increment(rec.count), last: ref.id });
+      await b.commit();
+    },
   };
 }
 
@@ -563,6 +587,13 @@ export const taskId = () => Math.random().toString(36).slice(2, 9) + Date.now().
 export const sortTasks = tasks => (tasks || []).slice().sort((a, b) => String(a.time).localeCompare(String(b.time)) || String(a.title).localeCompare(String(b.title)));
 export const taskIsMine = (t, uid) => !!(t && (t.all || (t.uids || []).includes(uid)));
 /** Plain-text programme for WhatsApp. */
+// What guests see of a programme item: never the staff names or the office note. guest = "show" (just come) | "signup".
+export function guestItems(tasks){
+  const out = {};
+  (tasks || []).filter(t => t.guest === "show" || t.guest === "signup").forEach(t => { out[t.id] = { time: t.time || "", end: t.end || "", title: t.title || "", place: t.place || "", places: t.guest === "signup" ? Math.max(1, +t.places || 0) : 0, kids: !!t.kids }; });
+  return out;
+}
+export const signupCount = (signups, taskId) => (signups || []).filter(r => r.taskId === taskId).reduce((n, r) => n + (+r.count || 0), 0);
 export function programmeText(hotel, date, tasks){
   const lines = sortTasks(tasks).map(t => `${t.time}${t.end ? "–" + t.end : ""}  ${t.title}${t.place ? " — " + t.place : ""}${t.all ? " — everyone" : (t.names || []).length ? " — " + t.names.join(", ") : ""}${t.note ? " (" + t.note + ")" : ""}`);
   return `📋 Programme ${hotel && hotel.name ? hotel.name + " " : ""}${date}\n` + (lines.length ? lines.join("\n") : "Nothing planned yet.");

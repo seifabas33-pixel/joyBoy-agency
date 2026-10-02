@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-ESBA8SvAtLOVRpxGhOXjA9WwvKD997uMjvEpJZiXpJ4='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-bbNGBQcG58l/Em5/a3yCCCPR0Hw5sqUTUMAmAjH+jMo='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609301812">
-<script src="firebase-config.js?v=202609301812"></script>
+<link rel="stylesheet" href="portal.css?v=202610020938">
+<script src="firebase-config.js?v=202610020938"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 <script>
 (function(){
@@ -91,7 +91,8 @@
         <div class="card"><h2>Print a QR card</h2>
           <div class="grid" style="margin-top:10px">
             <label class="f"><span>Hotel</span><select class="in" id="qr-hotel"></select></label>
-            <label class="f"><span>For</span><select class="in" id="qr-who"></select></label>
+            <label class="f"><span>The code opens</span><select class="in" id="qr-what"><option value="rate">Rate us (guest feedback)</option><option value="today">What's on today? (activities + sign-up)</option></select></label>
+            <label class="f" id="qr-who-f"><span>For</span><select class="in" id="qr-who"></select></label>
           </div>
           <div class="qrbox" id="qr-box"><p class="hint">Pick a hotel to see the code.</p></div>
           <p class="hint" id="qr-link" style="word-break:break-all"></p>
@@ -187,6 +188,9 @@
           <label class="f"><span>Other place</span><input class="in" id="t-place-other" placeholder="Pool bar, lobby, kids club…"></label>
           <div class="f full"><span>Who</span><div class="chips" id="t-who" style="margin-top:6px"></div></div>
           <label class="f full"><span>Note</span><input class="in" id="t-note" maxlength="200" placeholder="Bring the speaker · meet 10 min before · costume: white"></label>
+          <label class="f"><span>Guests</span><select class="in" id="t-guest"><option value="">Not shown to guests</option><option value="show">Shown to guests — just come along</option><option value="signup">Guests can sign up</option></select></label>
+          <label class="f" id="t-places-f" hidden><span>Places</span><input class="in" type="number" id="t-places" min="1" max="500" placeholder="16"></label>
+          <label class="chip" id="t-kids-f" hidden style="align-self:end"><input type="checkbox" id="t-kids"><span>Kids activity — a parent signs up the child</span></label>
         </div>
         <div class="actions"><button class="btn small" id="t-save" type="button">Add activity</button><button class="btn ghost small" id="t-cancel" type="button" hidden>Cancel</button></div>
       </div>
@@ -194,7 +198,7 @@
         <thead><tr><th>Time</th><th>Activity</th><th>Place</th><th>Who</th><th></th></tr></thead>
         <tbody id="p-rows"></tbody>
       </table><div class="empty" id="p-empty" hidden>Nothing planned for this day yet. Add the first activity above, or copy yesterday.</div></div>
-      <p class="hint" style="margin-top:10px">Staff see the whole day's programme on their card, their own activities highlighted, and tomorrow's programme as soon as you enter it. Changes are saved immediately. "Share on WhatsApp" sends the day as text to your team group.</p>
+      <p class="hint" style="margin-top:10px">Guests see only the activities set to "Shown to guests" or "Guests can sign up", on the "What's on today?" page (QR card in the Guests tab) — never staff names or notes. Staff see the whole day's programme on their card, their own activities highlighted, and tomorrow's programme as soon as you enter it. Changes are saved immediately. "Share on WhatsApp" sends the day as text to your team group.</p>
     </div>
 
     <div id="v-att" hidden>
@@ -368,7 +372,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText, newHotelCode, CODE_EVERY_S, ROLL_WINDOW_MIN, rollId, rollState, distText, isOutside } from "./portal.js?v=202609301812";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText, newHotelCode, CODE_EVERY_S, ROLL_WINDOW_MIN, rollId, rollState, distText, isOutside, guestItems, signupCount } from "./portal.js?v=202610020938";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -761,7 +765,7 @@ $("a-csv").addEventListener("click", async () => {
 });
 
 /* ── programme: the day's activities per hotel, stored in the plan document ── */
-let progDay = dayKey(), progPlan = null, editTask = null;
+let progDay = dayKey(), progPlan = null, editTask = null, progSignups = [];
 $("p-date").value = progDay;
 const setProgDay = d => { progDay = d; $("p-date").value = d; loadProg(); };
 $("p-date").addEventListener("change", () => { if ($("p-date").value) setProgDay($("p-date").value); });
@@ -774,7 +778,7 @@ async function loadProg(){
   const keep = $("p-hotel").value, act = hotels.filter(h => h.active !== false);
   $("p-hotel").innerHTML = act.map(h => `<option value="${esc(h.id)}">${esc(h.name)}</option>`).join("") || `<option value="">No active hotel</option>`;
   if (act.some(h => h.id === keep)) $("p-hotel").value = keep;
-  const h = progHotel(); progPlan = null; if (h){ try { progPlan = await be.getPlan(h.id, progDay); } catch (ex) { toast("Could not load the programme: " + (ex.message || ex)); } }
+  const h = progHotel(); progPlan = null; progSignups = []; if (h){ try { progPlan = await be.getPlan(h.id, progDay); } catch (ex) { toast("Could not load the programme: " + (ex.message || ex)); } progSignups = (await be.signupsOn(progDay).catch(() => [])).filter(r => r.hotelId === h.id); }
   cancelTask(); paintProg();
 }
 function paintProgForm(){
@@ -788,11 +792,19 @@ function paintProgForm(){
 function paintProg(){
   paintProgForm();
   const h = progHotel(), tasks = sortTasks(progPlan && progPlan.tasks);
-  $("p-rows").innerHTML = tasks.map(t => `<tr data-tid="${esc(t.id)}"><td class="tm">${esc(t.time)}${t.end ? `<br><small class="hint">– ${esc(t.end)}</small>` : ""}</td><td><b>${esc(t.title)}</b>${t.note ? `<br><small class="hint">${esc(t.note)}</small>` : ""}</td><td>${esc(t.place || "—")}</td><td>${t.all ? "Everyone" : esc((t.names || []).map(n => n.split(" ")[0]).join(", ") || "—")}</td><td><span class="rowacts"><button class="btn ghost small" type="button" data-edit="${esc(t.id)}">Edit</button><button class="btn ghost small" type="button" data-del="${esc(t.id)}" style="border-color:rgba(255,77,46,.6);color:#FFB3A3">Delete</button></span></td></tr>`).join("");
+  $("p-rows").innerHTML = tasks.map(t => `<tr data-tid="${esc(t.id)}"><td class="tm">${esc(t.time)}${t.end ? `<br><small class="hint">– ${esc(t.end)}</small>` : ""}</td><td><b>${esc(t.title)}</b>${t.note ? `<br><small class="hint">${esc(t.note)}</small>` : ""}${guestBadge(t)}</td><td>${esc(t.place || "—")}</td><td>${t.all ? "Everyone" : esc((t.names || []).map(n => n.split(" ")[0]).join(", ") || "—")}</td><td><span class="rowacts"><button class="btn ghost small" type="button" data-edit="${esc(t.id)}">Edit</button><button class="btn ghost small" type="button" data-del="${esc(t.id)}" style="border-color:rgba(255,77,46,.6);color:#FFB3A3">Delete</button></span></td></tr>`).join("");
   show("p-empty", tasks.length === 0);
   $("p-rows").querySelectorAll("[data-edit]").forEach(b => b.onclick = () => startEdit(b.dataset.edit));
   $("p-rows").querySelectorAll("[data-del]").forEach(b => b.onclick = async () => { const t = tasks.find(x => x.id === b.dataset.del); if (!t || !confirm(`Delete "${t.title}" at ${t.time}?`)) return; await saveTasks(tasks.filter(x => x.id !== t.id)); });
 }
+function guestBadge(t){
+  if (t.guest === "show") return `<br><small class="gbadge">👀 on the guest page</small>`;
+  if (t.guest !== "signup") return "";
+  const mine = progSignups.filter(r => r.taskId === t.id), n = signupCount(progSignups, t.id), full = n >= (+t.places || 0);
+  return `<br><small class="gbadge ${full ? "full" : ""}">🙋 ${n} / ${+t.places || 0} signed up${t.kids ? " · kids" : ""}${full ? " · full" : ""}</small>${mine.length ? `<br><small class="hint">${mine.map(r => `${esc(r.firstName)}${r.count > 1 ? " · " + r.count : ""}${r.age ? " (" + esc(r.age) + ")" : ""}`).join(", ")}</small>` : ""}`;
+}
+const paintGuestFields = () => { const v = $("t-guest").value; show("t-places-f", v === "signup"); show("t-kids-f", v === "signup"); };
+$("t-guest").addEventListener("change", paintGuestFields);
 function readTaskForm(){
   const h = progHotel(); if (!h) { toast("Pick a hotel first"); return null; }
   const time = $("t-time").value, end = $("t-end").value, title = $("t-title").value.trim();
@@ -803,12 +815,17 @@ function readTaskForm(){
   const picked = [...$("t-who").querySelectorAll("input:checked")].map(i => i.value), allSel = picked.includes("__all"), uids = allSel ? [] : picked.filter(v => v !== "__all");
   if (!allSel && !uids.length) { toast("Choose who does it (or Everyone)"); return null; }
   const names = uids.map(u => { const p = all.find(x => x.uid === u); return p ? (p.fullName || p.email) : u; });
-  return { id: editTask || taskId(), time, end, title, place, placeKey, uids, names, all: allSel, note: $("t-note").value.trim() };
+  const guest = $("t-guest").value, places = Math.round(+$("t-places").value || 0);
+  if (guest === "signup" && !(places >= 1)) { toast("How many places can guests sign up for?"); return null; }
+  return { id: editTask || taskId(), time, end, title, place, placeKey, uids, names, all: allSel, note: $("t-note").value.trim(), guest, places: guest === "signup" ? places : 0, kids: guest === "signup" && $("t-kids").checked };
 }
 async function saveTasks(tasks){
   const h = progHotel(); if (!h) return;
   try { await be.saveTasks(h.id, progDay, tasks, user.email); progPlan = { ...(progPlan || {}), tasks }; toast("Programme saved — staff see it now"); cancelTask(); paintProg(); }
-  catch (ex) { toast("Could not save: " + (ex.message || ex)); }
+  catch (ex) { return toast("Could not save: " + (ex.message || ex)); }
+  // the guest page reads only this trimmed copy (no staff names, no notes)
+  try { await be.savePublicProgramme(h.id, h.name || "", progDay, guestItems(tasks)); }
+  catch (ex) { toast("Saved for the team, but the guest page could not be updated: " + (ex.message || ex) + " — are the new rules published?"); }
 }
 function startEdit(id){
   const t = sortTasks(progPlan && progPlan.tasks).find(x => x.id === id); if (!t) return; editTask = id;
@@ -816,9 +833,10 @@ function startEdit(id){
   $("t-time").value = t.time || ""; $("t-end").value = t.end || ""; $("t-title").value = t.title || ""; $("t-note").value = t.note || "";
   paintProgForm(); $("t-place").value = t.placeKey && [...$("t-place").options].some(o => o.value === t.placeKey) ? t.placeKey : (t.place ? "__other" : ""); $("t-place-other").value = t.placeKey ? "" : (t.place || "");
   $("t-who").querySelectorAll("input").forEach(i => { i.checked = t.all ? i.value === "__all" : (t.uids || []).includes(i.value); });
+  $("t-guest").value = t.guest || ""; $("t-places").value = t.places || ""; $("t-kids").checked = !!t.kids; paintGuestFields();
   $("t-time").scrollIntoView({ behavior: "smooth", block: "center" });
 }
-function cancelTask(){ editTask = null; $("t-formtitle").textContent = "Add an activity"; $("t-save").textContent = "Add activity"; show("t-cancel", false); ["t-time","t-end","t-title","t-note","t-place-other"].forEach(id => $(id).value = ""); $("t-place").value = ""; $("t-who").querySelectorAll("input").forEach(i => i.checked = false); }
+function cancelTask(){ editTask = null; $("t-formtitle").textContent = "Add an activity"; $("t-save").textContent = "Add activity"; show("t-cancel", false); ["t-time","t-end","t-title","t-note","t-place-other"].forEach(id => $(id).value = ""); $("t-place").value = ""; $("t-who").querySelectorAll("input").forEach(i => i.checked = false); $("t-guest").value = ""; $("t-places").value = ""; $("t-kids").checked = false; paintGuestFields(); }
 $("t-cancel").addEventListener("click", cancelTask);
 $("t-save").addEventListener("click", async () => { const t = readTaskForm(); if (!t) return; const tasks = sortTasks(progPlan && progPlan.tasks).filter(x => x.id !== t.id); await saveTasks([...tasks, t]); });
 $("t-place").addEventListener("change", () => { if ($("t-place").value === "__other") $("t-place-other").focus(); });
@@ -1239,14 +1257,20 @@ $("e-save").addEventListener("click", () => saveEdit(false));
 $("e-del").addEventListener("click", () => { if (confirm("Remove this check-in? The shift then counts as not attended unless you mark it.")) saveEdit(true); });
 
 /* ── Today: one screen with what matters right now ── */
-let tdRecs = [], tdReqs = [], tdPlans = {}, tdSales = [];
+let tdRecs = [], tdReqs = [], tdPlans = {}, tdSales = [], tdSignups = [];
 $("td-refresh").addEventListener("click", loadToday); $("td-hotel").addEventListener("change", paintToday);
 async function loadToday(){
   const today = dayKey(), keep = $("td-hotel").value; $("td-hotel").innerHTML = `<option value="">All hotels</option>` + hotels.filter(h => h.active !== false).map(h => `<option value="${esc(h.id)}">${esc(h.name)}</option>`).join(""); if ([...$("td-hotel").options].some(o => o.value === keep)) $("td-hotel").value = keep;
   $("td-when").textContent = `${today} · ${hhmm(new Date())} Egypt time`; paintNotifyWho(); paintOfficePush();
-  try { const [recs, reqs, plans, sales] = await Promise.all([be.attendanceOn(today), be.requestsOn(today).catch(() => []), be.plansRange(today, today).catch(() => []), be.salesOn(today).catch(() => [])]); tdRecs = recs; tdReqs = reqs; tdPlans = Object.fromEntries(plans.map(p => [p.hotelId, p])); tdSales = sales; }
+  try { const [recs, reqs, plans, sales, sups] = await Promise.all([be.attendanceOn(today), be.requestsOn(today).catch(() => []), be.plansRange(today, today).catch(() => []), be.salesOn(today).catch(() => []), be.signupsOn(today).catch(() => [])]); tdRecs = recs; tdReqs = reqs; tdPlans = Object.fromEntries(plans.map(p => [p.hotelId, p])); tdSales = sales; tdSignups = sups; }
   catch (ex) { toast("Could not load today: " + (ex.message || ex)); }
-  paintToday(); loadRolls();
+  paintToday(); loadRolls(); cleanupGuestNames();
+}
+// Guests' first names are kept 7 days, then deleted (the counts stay on the programme). Once a day, from whichever office phone opens Today.
+async function cleanupGuestNames(){
+  const key = "jb-signup-clean", today = dayKey(); let last = ""; try { last = localStorage.getItem(key) || ""; } catch {}
+  if (last === today) return;
+  try { await be.cleanupSignups(addDays(today, -7)); try { localStorage.setItem(key, today); } catch {} } catch (ex) { console.warn("sign-up cleanup", ex); }
 }
 function paintToday(){
   const today = dayKey(), now = toMin(hhmm(new Date())), hf = $("td-hotel").value, hs = hotels.filter(h => h.active !== false && (!hf || h.id === hf));
@@ -1262,9 +1286,9 @@ function paintToday(){
   $("td-hotels").innerHTML = hs.map(h => { const shifts = hotelShifts(h), cur = currentShift(shifts, now), plan = tdPlans[h.id], hr = rows.filter(x => x.hotelId === h.id);
     return `<div class="card tcard"><h2>${esc(h.name)}</h2><p class="hint">${hr.filter(x => x.shifts.length).length} scheduled · ${hr.filter(x => !x.shifts.length).length} off${plan && plan.setBy ? "" : " · no spot plan today"}</p>` + shifts.map(sh => { const sp = plannedSpot(h, plan, sh.key), ppl = hr.filter(x => x.shifts.some(s => s.key === sh.key)), inN = ppl.filter(x => (x.day.shifts || []).some(y => y.shift.key === sh.key && y.rec && y.rec.checkInAt)).length, miss = ppl.filter(x => !(x.day.shifts || []).some(y => y.shift.key === sh.key && y.rec && y.rec.checkInAt) && !(x.dayRec && x.dayRec.override)), isCur = cur && cur.key === sh.key, over = now > shiftEnd(sh);
       return `<div class="tshift ${isCur ? "now" : ""} ${over ? "over" : ""}"><div><b>${esc(sh.name)}</b> <small>${esc(sh.start)}–${esc(sh.end || "?")} · ${sp ? "at the " + esc(sp.name) : "anywhere"}</small>${started(sh) && miss.length ? `<div class="tmiss">${over ? "missed" : "not in yet"}: ${miss.map(x => esc((x.p.preferredName || x.p.fullName || x.p.email).split(" ")[0])).join(", ")}</div>` : ""}</div><span class="status ${inN >= ppl.length && ppl.length ? "att-present" : started(sh) ? "att-review" : "att-pending"}">${inN} / ${ppl.length}</span></div>`; }).join("") + `</div>`; }).join("") || `<p class="hint">No active hotel.</p>`;
-  const tasks = hs.flatMap(h => sortTasks(tdPlans[h.id] && tdPlans[h.id].tasks).map(t => ({ ...t, hotel: h.name }))).sort((a, b) => String(a.time).localeCompare(String(b.time)));
+  const tasks = hs.flatMap(h => sortTasks(tdPlans[h.id] && tdPlans[h.id].tasks).map(t => ({ ...t, hotel: h.name, hid: h.id }))).sort((a, b) => String(a.time).localeCompare(String(b.time)));
   const upcoming = tasks.filter(t => toMin(t.end || t.time) + 30 >= now);
-  $("td-prog").innerHTML = `<h2>Programme</h2>` + (tasks.length ? `<div class="tasks" style="margin-top:8px">${(upcoming.length ? upcoming : tasks.slice(-3)).slice(0, 8).map(t => `<div class="task mine ${toMin(t.time) <= now && now <= toMin(t.end || t.time) + 30 ? "next" : ""}"><span class="tm">${esc(t.time)}${t.end ? `<small>until ${esc(t.end)}</small>` : ""}</span><div><b>${esc(t.title)}</b>${t.place ? `<div class="pl">${esc(t.place)}${hs.length > 1 ? " · " + esc(t.hotel) : ""}</div>` : ""}<div class="who">${t.all ? "<span>everyone</span>" : (t.names || []).map(n => `<span>${esc(n.split(" ")[0])}</span>`).join("")}</div></div></div>`).join("")}</div><p class="hint" style="margin-top:8px">${tasks.length} activities today${upcoming.length ? `, ${upcoming.length} still to come` : ", all done"}.</p>` : `<p class="hint" style="margin-top:8px">Nothing planned for today yet.</p>`) + `<div class="actions"><button class="btn ghost small" type="button" data-go="prog">Open Programme</button></div>`;
+  $("td-prog").innerHTML = `<h2>Programme</h2>` + (tasks.length ? `<div class="tasks" style="margin-top:8px">${(upcoming.length ? upcoming : tasks.slice(-3)).slice(0, 8).map(t => `<div class="task mine ${toMin(t.time) <= now && now <= toMin(t.end || t.time) + 30 ? "next" : ""}"><span class="tm">${esc(t.time)}${t.end ? `<small>until ${esc(t.end)}</small>` : ""}</span><div><b>${esc(t.title)}</b>${t.guest === "signup" ? ` <small class="gbadge">🙋 ${signupCount(tdSignups.filter(r => r.hotelId === t.hid), t.id)} / ${+t.places || 0}</small>` : ""}${t.place ? `<div class="pl">${esc(t.place)}${hs.length > 1 ? " · " + esc(t.hotel) : ""}</div>` : ""}<div class="who">${t.all ? "<span>everyone</span>" : (t.names || []).map(n => `<span>${esc(n.split(" ")[0])}</span>`).join("")}</div></div></div>`).join("")}</div><p class="hint" style="margin-top:8px">${tasks.length} activities today${upcoming.length ? `, ${upcoming.length} still to come` : ", all done"}.</p>` : `<p class="hint" style="margin-top:8px">Nothing planned for today yet.</p>`) + `<div class="actions"><button class="btn ghost small" type="button" data-go="prog">Open Programme</button></div>`;
   $("td-sales").innerHTML = `<h2>Sales today</h2>` + (salesLines.length ? `<p style="margin-top:8px"><b>${moneyMap(sumMaps(salesLines, saleAmounts))}</b><br><small class="hint">${salesLines.length} lines · commission ${moneyMap(sumMaps(salesLines, saleCommissions))}</small></p><table class="mini"><tbody>${[...new Set(salesLines.map(s => s.uid))].map(u => { const mine = salesLines.filter(s => s.uid === u); return `<tr><td>${esc((mine[0].name || "").split(" ")[0])}</td><td>${mine.map(s => esc(s.itemName)).join(", ")}</td><td>${moneyMap(sumMaps(mine, saleAmounts))}</td></tr>`; }).join("")}</tbody></table>` : `<p class="hint" style="margin-top:8px">No sales recorded yet today.</p>`) + `<div class="actions"><button class="btn ghost small" type="button" data-go="pay">Record sales</button></div>`;
   document.querySelectorAll("#v-today [data-go]").forEach(b => b.onclick = () => setView(b.dataset.go));
 }
@@ -1386,7 +1410,9 @@ function paintQrWho(){
 }
 $("qr-hotel").addEventListener("change", paintQrWho);
 $("qr-who").addEventListener("change", drawQr);
+$("qr-what").addEventListener("change", () => { show("qr-who-f", $("qr-what").value === "rate"); drawQr(); });
 function feedbackLink(){
+  if ($("qr-what").value === "today") return new URL("today.html", location.href).href + "?" + new URLSearchParams({ h: $("qr-hotel").value }).toString();
   const hid = $("qr-hotel").value, uid = $("qr-who").value, p = all.find(x => x.uid === uid);
   const base = new URL("feedback.html", location.href).href;
   const q = new URLSearchParams({ h: hid }); if (uid){ q.set("s", uid); q.set("n", (p && (p.preferredName || p.fullName) || "").split(" ")[0]); }
@@ -1396,11 +1422,12 @@ async function drawQr(){
   const hid = $("qr-hotel").value; if (!hid){ $("qr-box").innerHTML = `<p class="hint">Pick a hotel first.</p>`; $("qr-link").textContent = ""; return; }
   const url = feedbackLink(); $("qr-link").textContent = url;
   try {
-    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202609301812"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
+    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202610020938"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
     const q = qrLib(0, "M"); q.addData(url); q.make();
     const who = $("qr-who").selectedOptions[0] ? $("qr-who").selectedOptions[0].textContent : "";
     const hotel = hotels.find(h => h.id === hid) || {};
-    $("qr-box").innerHTML = `<div class="qrcard" id="qrcard"><div class="qrtitle">How is your holiday going?</div>${q.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}<div class="qrwho">${esc(who === "The whole team" ? hotel.name || "" : who)}</div><div class="qrfoot">Joy Boy Agency · scan &amp; tell us</div></div>`;
+    const today = $("qr-what").value === "today";
+    $("qr-box").innerHTML = `<div class="qrcard" id="qrcard"><div class="qrtitle">${today ? "What's on today?" : "How is your holiday going?"}</div>${q.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}<div class="qrwho">${esc(today || who === "The whole team" ? hotel.name || "" : who)}</div><div class="qrfoot">${today ? "Joy Boy Agency · activities · join in" : "Joy Boy Agency · scan &amp; tell us"}</div></div>`;
   } catch (ex) { $("qr-box").innerHTML = `<p class="hint">${esc(ex.message || String(ex))}</p>`; }
 }
 $("qr-copy").addEventListener("click", async () => { try { await navigator.clipboard.writeText(feedbackLink()); toast("Link copied"); } catch { toast("Copy it from the line above"); } });
