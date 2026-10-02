@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-VSpzOHEMeXdxF6E4aJCRzDkAHQRM6+3D791kaSe/9cA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta name="robots" content="noindex, nofollow">
+<title>Joy Boy Agency — What's on today?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0D0A14">
+<link rel="icon" type="image/png" sizes="64x64" href="../media/img/favicon-64.png">
+<link rel="apple-touch-icon" href="../media/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="portal.css?v=202610020938">
+<script src="firebase-config.js?v=202610020938"></script>
+</head>
+<body class="guest">
+<main class="gwrap" id="main">
+  <div class="glangs" id="langs"></div>
+  <img class="glogo" src="../media/img/logo.jpg" alt="Joy Boy Agency" width="64" height="64">
+  <h1 id="t-title">What's on today?</h1>
+  <p class="gwho" id="t-where" hidden></p>
+  <p class="glead" id="t-lead" style="margin-top:6px"></p>
+
+  <div class="glist" id="list"><p class="ghint" id="t-loading">…</p></div>
+
+  <p class="gsmall" id="t-privacy"></p>
+  <p class="gfoot">Joy Boy Agency · <span id="t-foot">entertainment &amp; animation</span></p>
+</main>
+
+<script type="module">
+import { initGuest, dayKey, hhmm, toMin, fromCairo, esc } from "./portal.js?v=202610020938";
+
+// Guests are never chased: signing up is optional, no account, no messages — two fields, and a calendar entry only if they ask.
+const DICT = {
+  en: { lang: "English", title: "What's on today?", lead: "Signing up is optional — you can always just come along.",
+        at: n => `with the animation team at <b>${n}</b>`, now: "Now", come: "Just come along", signup: "Sign up", full: "Full",
+        left: n => n === 1 ? "1 place left" : `${n} places left`, kids: "Kids", name: "Your first name", kidName: "Child's first name",
+        people: "How many people?", kidsCount: "How many children?", age: "Age", send: "Sign up", sending: "Signing up…", cancel: "Cancel",
+        done: (n, t, p) => `You're in, ${n}! See you at ${t}${p ? " · " + p : ""}.`, mine: c => `✓ You're signed up${c > 1 ? " (" + c + ")" : ""}`, cal: "Add to my calendar",
+        needName: "Please write a first name.", fullNow: "Sorry — that just filled up.", fail: "Could not sign up. Please check your connection and try again.",
+        nothing: "No activities are listed for today yet — ask the animation team!", over: "That's all for today — see you tomorrow!",
+        privacy: "We keep only the first name you type, for 7 days.", foot: "entertainment &amp; animation" },
+  de: { lang: "Deutsch", title: "Was ist heute los?", lead: "Anmelden ist freiwillig — Sie können auch einfach vorbeikommen.",
+        at: n => `mit dem Animationsteam im <b>${n}</b>`, now: "Jetzt", come: "Einfach vorbeikommen", signup: "Anmelden", full: "Ausgebucht",
+        left: n => n === 1 ? "Noch 1 Platz frei" : `Noch ${n} Plätze frei`, kids: "Kinder", name: "Ihr Vorname", kidName: "Vorname des Kindes",
+        people: "Wie viele Personen?", kidsCount: "Wie viele Kinder?", age: "Alter", send: "Anmelden", sending: "Wird angemeldet…", cancel: "Abbrechen",
+        done: (n, t, p) => `Sie sind dabei, ${n}! Bis ${t} Uhr${p ? " · " + p : ""}.`, mine: c => `✓ Angemeldet${c > 1 ? " (" + c + ")" : ""}`, cal: "Zum Kalender hinzufügen",
+        needName: "Bitte einen Vornamen eingeben.", fullNow: "Leider gerade ausgebucht.", fail: "Anmeldung fehlgeschlagen. Bitte Verbindung prüfen und erneut versuchen.",
+        nothing: "Für heute ist noch nichts eingetragen — fragen Sie das Animationsteam!", over: "Das war's für heute — bis morgen!",
+        privacy: "Wir speichern nur den Vornamen, den Sie eingeben, für 7 Tage.", foot: "Entertainment &amp; Animation" },
+  it: { lang: "Italiano", title: "Cosa c'è oggi?", lead: "L'iscrizione è facoltativa — puoi sempre venire e basta.",
+        at: n => `con il team di animazione al <b>${n}</b>`, now: "Adesso", come: "Basta venire", signup: "Iscriviti", full: "Completo",
+        left: n => n === 1 ? "Ancora 1 posto" : `Ancora ${n} posti`, kids: "Bambini", name: "Il tuo nome", kidName: "Nome del bambino",
+        people: "Quante persone?", kidsCount: "Quanti bambini?", age: "Età", send: "Iscriviti", sending: "Iscrizione…", cancel: "Annulla",
+        done: (n, t, p) => `Ci sei, ${n}! Ci vediamo alle ${t}${p ? " · " + p : ""}.`, mine: c => `✓ Iscritto${c > 1 ? " (" + c + ")" : ""}`, cal: "Aggiungi al calendario",
+        needName: "Scrivi un nome, per favore.", fullNow: "Peccato — appena esaurito.", fail: "Iscrizione non riuscita. Controlla la connessione e riprova.",
+        nothing: "Per oggi non c'è ancora nulla in programma — chiedi al team di animazione!", over: "Per oggi è tutto — a domani!",
+        privacy: "Conserviamo solo il nome che scrivi, per 7 giorni.", foot: "entertainment &amp; animation" },
+};
+const AGES = ["4–7", "8–12"];
+
+const q = new URLSearchParams(location.search);
+const hotelId = (q.get("h") || "").slice(0, 60), date = dayKey(), pid = `${hotelId}_${date}`;
+let lang = (q.get("l") || (navigator.language || "en").slice(0, 2)).toLowerCase(); if (!DICT[lang]) lang = "en";
+let be = null, prog = null, open = "", busy = false, msg = {};      // msg[taskId] = {ok|err, text}
+const $ = id => document.getElementById(id), T = () => DICT[lang];
+const MINE = "jb-mine-" + pid;
+const mine = () => { try { return JSON.parse(localStorage.getItem(MINE) || "{}"); } catch { return {}; } };
+const saveMine = m => { try { localStorage.setItem(MINE, JSON.stringify(m)); } catch {} };
+
+function items(){
+  const its = (prog && prog.items) || {}, now = toMin(hhmm(new Date()));
+  return Object.entries(its).map(([id, it]) => ({ id, ...it })).sort((a, b) => String(a.time).localeCompare(String(b.time)))
+    .map(it => ({ ...it, startM: toMin(it.time), endM: toMin(it.end) ?? ((toMin(it.time) ?? 0) + 60) }))
+    .filter(it => it.endM >= now)                                               // finished activities drop off the list
+    .map(it => ({ ...it, live: it.startM <= now }));
+}
+function paint(){
+  const t = T(), m = mine();
+  document.documentElement.lang = lang;
+  $("t-title").textContent = t.title; $("t-lead").textContent = t.lead; $("t-privacy").textContent = t.privacy; $("t-foot").innerHTML = t.foot;
+  $("t-where").innerHTML = prog && prog.hotelName ? t.at(esc(prog.hotelName)) : ""; $("t-where").hidden = !(prog && prog.hotelName);
+  $("langs").innerHTML = Object.keys(DICT).map(k => `<button type="button" class="${k === lang ? "on" : ""}" data-l="${k}">${DICT[k].lang}</button>`).join("");
+  $("langs").querySelectorAll("[data-l]").forEach(b => b.onclick = () => { lang = b.dataset.l; paint(); });
+  if (!prog) { $("list").innerHTML = `<p class="ghint">${be ? esc(t.nothing) : "…"}</p>`; return; }
+  const list = items();
+  if (!list.length) { $("list").innerHTML = `<p class="ghint">${esc(Object.keys(prog.items || {}).length ? t.over : t.nothing)}</p>`; return; }
+  $("list").innerHTML = list.map(it => {
+    const n = (prog.counts || {})[it.id] || 0, places = +it.places || 0, left = Math.max(0, places - n), signed = m[it.id], r = msg[it.id];
+    const right = !places ? `<span class="gnote">${esc(t.come)}</span>`
+      : signed ? `<span class="gmine">${esc(t.mine(signed))}</span>`
+      : left <= 0 ? `<span class="gfull">${esc(t.full)}</span>`
+      : `<button type="button" class="btn small" data-open="${esc(it.id)}">${esc(t.signup)}</button>`;
+    const sub = [it.place, it.kids ? t.kids : "", places && !signed && left > 0 ? t.left(left) : ""].filter(Boolean).map(esc).join(" · ");
+    const form = open === it.id ? `<div class="gform">
+        <label class="f"><span>${esc(it.kids ? t.kidName : t.name)}</span><input class="in" id="f-name" maxlength="30" autocomplete="given-name"></label>
+        <div class="grow2"><label class="f"><span>${esc(it.kids ? t.kidsCount : t.people)}</span><select class="in" id="f-count">${Array.from({ length: Math.min(8, left) }, (_, i) => `<option>${i + 1}</option>`).join("")}</select></label>
+        ${it.kids ? `<label class="f"><span>${esc(t.age)}</span><select class="in" id="f-age">${AGES.map(a => `<option>${a}</option>`).join("")}</select></label>` : ""}</div>
+        <div class="actions"><button type="button" class="btn" id="f-send">${esc(busy ? t.sending : t.send)}</button><button type="button" class="btn ghost" id="f-cancel">${esc(t.cancel)}</button></div>
+      </div>` : "";
+    const note = r ? `<div class="gmsg ${r.ok ? "ok" : "err"}">${esc(r.text)}${r.ok ? ` <a href="#" data-cal="${esc(it.id)}">${esc(t.cal)}</a>` : ""}</div>` : "";
+    return `<div class="gact ${it.live ? "live" : ""}"><div class="gtime">${esc(it.time)}${it.live ? `<small>${esc(t.now)}</small>` : ""}</div><div class="gbody"><b>${esc(it.title)}</b>${sub ? `<small>${sub}</small>` : ""}</div><div class="gside">${right}</div>${form}${note}</div>`;
+  }).join("");
+  $("list").querySelectorAll("[data-open]").forEach(b => b.onclick = () => { open = b.dataset.open; delete msg[open]; paint(); const f = $("f-name"); if (f) f.focus(); });
+  $("list").querySelectorAll("[data-cal]").forEach(a => a.onclick = e => { e.preventDefault(); calendar(list.find(x => x.id === a.dataset.cal)); });
+  const c = $("f-cancel"); if (c) c.onclick = () => { open = ""; paint(); };
+  const s = $("f-send"); if (s) s.onclick = () => send(list.find(x => x.id === open));
+}
+async function send(it){
+  if (!it || busy) return;
+  const t = T(), name = $("f-name").value.trim().slice(0, 30), count = +$("f-count").value || 1, age = it.kids && $("f-age") ? $("f-age").value : "";
+  if (!name) { $("f-name").focus(); msg[it.id] = { ok: false, text: t.needName }; return paintKeep(name); }
+  busy = true; paintKeep(name);
+  try {
+    await be.signUp({ hotelId, date, taskId: it.id, title: it.title, time: it.time, firstName: name, count, kids: !!it.kids, age, lang });
+    const m = mine(); m[it.id] = (m[it.id] || 0) + count; saveMine(m);
+    msg[it.id] = { ok: true, text: t.done(name, it.time, it.place) }; open = "";
+    prog = await be.programme(hotelId, date).catch(() => prog);
+  } catch (ex) {
+    const denied = ex && (ex.code === "permission-denied" || /insufficient permissions/i.test(String(ex.message || ex)));
+    msg[it.id] = { ok: false, text: denied ? t.fullNow : t.fail }; open = denied ? "" : open;
+    if (denied) prog = await be.programme(hotelId, date).catch(() => prog);
+  } finally { busy = false; paint(); }
+}
+function paintKeep(name){ paint(); const f = $("f-name"); if (f) f.value = name; }
+// A calendar entry with a 15-minute alarm — the only "reminder", and only if the guest asks for it.
+function calendar(it){
+  if (!it) return;
+  const st = fromCairo(date, it.time), en = it.end ? fromCairo(date, it.end) : new Date(st.getTime() + 3600000);
+  const f = d => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""), x = s => String(s || "").replace(/([,;\\])/g, "\\$1");
+  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Joy Boy Agency//Activities//EN", "BEGIN:VEVENT", `UID:${pid}-${it.id}@joyboy`, `DTSTAMP:${f(new Date())}`, `DTSTART:${f(st)}`, `DTEND:${f(en)}`,
+    `SUMMARY:${x(it.title)}`, `LOCATION:${x([it.place, prog && prog.hotelName].filter(Boolean).join(", "))}`, "BEGIN:VALARM", "TRIGGER:-PT15M", "ACTION:DISPLAY", `DESCRIPTION:${x(it.title)}`, "END:VALARM", "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" })); a.download = "activity.ics"; document.body.appendChild(a); a.click(); a.remove();
+}
+
+paint();
+try {
+  be = await initGuest();
+  if (hotelId) prog = await be.programme(hotelId, date).catch(() => null);
+  paint();
+  document.addEventListener("visibilitychange", async () => { if (document.visibilityState === "visible" && !open) { prog = await be.programme(hotelId, date).catch(() => prog); paint(); } });
+} catch (ex) { $("list").innerHTML = `<p class="ghint">${esc(T().fail)}</p>`; }
+</script>
+</body>
+</html>

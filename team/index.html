@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-Xu0TqTOOOueIDZpxWPq8fyALo+GwR8lhiNxxCvy+Px8='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-FWsqkuwDlME/p48VksiHSPfWJO025n5MkPJNUAL7sZY='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team portal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,8 +20,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202609301812">
-<script src="firebase-config.js?v=202609301812"></script>
+<link rel="stylesheet" href="portal.css?v=202610020938">
+<script src="firebase-config.js?v=202610020938"></script>
 <script>
 (function(){
   var KEY = "jb-theme", ORDER = ["auto", "light", "dark"];
@@ -238,7 +238,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState, hotelSpots } from "./portal.js?v=202609301812";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState, hotelSpots, signupCount } from "./portal.js?v=202610020938";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -360,6 +360,7 @@ function renderProfile(){
   loadAttendance();
 }
 /* ── attendance (approved staff assigned to a hotel) ── */
+let signups = [];
 let hotel = null, shifts = [], allShifts = [], plan = null, planTmrw = null, weekPlans = [], dayRec = null, recs = [], hist = [], reqs = [], cur = null, lastGeo = null;
 const nowMin = () => toMin(hhmm(new Date()));
 const recOf = k => recs.find(r => r.shift === k) || null, reqOf = k => reqs.find(r => r.shift === k) || null;
@@ -370,6 +371,7 @@ async function loadAttendance(){
   if (!hotel) return;
   allShifts = hotelShifts(hotel);
   const today = dayKey();
+  be.signupsOn(today).then(l => { signups = l.filter(r => r.hotelId === hotel.id); if (plan) paintProg(); }).catch(() => {});   // guests signed up for today's activities
   [hist, plan, reqs, planTmrw, weekPlans] = await Promise.all([be.myAttendance(user.uid, addDays(today, -14)).catch(ex => { console.warn(ex); return []; }), be.getPlan(hotel.id, today).catch(() => null), be.myRequests(user.uid, today).catch(() => []), be.getPlan(hotel.id, addDays(today, 1)).catch(() => null), be.plansRange(today, addDays(today, 6)).then(ps => ps.filter(p => p.hotelId === hotel.id)).catch(() => [])]);
   shifts = scheduledShifts(allShifts, plan, user.uid);
   dayRec = hist.find(r => r.date === today && !r.shift) || null; recs = hist.filter(r => r.date === today && r.shift);
@@ -429,7 +431,7 @@ function taskRows(tasks, all, isToday){
   const list = sortTasks(tasks).filter(t => all || taskIsMine(t, user.uid));
   return list.map(t => { const mine = taskIsMine(t, user.uid), endM = toMin(t.end) ?? (toMin(t.time) + 60), done = isToday && now > endM, isNext = isToday && !done && !nextDone && mine && now <= endM; if (isNext) nextDone = true;
     const who = t.all ? `<span class="${mine ? "me" : ""}">everyone</span>` : (t.names || []).map((n, i) => `<span class="${(t.uids || [])[i] === user.uid ? "me" : ""}">${(t.uids || [])[i] === user.uid ? "You" : esc(n.split(" ")[0])}</span>`).join("");
-    return `<div class="task ${mine ? "mine" : ""} ${isNext ? "next" : ""} ${done ? "done" : ""}"><span class="tm">${esc(t.time)}${t.end ? `<small>until ${esc(t.end)}</small>` : ""}</span><div><b>${esc(t.title)}</b>${t.place ? `<div class="pl">${esc(t.place)}</div>` : ""}<div class="who">${who}</div>${t.note ? `<div class="nt">${esc(t.note)}</div>` : ""}</div></div>`; }).join("");
+    return `<div class="task ${mine ? "mine" : ""} ${isNext ? "next" : ""} ${done ? "done" : ""}"><span class="tm">${esc(t.time)}${t.end ? `<small>until ${esc(t.end)}</small>` : ""}</span><div><b>${esc(t.title)}</b>${isToday && t.guest === "signup" ? ` <small class="gbadge">🙋 ${signupCount(signups, t.id)} guests signed up</small>` : ""}${t.place ? `<div class="pl">${esc(t.place)}</div>` : ""}<div class="who">${who}</div>${t.note ? `<div class="nt">${esc(t.note)}</div>` : ""}</div></div>`; }).join("");
 }
 function paintProg(){
   if (!hotel) return; const all = $("prog-all").checked, tt = (plan && plan.tasks) || [], tm = (planTmrw && planTmrw.tasks) || [];

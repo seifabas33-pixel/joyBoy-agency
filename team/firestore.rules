@@ -262,6 +262,43 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // ── Guest sign-ups ("What's on today?", team/today.html, guests signed in anonymously) ──
+    // publicProgramme/{hotelId}_{date}: the activities the office chose to show guests (no staff names, no notes) +
+    // the live counts. A guest writes one signup and, in the same batch, raises that activity's count by exactly
+    // its number of people, never past the places. Names are first names only; the office deletes them after 7 days.
+    match /publicProgramme/{pid} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || guestCount();
+    }
+    function guestCount() {
+      let d = request.resource.data;
+      let old = resource.data;
+      let sid = d.last;
+      let s = getAfter(/databases/$(database)/documents/signups/$(sid)).data;
+      let tid = s.taskId;
+      let before = old.get('counts', {});
+      return request.auth != null
+        && d.diff(old).affectedKeys().hasOnly(['counts', 'last'])
+        && !exists(/databases/$(database)/documents/signups/$(sid))
+        && tid in old.items && old.items[tid].get('places', 0) > 0
+        && d.counts.diff(before).affectedKeys().hasOnly([tid])
+        && d.counts[tid] == before.get(tid, 0) + s.count
+        && d.counts[tid] <= old.items[tid].places;
+    }
+    match /signups/{sid} {
+      allow read: if isAdmin() || isApproved();
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['hotelId', 'date', 'taskId', 'title', 'time', 'firstName', 'count', 'kids', 'age', 'lang', 'createdAt'])
+        && request.resource.data.firstName is string && request.resource.data.firstName.size() >= 1 && request.resource.data.firstName.size() <= 30
+        && request.resource.data.count is int && request.resource.data.count >= 1 && request.resource.data.count <= 8
+        && request.resource.data.taskId is string
+        && request.resource.data.createdAt == request.time
+        && getAfter(/databases/$(database)/documents/publicProgramme/$(request.resource.data.hotelId + '_' + request.resource.data.date)).data.last == sid;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
     // ── Requests: "I could not check in" notes, sent from anywhere; the office decides. One per person, day and shift. ──
     match /requests/{id} {
       allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);

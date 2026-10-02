@@ -390,3 +390,14 @@ The portal used `getCurrentPosition`, which returns the phone's *first* answer; 
 Wi-Fi/cell guess 1–2 km off and only seconds later with GPS (Maps never shows this because it keeps listening).
 Check-in now keeps listening (`bestFix`): it stops as soon as the fix is inside the fence or accurate to 30 m, and
 otherwise uses the best reading of ~15 s. Button shows "Locating… (a few seconds)".
+
+### Guest sign-ups — "What's on today?" (2026-10-02)
+
+Programme tab → on an activity choose **Guests: Not shown / Shown — just come along / Guests can sign up** (+ places,
++ "Kids activity"). Guests open `team/today.html?h=<hotelId>` from a QR (Guests tab → Print a QR card → "The code
+opens: What's on today?"), see today's activities in EN/DE/IT and sign up with a first name and a number of people.
+No account, no phone, no room number, no messages; a calendar entry only if they tap "Add to my calendar".
+Data: `publicProgramme/{hotelId}_{date}` (public, trimmed copy written on every programme save; `counts` raised by
+guests) and `signups/{id}` (first name, count, kids/age, lang; admin + approved staff read; deleted after 7 days by the
+admin page). The rules let a guest write a sign-up only together with the matching count increase, never over the places.
+**Re-publish the rules after this change.**

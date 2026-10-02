@@ -222,6 +222,9 @@ select.in.tiny{padding:6px 28px 6px 10px;font-size:13px;min-width:0;width:auto}
 .coderow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
 .codein{flex:1 1 150px;min-width:0;font:700 26px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.3em;text-align:center;padding:12px 8px}
 .coderow .btn{flex:1 1 180px}
+/* guest sign-ups: badge on programme items */
+.gbadge{display:inline-block;margin-top:4px;font-size:12px;font-weight:700;border-radius:99px;padding:2px 9px;background:rgba(34,227,192,.15);color:var(--t-ok)}
+.gbadge.full{background:rgba(255,77,46,.16);color:var(--t-bad)}
 /* month check (admin → Attendance → Month check) */
 .mchead{display:flex;align-items:center;gap:10px;margin:6px 0 2px}
 .mchead h2{font-size:20px;font-weight:800;flex:1;text-align:center}
@@ -540,3 +543,30 @@ body.prop{display:block}
   .pwrap{max-width:none;padding:0}
   .pline,.pcta{break-inside:avoid}
 }
+/* guest page "What's on today?" (team/today.html) */
+.glist{margin-top:18px;text-align:left}
+.gact{display:grid;grid-template-columns:58px 1fr auto;gap:4px 12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.gact:first-child{border-top:0}
+.gact.live .gtime{color:var(--t-ok)}
+.gtime{font:700 15px "IBM Plex Mono",ui-monospace,monospace;color:var(--ink)}
+.gtime small{display:block;font:600 11px "Instrument Sans",system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase}
+.gbody{min-width:0}
+.gbody b{display:block;font-size:16px}
+.gbody small{display:block;color:var(--ink-3);font-size:13px;margin-top:2px}
+.gside{text-align:right}
+.gwrap .gside .btn{min-width:0}
+.gnote{font-size:12.5px;color:var(--ink-3)}
+.gmine{font-size:13px;font-weight:700;color:var(--t-ok)}
+.gfull{font-size:12.5px;font-weight:700;color:var(--t-bad)}
+.gform,.gmsg{grid-column:1/-1}
+.gform{background:var(--raised);border-radius:14px;padding:12px 14px;margin-top:6px}
+.gform .f{margin-top:8px}
+.gform .grow2{display:flex;gap:10px}
+.gform .grow2 .f{flex:1}
+.gwrap .gform .actions{justify-content:flex-start;margin-top:12px}
+.gwrap .gform .btn{min-width:0}
+.gmsg{font-size:14px;border-radius:12px;padding:10px 12px;margin-top:6px}
+.gmsg.ok{background:rgba(34,227,192,.12);color:var(--t-ok)}
+.gmsg.err{background:rgba(255,77,46,.12);color:var(--t-bad)}
+.gmsg a{color:inherit;font-weight:700}
+.gsmall{color:var(--ink-3);font-size:12.5px;margin-top:22px}
