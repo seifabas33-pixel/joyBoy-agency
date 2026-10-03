@@ -46,7 +46,7 @@ const PROJECT_ID = "joy-boy-agency";
 const DAYS_BACK = 62;                 // how much history to (re)write each run
 const TZ = "Africa/Cairo";
 const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)", REPORT_TAB = "Sync report (portal)";
-const SCRIPT_VERSION = "2026-09-30d";   // shown in every toast, so you can tell which copy the sheet is running
+const SCRIPT_VERSION = "2026-10-03a";   // shown in every toast, so you can tell which copy the sheet is running
 
 function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addSeparator().addItem("Reminders: install (every 15 min)", "installPushTriggers").addItem("Reminders: send a test", "testPush").addItem("Reminders: test a programme item", "testTaskPush").addItem("Reminders: check for arrivals now", "checkinTick").addToUi(); }
 function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); note("Done — the sheet now refreshes every hour."); }
@@ -302,8 +302,8 @@ function patchAll(writes){
 
 /* ────────────────────────── Digest e-mail for the office ────────────────────────── */
 const BUILT_IN_ADMINS = ["seifabas33@gmail.com", "seif.abas33@gmail.com", "joyboyentertainmentagency@gmail.com", "the.z.1417@gmail.com"];
-const ADMIN_URL = "https://seifabas33-pixel.github.io/joyBoy-agency/team/admin.html";
-const PORTAL_URL = "https://seifabas33-pixel.github.io/joyBoy-agency/team/";
+const ADMIN_URL = "https://joyboy-agency.com/team/admin.html";
+const PORTAL_URL = "https://joyboy-agency.com/team/";
 const REMIND_BEFORE = 30;             // minutes before a shift starts that the reminder goes out
 const TASK_BEFORE = 15;               // minutes before a programme item starts that the people on it are reminded
 const BAD_RATING = 2;                 // a guest rating at or below this reaches the office at once — they are still at the hotel

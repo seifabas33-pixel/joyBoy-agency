@@ -19,7 +19,9 @@ account; the workflow in `.github/workflows/pages.yml` is dormant).
 | `/team/` | `team/` (staff portal, see section below; copy the whole folder) |
 | `/media/**` | `media/` (videos) and `media/img/` (photos, posters, icons) |
 
-Deploy = commit on `main`, then on `gh-pages`: `git show main:portfolio.html >
+**Custom domain (2026-10-03): https://joyboy-agency.com/** (GoDaddy; DNS: 4 A records @ → 185.199.108–111.153, CNAME www → seifabas33-pixel.github.io; the domain also carries Microsoft 365 e-mail records — autodiscover, msoid, selector1/2._domainkey, sip, lyncdiscover, MX, SPF/DMARC TXT — never touch them). The `CNAME` file (on `main` and on `gh-pages`) tells Pages the domain; GitHub forwards the old github.io/joyBoy-agency/ links (and printed QR codes) to it. Every canonical/og/sitemap/robots URL and the Apps Script ADMIN_URL/PORTAL_URL use the new domain; the site now lives at the domain ROOT, so root-absolute paths ("/media/…") are safe (404.html uses them). Firebase Auth → Authorized domains must list joyboy-agency.com + www. The Pages settings API is blocked from this environment — "Enforce HTTPS" is ticked by the owner in repo Settings → Pages.
+
+Deploy = commit on `main`, then on `gh-pages` (keep the `CNAME` file there): `git show main:portfolio.html >
 index.html`, copy `de.html`, `it.html` and the other files, commit, push. Pushes sometimes stall through
 the proxy: use `timeout 50 git push` with retries. Always verify
 `git diff --quiet main:portfolio.html origin/gh-pages:index.html`.
@@ -113,4 +115,4 @@ the pre-launch checklist below. Preloader with the logo must always show
 **Waiting on the owner (2026-09-12)**: True Beach 2026 photos and clips for the website — he is sending them. Asked for: 6–10 photos at full phone resolution (night show with the audience in frame, the daytime line, the kids line / mini disco, a theme night, a wide sunset shot with the team) and 2–4 vertical clips of 10–20 s, each with a one-line description for the caption and alt text. Wide crowd shots preferred over recognisable close-ups; no close-ups of children; nothing showing room numbers, wristbands or staff lists. Then: resize, build the 480px copies in `media/img/wall/`, add to the masthead gallery with captions, mirror the captions into the DE/IT dictionaries, regenerate both files, deploy.
 
 Open items the owner knows about: Actions billing block; sensitive figures in
-old git history (needs repo recreation); no analytics; custom domain not bought.
+old git history (needs repo recreation); no analytics.
