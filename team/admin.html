@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-5Q147mxrEHx5A9wPgMbrSHEsNF12hrLe3HjiEKInMV4=' 'sha256-bbNGBQcG58l/Em5/a3yCCCPR0Hw5sqUTUMAmAjH+jMo='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-xfQ803q5pEWx22Mm2XXb1DQmn4+SZUBrmCPsnftHEac='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,15 +19,25 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202610020938">
-<script src="firebase-config.js?v=202610020938"></script>
+<link rel="stylesheet" href="portal.css?v=202610031053">
+<script src="firebase-config.js?v=202610031053"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 <script>
 (function(){
-  var KEY = "jb-theme", ORDER = ["auto", "light", "dark"];
+  var KEY = "jb-theme2", ORDER = ["auto", "light", "dark"];   // new key (2026-10-03): everyone starts again on Auto
   var LABEL = { auto: ["\u25D1", "Auto"], light: ["\u2600\uFE0F", "Light"], dark: ["\u{1F319}", "Dark"] };
   function pref(){ try { return LABEL[localStorage.getItem(KEY)] ? localStorage.getItem(KEY) : "auto"; } catch (e) { return "auto"; } }
-  function daylight(){ var h = new Date().getHours(); return h >= 6 && h < 18; }          // Cairo phone clock
+  // light while the sun is up at Marsa Alam (NOAA solar formulas, a few minutes' accuracy): ~06:20–16:55 in December, ~05:50–19:30 in June
+  function sunUp(t){
+    var r = Math.PI / 180, lat = 25.07 * r, lng = 34.89, d = new Date(t);
+    var N = Math.floor((Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - Date.UTC(d.getUTCFullYear(), 0, 1)) / 864e5) + 1, g = 2 * Math.PI / 365 * (N - 1);
+    var eq = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g) - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
+    var de = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g) + 0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
+    var ha = Math.acos(Math.cos(90.833 * r) / (Math.cos(lat) * Math.cos(de)) - Math.tan(lat) * Math.tan(de)) / r;
+    var noon = 720 - 4 * lng - eq, m = d.getUTCHours() * 60 + d.getUTCMinutes();
+    return m >= noon - 4 * ha && m < noon + 4 * ha;
+  }
+  function daylight(){ return sunUp(Date.now()); }
   function apply(){
     var p = pref(), light = p === "light" || (p === "auto" && daylight());
     document.documentElement.setAttribute("data-theme", light ? "light" : "dark");
@@ -38,7 +48,7 @@
       b.textContent = LABEL[p][0];
       var s = document.createElement("b"); s.textContent = LABEL[p][1]; b.appendChild(s);
       b.setAttribute("aria-label", "Screen: " + LABEL[p][1] + ". Tap to change.");
-      b.title = p === "auto" ? "Auto \u2014 light in the daytime, dark after 6 pm" : "Always " + LABEL[p][1].toLowerCase();
+      b.title = p === "auto" ? "Auto \u2014 light while the sun is up, dark after sunset" : "Always " + LABEL[p][1].toLowerCase();
     }
   }
   function cycle(){
@@ -372,7 +382,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText, newHotelCode, CODE_EVERY_S, ROLL_WINDOW_MIN, rollId, rollState, distText, isOutside, guestItems, signupCount } from "./portal.js?v=202610020938";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText, newHotelCode, CODE_EVERY_S, ROLL_WINDOW_MIN, rollId, rollState, distText, isOutside, guestItems, signupCount } from "./portal.js?v=202610031053";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -1422,7 +1432,7 @@ async function drawQr(){
   const hid = $("qr-hotel").value; if (!hid){ $("qr-box").innerHTML = `<p class="hint">Pick a hotel first.</p>`; $("qr-link").textContent = ""; return; }
   const url = feedbackLink(); $("qr-link").textContent = url;
   try {
-    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202610020938"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
+    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202610031053"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
     const q = qrLib(0, "M"); q.addData(url); q.make();
     const who = $("qr-who").selectedOptions[0] ? $("qr-who").selectedOptions[0].textContent : "";
     const hotel = hotels.find(h => h.id === hid) || {};

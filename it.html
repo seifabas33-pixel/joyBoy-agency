@@ -784,7 +784,29 @@ footer .copy a{display:inline-block;padding:6px 0;margin:-6px 0;color:var(--ink-
   .gx,.stat .k{-webkit-text-fill-color:initial;color:#000;background:none}
 }
 </style>
-<script>document.documentElement.classList.add("loading");try{if(localStorage.getItem("joyboy-theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
+<script>document.documentElement.classList.add("loading");
+// Theme: automatic — light while the sun is up at the Red Sea, dark after sunset — unless the visitor pressed the
+// sun/moon button (that choice is kept). New key on 2026-10-03, so earlier button presses no longer pin anyone.
+(function(){
+  // light while the sun is up at Marsa Alam (NOAA solar formulas, a few minutes' accuracy): ~06:20–16:55 in December, ~05:50–19:30 in June
+  function sunUp(t){
+    var r = Math.PI / 180, lat = 25.07 * r, lng = 34.89, d = new Date(t);
+    var N = Math.floor((Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - Date.UTC(d.getUTCFullYear(), 0, 1)) / 864e5) + 1, g = 2 * Math.PI / 365 * (N - 1);
+    var eq = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g) - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
+    var de = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g) + 0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
+    var ha = Math.acos(Math.cos(90.833 * r) / (Math.cos(lat) * Math.cos(de)) - Math.tan(lat) * Math.tan(de)) / r;
+    var noon = 720 - 4 * lng - eq, m = d.getUTCHours() * 60 + d.getUTCMinutes();
+    return m >= noon - 4 * ha && m < noon + 4 * ha;
+  }
+  function apply(){
+    var c = null; try { c = localStorage.getItem("joyboy-theme2"); } catch (e) {}
+    var light = c ? c === "light" : sunUp(Date.now());
+    if (light) document.documentElement.setAttribute("data-theme", "light"); else document.documentElement.removeAttribute("data-theme");
+    var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", light ? "#FFF8EC" : "#0D0A14");
+  }
+  window.jbTheme = apply; apply(); setInterval(apply, 600000);
+})();
+</script>
 <script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Organization", "name": "Joy Boy Agency", "url": "https://seifabas33-pixel.github.io/joyBoy-agency/it.html", "logo": "https://seifabas33-pixel.github.io/joyBoy-agency/media/img/logo.jpg", "image": "https://seifabas33-pixel.github.io/joyBoy-agency/media/img/og.jpg", "description": "Gestione dell'intrattenimento e dell'animazione per i resort del Mar Rosso: show serali, programma diurno, programma bambini e musica dal vivo, con un unico team residente.", "areaServed": ["Marsa Alam", "Hurghada", "Sahl Hasheesh", "Red Sea, Egypt"], "sameAs": ["https://www.instagram.com/joyboyentertainment/"], "email": "joyboyentertainmentagency@gmail.com", "contactPoint": [{"@type": "ContactPoint", "contactType": "sales", "telephone": "+20-102-128-1660", "name": "Moaz Moamen"}, {"@type": "ContactPoint", "contactType": "sales", "telephone": "+20-100-157-0273", "email": "seifabas33@gmail.com", "name": "Seif Abas"}]}, {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Come funziona il prezzo?", "acceptedAnswer": {"@type": "Answer", "text": "Per resort, mai da un listino generico. Dopo un brief e un sopralluogo proponiamo un programma, un organico e un budget completo di intrattenimento per quell'hotel. Chiedete su WhatsApp e ve lo invieremo."}}, {"@type": "Question", "name": "Cosa è incluso in ogni incarico?", "acceptedAnswer": {"@type": "Answer", "text": "Un team residente con un team leader responsabile; il piano d'azione settimanale con responsabili nominati e orari di allestimento fissi; un registro presenze giornaliero; un programma ospiti pubblicato con calendario QR; e un report mensile su puntualità, sessioni svolte e menzioni nelle recensioni degli ospiti."}}, {"@type": "Question", "name": "Quante sere a settimana c'è programma?", "acceptedAnswer": {"@type": "Answer", "text": "Sette. Uno show ogni sera su repertorio a rotazione, il programma diurno, il programma bambini tutti i giorni e musica dal vivo a rotazione nelle varie location."}}, {"@type": "Question", "name": "Gestite anche il programma bambini?", "acceptedAnswer": {"@type": "Answer", "text": "Sì. Un animatore dedicato al mini club fa parte del team, non è preso in prestito: sessioni quotidiane, una Mini Disco ogni sera e un evento settimanale con i personaggi."}}, {"@type": "Question", "name": "Dove operate?", "acceptedAnswer": {"@type": "Answer", "text": "Sul Mar Rosso egiziano: Marsa Alam, Hurghada e Sahl Hasheesh. Il team vive nel resort per tutta la stagione; non siamo artisti di passaggio."}}, {"@type": "Question", "name": "Con quali resort avete lavorato?", "acceptedAnswer": {"@type": "Answer", "text": "Casa Blue Beach Resort a Marsa Alam (stagioni 2024–2025) e True Beach Resort a Marsa Alam (stagione 2026). Prima, il nostro team ha gestito le stagioni al Solymar Reef e al Jaz Grand (2021–2022) e all'Hilton Marsa Alam Nubian (2022–2023). I premi e le recensioni degli ospiti in questa pagina vengono da Casa Blue e True Beach."}}, {"@type": "Question", "name": "Come si comincia?", "acceptedAnswer": {"@type": "Answer", "text": "Scrivete al Sig. Moaz su WhatsApp o via e-mail a joyboyentertainmentagency@gmail.com. Raccogliamo un brief, visitiamo la struttura e torniamo con un programma e un budget su misura."}}, {"@type": "Question", "name": "Possiamo vedere gli show prima di decidere?", "acceptedAnswer": {"@type": "Answer", "text": "Sì — i reel in questa pagina sono clip non montati dal resort, e possiamo organizzare una visita a un programma in corso durante la stagione."}}]}]</script>
 </head>
 <body>
@@ -1219,7 +1241,7 @@ footer .copy a{display:inline-block;padding:6px 0;margin:-6px 0;color:var(--ink-
     var light = document.documentElement.getAttribute("data-theme") === "light";
     if (light) document.documentElement.removeAttribute("data-theme");
     else document.documentElement.setAttribute("data-theme", "light");
-    try{ localStorage.setItem("joyboy-theme", light ? "dark" : "light"); }catch(e){}
+    try{ localStorage.setItem("joyboy-theme2", light ? "dark" : "light"); }catch(e){}
   });
   var els = [].slice.call(document.querySelectorAll(".bento > *"));
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

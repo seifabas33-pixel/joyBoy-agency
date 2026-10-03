@@ -2,19 +2,39 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-NLR8gNvpJarmhD+8vAlBY94QFUGiFEs14sVWj6+YXQM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-s2N60wBrTAWDzkJlgu9WnBUBGvKXBxBFYgc8MDwbeEE=' 'sha256-jV+gqNpZiE9xbQ6qNcRStHcVgn/niNAS/GB5ZP96V0A='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — How is your holiday going?</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0D0A14">
+<script>
+(function(){
+  // light while the sun is up at Marsa Alam (NOAA solar formulas, a few minutes' accuracy): ~06:20–16:55 in December, ~05:50–19:30 in June
+  function sunUp(t){
+    var r = Math.PI / 180, lat = 25.07 * r, lng = 34.89, d = new Date(t);
+    var N = Math.floor((Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - Date.UTC(d.getUTCFullYear(), 0, 1)) / 864e5) + 1, g = 2 * Math.PI / 365 * (N - 1);
+    var eq = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g) - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
+    var de = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g) + 0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
+    var ha = Math.acos(Math.cos(90.833 * r) / (Math.cos(lat) * Math.cos(de)) - Math.tan(lat) * Math.tan(de)) / r;
+    var noon = 720 - 4 * lng - eq, m = d.getUTCHours() * 60 + d.getUTCMinutes();
+    return m >= noon - 4 * ha && m < noon + 4 * ha;
+  }
+  function apply(){
+    var l = sunUp(Date.now());
+    document.documentElement.setAttribute("data-theme", l ? "light" : "dark");
+    var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", l ? "#F6F2EC" : "#0D0A14");
+  }
+  apply(); setInterval(apply, 600000);
+})();
+</script>
 <link rel="icon" type="image/png" sizes="64x64" href="../media/img/favicon-64.png">
 <link rel="apple-touch-icon" href="../media/img/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202610020938">
-<script src="firebase-config.js?v=202610020938"></script>
+<link rel="stylesheet" href="portal.css?v=202610031053">
+<script src="firebase-config.js?v=202610031053"></script>
 </head>
 <body class="guest">
 <main class="gwrap" id="main">
@@ -49,7 +69,7 @@
 </main>
 
 <script type="module">
-import { initGuest, dayKey, esc, toast } from "./portal.js?v=202610020938";
+import { initGuest, dayKey, esc, toast } from "./portal.js?v=202610031053";
 
 const DICT = {
   en: { lang: "English", title: "How is your holiday going?", lead: "Thirty seconds on the shows, the daytime and the kids club — it goes straight to the animation team.",
