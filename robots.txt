@@ -3,4 +3,4 @@ Allow: /
 Disallow: /anjum.html
 Disallow: /portfolio.html
 
-Sitemap: https://seifabas33-pixel.github.io/joyBoy-agency/sitemap.xml
+Sitemap: https://joyboy-agency.com/sitemap.xml
