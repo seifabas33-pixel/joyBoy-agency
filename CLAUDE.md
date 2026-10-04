@@ -89,6 +89,10 @@ Reference reels the owner shared: hero-section styles (Gallery / Masthead) and
 the pre-launch checklist below. Preloader with the logo must always show
 (including under reduced motion). Everything must work on phones.
 
+## Pitch reel for hotels — `video/pitch-reel/` (2026-10-04)
+
+Owner asked for a "really professional" 16:9 pitch reel, made with Remotion (React → MP4; Remotion's agent skills installed with `npx skills add remotion-dev/skills`). 62 s, 1920×1080, 30 fps: Open (photo wall + spotlight + ticket) · Hook ("We run the night / kids club / theme nights / daytime line") · Shows (triptych, then "No studio. No extras.") · Team (7/7) · Proof (Casa Blue #2 of 108 + award cards; Solymar #3, Jaz #4, Hilton #9) · Quote (mdovetto, verbatim) · Method ("Nothing runs on hope.") · CTA (Moaz's WhatsApp, domain). Same tokens/fonts as the site; fonts kept locally in `fonts/` (renderer has no Google access). Music is synthesised by `tools/music.py` (no licence; 120 BPM = 15 frames a beat, every cut on a beat; −14 LUFS) — if the owner sends a licensed track, swap `public/music.wav`. `npm run assets` builds `public/` (never commit it or `out/`); `node tools/stills.mjs <frames>` for visual checks; `npm run render` → `out/joyboy-pitch-reel.mp4` (not committed; share the file). Same hard rules as the site: no prices or internal figures, quotes verbatim + attributed. The award note uses the CLAUDE.md wording ("none of them was in the top 10 when we arrived"); the site says "None of these hotels were on the platform when we arrived" — owner to confirm which is right. Remotion is free only for companies with ≤ 3 employees; above that a Company License is needed before commercial use.
+
 ## Pre-launch checklist (owner asked to keep this in mind — check on every change)
 
 1. Privacy policy → `legal.html#privacy`
