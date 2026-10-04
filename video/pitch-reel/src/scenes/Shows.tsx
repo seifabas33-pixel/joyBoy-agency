@@ -7,7 +7,7 @@ import { C, EXPO, HEAD, headline, IN_OUT, mono, p } from "../theme";
 const COLS = [
   { clip: "reel-egypt.mp4", at: 14.6, rate: 1, name: "Echo of Egypt Night", sub: "lanterns · lasers · the golden stage", pos: "50% 50%" },
   { clip: "reel-fire.mp4", at: 7.8, rate: 0.75, name: "Fire Show", sub: "on the amphitheatre stage", pos: "50% 50%" },
-  { clip: "reel-light.mp4", at: 6.3, rate: 0.75, name: "Light Show", sub: "LED suits · glowing fans", pos: "50% 40%" },
+  { clip: "reel-light.mp4", at: 6.6, rate: 0.75, name: "Light Show", sub: "LED suits · glowing fans", pos: "50% 40%" },
 ];
 const W = (1920 - 2 * 14) / 3;
 const SPLIT = 165;

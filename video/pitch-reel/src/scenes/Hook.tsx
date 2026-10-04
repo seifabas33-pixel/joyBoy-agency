@@ -14,8 +14,8 @@ type Beat = {
 
 const BEATS: Beat[] = [
   { from: 0, word: "night.", media: { clip: "reel-egypt.mp4", at: 4.4 }, caption: "Echo of Egypt Night" },
-  { from: 60, word: "kids club.", media: { clip: "reel-kids.mp4", at: 0.2 }, caption: "Kids programme" },
-  { from: 105, word: "theme nights.", media: { clip: "reel-theme.mp4", at: 1.6 }, caption: "Theme night parade" },
+  { from: 60, word: "kids club.", media: { clip: "reel-kids.mp4", at: 1.65 }, caption: "Kids programme" },
+  { from: 105, word: "theme nights.", media: { clip: "reel-theme.mp4", at: 6.15 }, caption: "Theme night parade" },
   {
     from: 150,
     word: "daytime line.",
