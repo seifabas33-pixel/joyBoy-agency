@@ -10,6 +10,31 @@ import { Quote } from "./scenes/Quote";
 import { Shows } from "./scenes/Shows";
 import { Team } from "./scenes/Team";
 import { C, EXPO, mono, p } from "./theme";
+import { VOICE_OVER } from "./voiceover";
+
+// Music sits ~9 dB lower while the voice speaks. Lines closer than a second
+// share one dip, so the music does not pump between short phrases.
+const DUCK = 0.35;
+const RAMP = 8;
+const DUCK_WINDOWS = VOICE_OVER.reduce<[number, number][]>((acc, l) => {
+  const last = acc[acc.length - 1];
+  const end = l.from + l.frames;
+  if (last && l.from - last[1] < 30) last[1] = end;
+  else acc.push([l.from, end]);
+  return acc;
+}, []);
+const musicVolume = (f: number) =>
+  DUCK_WINDOWS.reduce(
+    (v, [a, b]) =>
+      Math.min(
+        v,
+        interpolate(f, [a - RAMP, a, b, b + RAMP * 2], [1, DUCK, DUCK, 1], {
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+        }),
+      ),
+    1,
+  );
 
 // 62 s, 1920×1080, 30 fps. Every cut sits on the beat of public/music.wav
 // (tools/music.py, 120 BPM = 15 frames a beat, 60 frames a bar).
@@ -58,7 +83,12 @@ export const PitchReel: React.FC = () => {
 
       <Vignette />
       <Grain />
-      <Audio src={staticFile("music.wav")} />
+      <Audio src={staticFile("music.wav")} volume={musicVolume} />
+      {VOICE_OVER.map((l) => (
+        <Sequence key={l.id} name={`Voice: ${l.text}`} from={l.from} durationInFrames={l.frames + 4} premountFor={fps}>
+          <Audio src={staticFile(`vo/${l.id}.wav`)} />
+        </Sequence>
+      ))}
     </AbsoluteFill>
   );
 };

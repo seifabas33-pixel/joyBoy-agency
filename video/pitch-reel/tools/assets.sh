@@ -34,3 +34,6 @@ while [ $i -lt 8 ]; do
 done
 
 python3 tools/music.py public/music.wav
+
+# voice-over: generated separately (needs the Kokoro model or recorded lines)
+[ -d public/vo ] || echo "voice-over missing: run tools/voiceover.py (see README)" >&2

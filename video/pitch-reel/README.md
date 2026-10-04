@@ -9,6 +9,7 @@ fonts as the website, so a change to the copy is a text edit plus a re-render.
 ```console
 npm i
 npm run assets      # builds public/: clips, blurred plates, grain, fonts, music
+python3 tools/voiceover.py   # public/vo/ + src/voiceover.ts (see Voice-over below)
 npm run dev         # Remotion Studio preview
 npm run render      # → out/joyboy-pitch-reel.mp4
 ```
@@ -37,6 +38,16 @@ lives in `../../media`, everything else is made by `tools/assets.sh`.
 - **Copy rules** are the website's: no prices, no internal figures, guest
   quotes verbatim with name, platform, hotel and date, the client record only
   as in CLAUDE.md.
+- **Voice-over** (`tools/voiceover.py`): 15 short lines, each placed on the
+  frame where its words appear (`src/voiceover.ts`, generated); the music
+  ducks ~9 dB under the voice. Default voice: Kokoro-82M `af_heart`, run
+  locally (Apache-2.0, free, commercial use allowed) — needs
+  `pip install kokoro-onnx soundfile` and the two model files from
+  github.com/thewh1teagle/kokoro-onnx releases in `$KOKORO_DIR`. To use another
+  voice (a person reading the script, Higgsfield, ElevenLabs), save one file per
+  line as `<id>.wav|mp3` and run `python3 tools/voiceover.py --from-dir <folder>`:
+  same trimming, levelling and timing check. The line ids and the script are at
+  the top of the file.
 - `tools/stills.mjs` renders single frames for checks:
   `node tools/stills.mjs 150 960 1745` → `out/stills/`.
 - `remotion.config.ts` uses the Playwright headless shell in `/opt/pw-browsers`
