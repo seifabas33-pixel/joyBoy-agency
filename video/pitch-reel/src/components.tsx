@@ -265,10 +265,10 @@ export const Ticket: React.FC<{ parts: string[]; style?: React.CSSProperties }> 
   </div>
 );
 
-/** A warm light leak that sweeps across the frame, centred on `at`. */
+/** A warm streak of light that sweeps across the frame, centred on `at`. */
 export const Leak: React.FC<{ at: number; dur?: number; hue?: "warm" | "pink" }> = ({
   at,
-  dur = 26,
+  dur = 22,
   hue = "warm",
 }) => {
   const frame = useCurrentFrame();
@@ -278,18 +278,19 @@ export const Leak: React.FC<{ at: number; dur?: number; hue?: "warm" | "pink" }>
   });
   if (t <= 0 || t >= 1) return null;
   const a = Math.sin(t * Math.PI);
-  const c1 = hue === "warm" ? "255,170,60" : "240,63,168";
+  const x = -25 + t * 150;
+  const c1 = hue === "warm" ? "255,150,40" : "240,63,168";
   const c2 = hue === "warm" ? "255,77,46" : "160,61,230";
   return (
-    <AbsoluteFill style={{ mixBlendMode: "screen", opacity: a, pointerEvents: "none" }}>
+    <AbsoluteFill style={{ mixBlendMode: "screen", opacity: a * 0.8, pointerEvents: "none" }}>
       <AbsoluteFill
         style={{
-          background: `radial-gradient(ellipse 45% 70% at ${-10 + t * 120}% ${40 + t * 20}%, rgba(${c1},0.95), rgba(${c2},0.55) 40%, transparent 72%)`,
+          background: `linear-gradient(105deg, transparent ${x - 34}%, rgba(${c2},0.35) ${x - 18}%, rgba(${c1},0.8) ${x - 5}%, rgba(255,240,205,0.95) ${x}%, rgba(${c1},0.7) ${x + 6}%, rgba(${c2},0.3) ${x + 18}%, transparent ${x + 32}%)`,
         }}
       />
       <AbsoluteFill
         style={{
-          background: `radial-gradient(ellipse 30% 50% at ${110 - t * 90}% 30%, rgba(255,214,10,0.6), transparent 70%)`,
+          background: `radial-gradient(ellipse 14% 70% at ${x + 3}% 40%, rgba(255,246,220,0.55), transparent 70%)`,
         }}
       />
     </AbsoluteFill>

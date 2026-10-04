@@ -20,9 +20,6 @@ export const Proof: React.FC = () => {
   );
 };
 
-const countDown = (f: number, start: number, from: number, to: number, dur = 36) =>
-  Math.round(interpolate(f, [start, start + dur], [from, to], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: EXPO }));
-
 const AWARDS = [
   { src: "img/award-tripadvisor-casa-blue.jpg", w: 380, h: 440, x: 880, y: 250, rot: -6, at: 26 },
   { src: "img/award-booking-2025.jpg", w: 360, h: 363, x: 1170, y: 400, rot: 3, at: 34 },
@@ -40,10 +37,16 @@ const CasaBlue: React.FC = () => {
         <div style={{ ...mono, fontSize: 28, color: C.aqua }}>
           <Line start={0}>TripAdvisor · Marsa Alam</Line>
         </div>
-        <div style={{ ...headline, fontSize: 380, marginTop: 10, fontVariantNumeric: "tabular-nums" }}>
-          <Line start={0} dur={12}>
-            #{countDown(f, 2, 108, 2)}
-          </Line>
+        <div
+          style={{
+            ...headline,
+            fontSize: 380,
+            marginTop: 10,
+            scale: String(interpolate(p(f, 0, 30, EXPO), [0, 1], [1.12, 1])),
+            transformOrigin: "0 80%",
+          }}
+        >
+          <Line start={0} dur={14}>#2</Line>
         </div>
         <div style={{ ...headline, fontSize: 84, fontWeight: 700, marginTop: -10 }}>
           <Line start={12}>of 108 hotels.</Line>
@@ -127,8 +130,8 @@ const Earlier: React.FC = () => {
             <div style={{ padding: "26px 36px" }}>
               <div style={{ fontFamily: HEAD, fontWeight: 700, fontSize: 40, color: C.ink, letterSpacing: "-0.01em" }}>{h.name}</div>
               <div style={{ display: "flex", alignItems: "baseline", gap: 18, marginTop: 6 }}>
-                <div style={{ ...headline, fontSize: 150, color: C.yellow, fontVariantNumeric: "tabular-nums" }}>
-                  #{countDown(f, s + 4, h.of, h.rank, 30)}
+                <div style={{ ...headline, fontSize: 150, color: C.yellow }}>
+                  <Line start={s + 6} dur={16}>#{h.rank}</Line>
                 </div>
                 <div style={{ ...mono, fontSize: 22, letterSpacing: "0.1em", lineHeight: 1.5 }}>
                   of {h.of}

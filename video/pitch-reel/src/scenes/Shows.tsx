@@ -39,7 +39,7 @@ const Triptych: React.FC = () => {
   return (
     <AbsoluteFill>
       {COLS.map((c, i) => {
-        const t = p(f, i * 6, 22);
+        const t = p(f, i * 4, 16);
         return (
           <div
             key={c.name}
