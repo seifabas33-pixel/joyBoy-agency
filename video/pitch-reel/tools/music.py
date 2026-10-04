@@ -297,3 +297,19 @@ subprocess.run(
 )
 os.remove(raw)
 print(f"{out}: {N / SR:.1f} s, was {m['input_i']} LUFS, normalised to -14 LUFS")
+
+# Two stems for ducking under the voice-over: the speech band (250 Hz-5 kHz)
+# and everything else. Zero-phase filters, so body + mid == music exactly and
+# the reel can pull the speech band down hard while kick, bass and hats stay.
+from scipy.signal import sosfiltfilt
+
+sr_out, final = wavfile.read(out)
+final = final.astype(np.float64) / 32768
+low = sosfiltfilt(butter(4, 250, "low", fs=sr_out, output="sos"), final, axis=0)
+high = sosfiltfilt(butter(4, 5000, "high", fs=sr_out, output="sos"), final, axis=0)
+body = low + high
+mid = final - body
+stem = os.path.splitext(out)[0]
+wavfile.write(f"{stem}-body.wav", sr_out, np.clip(body * 32767, -32768, 32767).astype(np.int16))
+wavfile.write(f"{stem}-mid.wav", sr_out, np.clip(mid * 32767, -32768, 32767).astype(np.int16))
+print(f"stems: {stem}-body.wav (lows + highs), {stem}-mid.wav (speech band)")

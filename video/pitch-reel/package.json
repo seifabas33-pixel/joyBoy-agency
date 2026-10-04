@@ -28,9 +28,10 @@
   "scripts": {
     "assets": "sh tools/assets.sh",
     "dev": "remotion studio",
-    "render": "remotion render PitchReel out/joyboy-pitch-reel.mp4",
+    "render": "remotion render PitchReel out/joyboy-pitch-reel.mp4 --crf=18",
     "build": "remotion bundle",
     "upgrade": "remotion upgrade",
-    "lint": "eslint src && tsc"
+    "lint": "eslint src && tsc",
+    "render:audio": "remotion render PitchReel out/mix.wav --codec=wav"
   }
 }

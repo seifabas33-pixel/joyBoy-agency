@@ -12,7 +12,6 @@ import path from "node:path";
 Config.setRspack(true);
 Config.setVideoImageFormat("jpeg");
 Config.setJpegQuality(92);
-Config.setCrf(18);
 Config.setOverwriteOutput(true);
 
 // Claude cloud sessions ship Playwright's headless shell; use it instead of

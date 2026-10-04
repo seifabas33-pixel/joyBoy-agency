@@ -47,7 +47,12 @@ lives in `../../media`, everything else is made by `tools/assets.sh`.
   voice (a person reading the script, Higgsfield, ElevenLabs), save one file per
   line as `<id>.wav|mp3` and run `python3 tools/voiceover.py --from-dir <folder>`:
   same trimming, levelling and timing check. The line ids and the script are at
-  the top of the file.
+  the top of the file. Under the voice only the music's speech band
+  (`music-mid.wav`, 250 Hz–5 kHz) ducks hard (×0.12); kick, bass and hats
+  (`music-body.wav`) stay at ×0.6 — the voice is ~12 dB clear where speech lives.
+- **Audio-only re-mix** (visuals unchanged): `npm run render:audio`, put the
+  wav on the last video with ffmpeg, then `tools/master.sh <file.mp4>` →
+  `-master.mp4` and `-share.mp4` at −14 LUFS, true peak −1.5 dB.
 - `tools/stills.mjs` renders single frames for checks:
   `node tools/stills.mjs 150 960 1745` → `out/stills/`.
 - `remotion.config.ts` uses the Playwright headless shell in `/opt/pw-browsers`

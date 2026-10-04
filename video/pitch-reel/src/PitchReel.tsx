@@ -12,9 +12,10 @@ import { Team } from "./scenes/Team";
 import { C, EXPO, mono, p } from "./theme";
 import { VOICE_OVER } from "./voiceover";
 
-// Music sits ~9 dB lower while the voice speaks. Lines closer than a second
-// share one dip, so the music does not pump between short phrases.
-const DUCK = 0.35;
+// Under the voice the music's speech band (250 Hz-5 kHz stem) drops to 0.12,
+// the rest (kick, bass, hats) only to 0.6: the voice stays ~12 dB clear where
+// speech lives and the beat keeps its punch. Lines closer than a second share
+// one dip, so the music does not pump between short phrases.
 const RAMP = 8;
 const DUCK_WINDOWS = VOICE_OVER.reduce<[number, number][]>((acc, l) => {
   const last = acc[acc.length - 1];
@@ -23,12 +24,12 @@ const DUCK_WINDOWS = VOICE_OVER.reduce<[number, number][]>((acc, l) => {
   else acc.push([l.from, end]);
   return acc;
 }, []);
-const musicVolume = (f: number) =>
+const duck = (f: number, depth: number) =>
   DUCK_WINDOWS.reduce(
     (v, [a, b]) =>
       Math.min(
         v,
-        interpolate(f, [a - RAMP, a, b, b + RAMP * 2], [1, DUCK, DUCK, 1], {
+        interpolate(f, [a - RAMP, a, b, b + RAMP * 2], [1, depth, depth, 1], {
           extrapolateLeft: "clamp",
           extrapolateRight: "clamp",
         }),
@@ -83,7 +84,8 @@ export const PitchReel: React.FC = () => {
 
       <Vignette />
       <Grain />
-      <Audio src={staticFile("music.wav")} volume={musicVolume} />
+      <Audio src={staticFile("music-body.wav")} volume={(f) => duck(f, 0.6)} />
+      <Audio src={staticFile("music-mid.wav")} volume={(f) => duck(f, 0.12)} />
       {VOICE_OVER.map((l) => (
         <Sequence key={l.id} name={`Voice: ${l.text}`} from={l.from} durationInFrames={l.frames + 4} premountFor={fps}>
           <Audio src={staticFile(`vo/${l.id}.wav`)} />
