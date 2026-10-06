@@ -1,13 +1,10 @@
 name: Deploy site to GitHub Pages
 
+# SWITCHED OFF (2026-10-06): the live site is published from the gh-pages branch, which carries
+# the WHOLE site (team portal, de/it, legal, 404, CNAME, favicon). This workflow only assembles the
+# homepage + media, and once Actions became available on the account it ran on pushes to main and
+# replaced the full site — /team/ went 404. Manual runs only; never re-add the push trigger.
 on:
-  push:
-    branches: [main]
-    paths:
-      - "anjum-dashboard.html"
-      - "portfolio.html"
-      - "media/**"
-      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:
