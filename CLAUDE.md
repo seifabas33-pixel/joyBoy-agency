@@ -103,7 +103,7 @@ the pre-launch checklist below. Preloader with the logo must always show
 10. Meta titles → descriptive `<title>` per page
 11. Meta description → present
 12. Social share → og:image (`media/img/og.jpg`) + twitter card
-13. Favicon → `media/img/favicon-64.png` + apple-touch-icon
+13. Favicon → `/favicon.ico` (48+96 PNG inside) + `media/img/favicon-48/96/144/192.png` (Google search shows the logo only for square icons in multiples of 48 px — the old 64 px one never appeared, 2026-10-06) + apple-touch-icon
 14. Canonical URLs → root canonical on the portfolio
 15. Cookie consent → not needed: no cookies, no tracking; theme stored in localStorage only (documented in privacy)
 16. Mobile → verify at 500px width in every change
