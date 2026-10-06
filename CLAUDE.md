@@ -6,8 +6,7 @@ agency's public website and pitch material. **The repo is public.**
 
 ## What is live, and how to deploy
 
-GitHub Pages serves the **`gh-pages` branch** (Actions is blocked on this
-account; the workflow in `.github/workflows/pages.yml` is dormant).
+GitHub Pages serves the **`gh-pages` branch**. **Actions now RUNS on this account (noticed 2026-10-06):** the old `.github/workflows/pages.yml` (homepage + media only) fired on a push to main and its deploy replaced the full gh-pages site — /team/, de/it, legal and 404 went offline until gh-pages was republished. The workflow is now `workflow_dispatch` only; **never give it a push trigger again**, and after any deploy check `gh api repos/seifabas33-pixel/joyBoy-agency/deployments?per_page=3` — the newest `github-pages` deployment must be `ref gh-pages`. (A Vercel integration also builds commits — "Preview"/"Production" deployments — it does not serve the domain.)
 
 | Live URL | Source on `main` |
 | --- | --- |
@@ -114,5 +113,5 @@ the pre-launch checklist below. Preloader with the logo must always show
 
 **Waiting on the owner (2026-09-12)**: True Beach 2026 photos and clips for the website — he is sending them. Asked for: 6–10 photos at full phone resolution (night show with the audience in frame, the daytime line, the kids line / mini disco, a theme night, a wide sunset shot with the team) and 2–4 vertical clips of 10–20 s, each with a one-line description for the caption and alt text. Wide crowd shots preferred over recognisable close-ups; no close-ups of children; nothing showing room numbers, wristbands or staff lists. Then: resize, build the 480px copies in `media/img/wall/`, add to the masthead gallery with captions, mirror the captions into the DE/IT dictionaries, regenerate both files, deploy.
 
-Open items the owner knows about: Actions billing block; sensitive figures in
+Open items the owner knows about: sensitive figures in
 old git history (needs repo recreation); no analytics.
