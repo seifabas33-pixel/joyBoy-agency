@@ -189,7 +189,10 @@ async function firebaseBackend(){
     // Guest page ("What's on today?"): the trimmed public copy of the day's programme, and the sign-ups (first names only).
     // mergeFields: re-saving the programme never touches the live counts the guests raise.
     savePublicProgramme: (hotelId, hotelName, date, items) => F.setDoc(F.doc(db, "publicProgramme", `${hotelId}_${date}`), { hotelId, hotelName, date, items, updatedAt: ts() }, { mergeFields: ["hotelId", "hotelName", "date", "items", "updatedAt"] }),
-    signupsOn: async date => { const s = await F.getDocs(F.query(F.collection(db, "signups"), F.where("date", "==", date))); return s.docs.map(att); },
+    // the office resets an activity's guest-page number to the sign-ups it can see (e.g. after fake sign-ups made it read "Full")
+    setGuestCount: (hotelId, date, taskId, n) => F.updateDoc(F.doc(db, "publicProgramme", `${hotelId}_${date}`), { ["counts." + taskId]: n }),
+    // staff must name their hotel (the rules let them read only their own hotel's sign-ups); the office may leave it out
+    signupsOn: async (date, hotelId) => { const s = await F.getDocs(F.query(F.collection(db, "signups"), F.where("date", "==", date), ...(hotelId ? [F.where("hotelId", "==", hotelId)] : []))); return s.docs.map(att); },
     cleanupSignups: async before => { const s = await F.getDocs(F.query(F.collection(db, "signups"), F.where("date", "<", before))); await Promise.all(s.docs.map(d => F.deleteDoc(d.ref))); return s.size; },
     // Roll call ("Where is everyone?"): the office's record, a pointer per hotel that staff phones read, one answer per person.
     startRollCall: async roll => {
@@ -305,7 +308,8 @@ function demoBackend(){
     diagnoseCheckIn: async () => [],
     checkOut: async (id, where) => { const a = get("att") || {}; if (!a[id]) throw new Error("No check-in for this shift"); a[id] = { ...a[id], checkOutAt: now(), ...(where || {}) }; set("att", a); return { id, ...a[id] }; },
     savePublicProgramme: async (hotelId, hotelName, date, items) => { const pp = get("pubprog") || {}, id = `${hotelId}_${date}`; pp[id] = { ...(pp[id] || {}), hotelId, hotelName, date, items, updatedAt: now() }; set("pubprog", pp); },
-    signupsOn: async date => (get("signups") || []).filter(r => r.date === date),
+    setGuestCount: async (hotelId, date, taskId, n) => { const pp = get("pubprog") || {}, id = `${hotelId}_${date}`; if (pp[id]) { pp[id].counts = { ...(pp[id].counts || {}), [taskId]: n }; set("pubprog", pp); } },
+    signupsOn: async (date, hotelId) => (get("signups") || []).filter(r => r.date === date && (!hotelId || r.hotelId === hotelId)),
     cleanupSignups: async before => { const l = get("signups") || [], keep = l.filter(r => r.date >= before); set("signups", keep); return l.length - keep.length; },
     startRollCall: async roll => { const r = get("rolls") || {}; r[roll.id] = { ...roll, askedAt: now(), status: "open" }; set("rolls", r); const n = get("rollnow") || {}; n[roll.hotelId] = { id: roll.id, hotelId: roll.hotelId, date: roll.date, shift: roll.shift, shiftName: roll.shiftName, uids: roll.uids, windowMin: roll.windowMin, askedAt: r[roll.id].askedAt }; set("rollnow", n); return { id: roll.id, ...r[roll.id] }; },
     rollCallsOn: async date => Object.entries(get("rolls") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date === date).sort((a, b) => String(b.askedAt).localeCompare(String(a.askedAt))),
@@ -385,13 +389,14 @@ export async function initGuest(){
   if (!auth.currentUser) await A.signInAnonymously(auth);
   return {
     mode: "firebase",
-    send: rec => F.addDoc(F.collection(db, "feedback"), { ...rec, createdAt: F.serverTimestamp() }),
+    // one rating per guest phone, day and team member: the id is fixed, so a second one is refused by the rules
+    send: rec => F.setDoc(F.doc(db, "feedback", `${auth.currentUser.uid}_${rec.date}_${rec.staffUid || ""}`), { ...rec, createdAt: F.serverTimestamp() }),
     publicHotel: async id => { const s = await F.getDoc(F.doc(db, "publicHotels", id)); return s.exists() ? s.data() : null; },
     publicProposal: async token => { const s = await F.getDoc(F.doc(db, "publicProposals", token)); return s.exists() ? s.data() : null; },
     programme: async (hotelId, date) => { const s = await F.getDoc(F.doc(db, "publicProgramme", `${hotelId}_${date}`)); return s.exists() ? s.data() : null; },
     // one batch: the sign-up + the activity's count raised by exactly its people (the rules check both together)
     signUp: async rec => {
-      const ref = F.doc(F.collection(db, "signups")), pref = F.doc(db, "publicProgramme", `${rec.hotelId}_${rec.date}`), b = F.writeBatch(db);
+      const ref = F.doc(db, "signups", `${auth.currentUser.uid}_${rec.date}_${rec.taskId}`), pref = F.doc(db, "publicProgramme", `${rec.hotelId}_${rec.date}`), b = F.writeBatch(db);   // one sign-up per guest phone and activity
       b.set(ref, { ...rec, createdAt: F.serverTimestamp() });
       b.update(pref, { ["counts." + rec.taskId]: F.increment(rec.count), last: ref.id });
       await b.commit();
@@ -481,7 +486,11 @@ export function rollState(ans, hotel, roll, nowMs = Date.now()){
   if (ans.noLocation || ans.distM == null) return { code: "noloc", label: ans.busy ? "Busy · no location" : "No location", late };
   return { code: ans.busy ? "busy" : "in", label: ans.busy ? "Busy · at the hotel" : "At the hotel", late };
 }
-export const distText = m => m == null ? "" : m >= 1000 ? (m / 1000).toFixed(1) + " km" : m + " m";
+// Distances come from staff phones: only a real number is ever shown (a text in that field must never reach the page as HTML).
+export const distText = m => { const n = Number(m); return m == null || m === "" || !Number.isFinite(n) ? "" : n >= 1000 ? (n / 1000).toFixed(1) + " km" : Math.round(n) + " m"; };
+export const accText = a => { const n = Number(a); return a == null || a === "" || !Number.isFinite(n) || n <= 0 ? "?" : String(Math.round(n)); };
+/** First word of a display name; tolerates a missing or non-text value. */
+export const firstWord = (...v) => String(v.find(x => x) || "").split(" ")[0];
 
 // Hotel code: six random digits, never the same as the one before. A new one every CODE_EVERY_S seconds while the office screen is open.
 export const CODE_EVERY_S = 60;
@@ -531,10 +540,11 @@ export const daysInMonth = m => { const [y, mo] = String(m).split("-").map(Numbe
 export const monthRange = m => [m + "-01", m + "-" + String(daysInMonth(m)).padStart(2, "0")];
 /** Things staff sell; the office edits names, prices and commission on the Pay & sales tab. */
 /** Each item has a price and a commission per unit for every currency a guest may pay in; the seller's commission follows the currency the guest paid. */
+/** The real prices and commissions live only in settings/sales (approved staff + office) — never in this public file. */
 export const DEFAULT_SALES_ITEMS = [
-  { key: "lottery", name: "Lottery", unit: "tickets", prices: { USD: 4 }, commissions: { USD: 1 } },
-  { key: "tshirt", name: "T-shirts", unit: "pieces", prices: {}, commissions: { USD: 5, EUR: 5 } },
-  { key: "disco", name: "Disco tour", unit: "guests", prices: { USD: 25, EUR: 20 }, commissions: { USD: 5, EUR: 5 } }
+  { key: "lottery", name: "Lottery", unit: "tickets", prices: {}, commissions: {} },
+  { key: "tshirt", name: "T-shirts", unit: "pieces", prices: {}, commissions: {} },
+  { key: "disco", name: "Disco tour", unit: "guests", prices: {}, commissions: {} }
 ];
 /** Older item shape (one price/currency/commissionUnit) → per-currency maps. */
 export function normItem(i){

@@ -29,8 +29,8 @@
  * Import (sheet → portal): open one of your monthly grid tabs (names in column B, one
  * column per day with a letter) and use Joy Boy → "Import this month tab into the portal".
  * Letters: P present · H half day · A absent · S sick · V vacation · O day off · E excused.
- * Names are matched to the portal's stage name / full name; for anyone it cannot match,
- * add a tab "Portal names" with the sheet name in column A and the person's Gmail in column B.
+ * Names are matched to approved staff by full name first, then stage name; a name that fits more than one person is
+ * never guessed. For anyone it cannot match, add a tab "Portal names" with the sheet name in column A and the person's Gmail in column B.
  *
  * Digest e-mails: Joy Boy → "Install twice-daily digest" sends the office accounts a short e-mail at
  * about 10:30 and 20:30 Egypt time with pending registrations, late check-ins and requests that need a
@@ -46,7 +46,7 @@ const PROJECT_ID = "joy-boy-agency";
 const DAYS_BACK = 62;                 // how much history to (re)write each run
 const TZ = "Africa/Cairo";
 const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)", REPORT_TAB = "Sync report (portal)";
-const SCRIPT_VERSION = "2026-10-03a";   // shown in every toast, so you can tell which copy the sheet is running
+const SCRIPT_VERSION = "2026-10-13a";   // shown in every toast, so you can tell which copy the sheet is running
 
 function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addSeparator().addItem("Reminders: install (every 15 min)", "installPushTriggers").addItem("Reminders: send a test", "testPush").addItem("Reminders: test a programme item", "testTaskPush").addItem("Reminders: check for arrivals now", "checkinTick").addToUi(); }
 function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); note("Done — the sheet now refreshes every hour."); }
@@ -57,8 +57,8 @@ function syncAttendance(){
   const hotels = fetchAll("hotels").map(d => ({ id: d.id, ...d.f }));
   const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f }));
   const from = Utilities.formatDate(new Date(Date.now() - DAYS_BACK * 864e5), TZ, "yyyy-MM-dd"), today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd");
-  const recs = fetchAll("attendance").map(d => ({ id: d.id, ...d.f })).filter(r => r.date >= from);
-  const plans = fetchAll("plans").map(d => ({ id: d.id, ...d.f })).filter(p => p.date >= from), planOf = (hid, d) => plans.find(p => p.hotelId === hid && p.date === d);
+  const recs = runQuery("attendance", [["date", "GREATER_THAN_OR_EQUAL", from]], { strict: true });   // only the range, never the whole history
+  const plans = runQuery("plans", [["date", "GREATER_THAN_OR_EQUAL", from]], { strict: true }), planOf = (hid, d) => plans.find(p => p.hotelId === hid && p.date === d);
   const byHotel = Object.fromEntries(hotels.map(h => [h.id, h]));
   const firstDay = {}; recs.forEach(r => { if (!firstDay[r.uid] || r.date < firstDay[r.uid]) firstDay[r.uid] = r.date; });
   employees.forEach(e => { const reg = String(e.createdAt || "").slice(0, 10); if (/^\d{4}-\d{2}-\d{2}$/.test(reg) && (!firstDay[e.uid] || reg < firstDay[e.uid])) firstDay[e.uid] = reg; });
@@ -149,6 +149,25 @@ function queryWhere(collection, field, value){
   return (JSON.parse(res.getContentText() || "[]") || []).filter(r => r.document)
     .map(r => ({ id: r.document.name.split("/").pop(), ...unwrap(r.document.fields || {}) }));
 }
+/** A Firestore query with one or more filters [field, op, value] (op: EQUAL, LESS_THAN, GREATER_THAN_OR_EQUAL, …; value a
+    string, or {ts: ISO time} for a timestamp field), optionally ordered / limited / inside a parent document. Reads only
+    what matches, so the minute jobs and the sync never download whole collections. strict: throw instead of returning []. */
+function runQuery(collection, filters, opts){
+  opts = opts || {};
+  const ff = filters.map(f => ({ fieldFilter: { field: { fieldPath: f[0] }, op: f[1], value: f[2] && f[2].ts ? { timestampValue: f[2].ts } : { stringValue: String(f[2]) } } }));
+  const q = { from: [{ collectionId: collection }] };
+  if (ff.length) q.where = ff.length === 1 ? ff[0] : { compositeFilter: { op: "AND", filters: ff } };
+  if (opts.orderBy) q.orderBy = [{ field: { fieldPath: opts.orderBy }, direction: opts.desc ? "DESCENDING" : "ASCENDING" }];
+  if (opts.limit) q.limit = opts.limit;
+  const res = UrlFetchApp.fetch(`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents${opts.parent ? "/" + opts.parent : ""}:runQuery`,
+    { method: "post", contentType: "application/json", headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() },
+      payload: JSON.stringify({ structuredQuery: q }), muteHttpExceptions: true });
+  if (res.getResponseCode() >= 300){ const msg = "query " + collection + ": " + res.getContentText().slice(0, 200); if (opts.strict) throw new Error(msg); Logger.log(msg); return []; }
+  return (JSON.parse(res.getContentText() || "[]") || []).filter(r => r.document)
+    .map(r => ({ id: r.document.name.split("/").pop(), ...unwrap(r.document.fields || {}) }));
+}
+/** Display name of a staff member from their profile — never from a name typed into a note, a rating or a check-in. */
+function staffName(employees, uid, fallback){ const e = employees.filter(x => x.uid === uid)[0]; return e ? (e.preferredName || e.fullName || e.email || fallback) : fallback; }
 /** Hotel names and shift times, kept in Script Properties for half an hour — the fast tick needs them
     for the "x min late" line and must not fetch the hotels every single minute. */
 function cachedHotels(props){
@@ -218,8 +237,11 @@ function writeSyncReport(employees, byHotel, recs, from, today){
  *  - a leftover dropdown (data validation) that refuses any value outside its list.
  * If the tab still refuses the data, it is deleted and recreated clean, then written again.
  */
+// A text cell that starts with = + - @ (or a tab / line break) would run as a formula in this sheet — staff type their
+// own names, so such text is written as plain text (a leading apostrophe), exactly like the admin page's CSV files.
+const cellSafe = v => typeof v === "string" && /^[=+\-@\t\r]/.test(v) ? "'" + v : v;
 function writeTab(name, header, rows){
-  const safe = rows.map(r => { const out = []; for (let i = 0; i < header.length; i++){ const v = r[i]; out.push(v === undefined || v === null ? "" : (typeof v === "number" || typeof v === "string" || typeof v === "boolean" ? v : String(v))); } return out; });
+  const safe = rows.map(r => { const out = []; for (let i = 0; i < header.length; i++){ const v = r[i]; out.push(v === undefined || v === null ? "" : (typeof v === "number" || typeof v === "string" || typeof v === "boolean" ? cellSafe(v) : cellSafe(String(v)))); } return out; });
   try { fillTab(name, header, safe, false); }
   catch (err) { Logger.log("writeTab " + name + " failed (" + err + ") — rebuilding the tab"); fillTab(name, header, safe, true); }
 }
@@ -251,18 +273,27 @@ function importGrid(){
   const dayCols = []; values[hdr].forEach((c, i) => { const d = dayKeyOf(c, yearGuess); if (d) dayCols.push({ col: i, date: d }); });
   const today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd");
   // people from the portal + optional mapping tab
-  const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f }));
+  const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f })).filter(e => e.status === "approved");   // only approved staff can receive marks
   const hotels = Object.fromEntries(fetchAll("hotels").map(d => [d.id, d.f]));
   const map = {}; const mt = ss.getSheetByName("Portal names"); if (mt) mt.getDataRange().getValues().forEach(r => { if (r[0] && r[1]) map[norm(r[0])] = String(r[1]).toLowerCase().trim(); });
+  // Full name first (the office's own record), then the stage name the person chose, then a lone first name.
+  // A sheet name that fits two people is never guessed: it goes to the "not found" list instead.
+  const ambiguous = new Set();
   const findEmp = name => { const n = norm(name); if (!n) return null;
     if (map[n]) return employees.find(e => String(e.email).toLowerCase() === map[n]) || null;
-    return employees.find(e => norm(e.preferredName) === n) || employees.find(e => norm(e.fullName) === n) || employees.find(e => norm(e.fullName).split(" ")[0] === n.split(" ")[0] && n.split(" ").length === 1) || null; };
-  const existing = {}; fetchAll("attendance").forEach(d => existing[d.id] = d.f);
+    const tries = [e => norm(e.fullName) === n, e => norm(e.preferredName) === n, e => n.split(" ").length === 1 && norm(e.fullName).split(" ")[0] === n];
+    for (const t of tries){ const hits = employees.filter(t); if (hits.length === 1) return hits[0]; if (hits.length > 1){ ambiguous.add(String(name).trim()); return null; } }
+    return null; };
+  const days = dayCols.map(x => x.date).sort(), existing = {};
+  runQuery("attendance", [["date", "GREATER_THAN_OR_EQUAL", days[0]], ["date", "LESS_THAN_OR_EQUAL", days[days.length - 1]]], { strict: true }).forEach(d => { const id = d.id; delete d.id; existing[id] = d; });
+  const usedBy = {};
   const me = "Google Sheet import";
   const writes = [], log = [], unmatched = new Set(), unknown = new Set();
   for (let r = hdr + 1; r < values.length; r++){
     const name = values[r][1] || values[r][0]; if (!String(name).trim()) continue;
-    const emp = findEmp(name); if (!emp){ unmatched.add(String(name).trim()); continue; }
+    const emp = findEmp(name); if (!emp){ if (!ambiguous.has(String(name).trim())) unmatched.add(String(name).trim()); continue; }
+    if (usedBy[emp.uid]){ ambiguous.add(String(name).trim() + " (same person as " + usedBy[emp.uid] + ")"); continue; }   // two sheet rows → one person: write neither twice
+    usedBy[emp.uid] = String(name).trim();
     for (const { col, date } of dayCols){
       const raw = String(values[r][col] || "").trim().toUpperCase(); if (!raw || date > today) continue;
       const code = LETTER[raw]; if (!code){ unknown.add(raw); continue; }
@@ -277,9 +308,10 @@ function importGrid(){
   patchAll(writes);
   const lg = ss.getSheetByName("Import log") || ss.insertSheet("Import log"); lg.clearContents();
   lg.getRange(1, 1, 1, 4).setValues([["Date", "Sheet name", "Portal account", "Imported as"]]).setFontWeight("bold");
-  if (log.length) lg.getRange(2, 1, log.length, 4).setValues(log);
+  if (log.length) lg.getRange(2, 1, log.length, 4).setValues(log.map(r => r.map(cellSafe)));
   let msg = `Imported ${writes.length} day(s) from "${sh.getName()}" into the portal.`;
   if (unmatched.size) msg += `\n\nNot found in the portal (add them to a tab "Portal names": column A = this name, column B = their Gmail): ${[...unmatched].join(", ")}`;
+  if (ambiguous.size) msg += `\n\nNames that fit more than one person — nothing was written for them (add them to "Portal names" with the right Gmail): ${[...ambiguous].join(", ")}`;
   if (unknown.size) msg += `\n\nLetters I did not understand (use P/H/A/S/V/O/E): ${[...unknown].join(", ")}`;
   ui.alert(msg);
   syncAttendance();
@@ -328,10 +360,14 @@ function restDelete(path){
   UrlFetchApp.fetch(`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${path}`,
     { method: "delete", headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
 }
-/** Every registered phone of the given people: [{path, token}]. */
+/** The registered phones of the given people: [{path, token}] — each person's 3 most recently used ones, and only
+    real-looking FCM tokens, so a pile of junk "devices" can never eat the reads or the daily send quota. */
 function devicesOf(uids){
   const out = [];
-  uids.forEach(uid => { try { fetchAll("employees/" + uid + "/devices").forEach(d => { if (d.f && d.f.token) out.push({ path: "employees/" + uid + "/devices/" + d.id, token: d.f.token }); }); } catch (e) { Logger.log("devices " + uid + ": " + e); } });
+  uids.forEach(uid => { try {
+    runQuery("devices", [], { parent: "employees/" + uid, orderBy: "updatedAt", desc: true, limit: 3, strict: true })
+      .forEach(d => { if (typeof d.token === "string" && /^[\w:-]{100,4096}$/.test(d.token)) out.push({ path: "employees/" + uid + "/devices/" + d.id, token: d.token }); });
+  } catch (e) { Logger.log("devices " + uid + ": " + e); } });
   return out;
 }
 /** The office's own phones (registered on the admin page, Today tab). */
@@ -342,6 +378,7 @@ function officeDevices(){
 /** Send one data-only message to each device; a phone that is gone is removed from the list. */
 function sendPush(devices, title, body, url, tag){
   if (!devices.length) return 0;
+  title = String(title || "").slice(0, 100); body = String(body || "").slice(0, 400);   // texts can carry what staff or guests typed; FCM refuses messages over 4 KB
   const reqs = devices.map(d => ({
     url: `https://fcm.googleapis.com/v1/projects/${PROJECT_ID}/messages:send`, method: "post", contentType: "application/json",
     headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() },
@@ -353,7 +390,8 @@ function sendPush(devices, title, body, url, tag){
     const code = res.getResponseCode();
     if (code < 300) { sent++; return; }
     const txt = res.getContentText();
-    if (code === 404 || txt.indexOf("UNREGISTERED") >= 0 || txt.indexOf("INVALID_ARGUMENT") >= 0){ restDelete(devices[i].path); Logger.log("dropped a dead phone: " + devices[i].path); }
+    // drop a phone only when FCM says the token itself is gone or invalid — never because one message was refused
+    if (code === 404 || txt.indexOf("UNREGISTERED") >= 0 || (txt.indexOf("INVALID_ARGUMENT") >= 0 && /registration token/i.test(txt))){ restDelete(devices[i].path); Logger.log("dropped a dead phone: " + devices[i].path); }
     else Logger.log("push failed (" + code + "): " + txt.slice(0, 200));
   });
   return sent;
@@ -364,8 +402,9 @@ function pushTick(){
   const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f })).filter(e => e.status === "approved" && e.hotelId);
   const hotels = fetchAll("hotels").map(d => ({ id: d.id, ...d.f })), byHotel = {}; hotels.forEach(h => { byHotel[h.id] = h; });
   const att = queryWhere("attendance", "date", today);
-  const plans = fetchAll("plans").map(d => ({ id: d.id, ...d.f })).filter(p => p.date === today);
+  const plans = queryWhere("plans", "date", today);
   let sent = 0;
+  housekeeping(props, today);
 
   // 1. shift reminders
   hotels.filter(h => h.active !== false).forEach(h => {
@@ -424,7 +463,7 @@ function pushTick(){
 
   // 2. whatever the office queued from the admin page
   // (lane "now" is sent by the one-minute job; picked up here only if that job has not run for 5 minutes)
-  const queue = fetchAll("notify").map(d => ({ id: d.id, ...d.f })).filter(n => !n.sentAt && !(n.lane === "now" && new Date().getTime() - new Date(n.createdAt).getTime() < 300000));
+  const queue = queryWhere("notify", "lane", "now").filter(n => !n.sentAt && new Date().getTime() - new Date(n.createdAt).getTime() >= 300000);
   queue.forEach(n => {
     const uids = (n.uids && n.uids.length) ? n.uids : employees.filter(e => !n.hotelId || e.hotelId === n.hotelId).map(e => e.uid);
     const n2 = sendPush(devicesOf(uids), n.title || "Joy Boy", n.body || "", n.url || PORTAL_URL, n.tag || "office");
@@ -440,6 +479,17 @@ function pushTick(){
 
   if (sent) Logger.log("pushTick sent " + sent + " notifications");
   return sent;
+}
+/** Once a day: forget the reminder markers of past days (Script Properties hold 500 KB at most — they would fill up
+    in about a year and stop the reminders), and delete guests' sign-up names older than 7 days, as the privacy policy
+    promises — here on the server, not only when an office phone happens to open the Today tab. */
+function housekeeping(props, today){
+  if (props.getProperty("housekept") === today) return;
+  props.setProperty("housekept", today);
+  const keep = addDays(today, -1);
+  props.getKeys().forEach(k => { const m = /^(rem|task|miss)_(\d{4}-\d{2}-\d{2})_/.exec(k); if (m && m[2] < keep) props.deleteProperty(k); });
+  try { const old = runQuery("signups", [["date", "LESS_THAN", addDays(today, -7)]], { limit: 300 }); old.forEach(d => restDelete("signups/" + d.id)); if (old.length) Logger.log("deleted " + old.length + " old guest sign-ups"); }
+  catch (e) { Logger.log("sign-up cleanup: " + e); }
 }
 /** Who a programme item is for: the people named on it, or — when it is marked "everyone" — the staff
     of that hotel who are actually scheduled today. Someone with the day off is never reminded. */
@@ -516,22 +566,21 @@ function tellOfficeAboutBadRatings(props, today){
   const KEY = "seenFeedback";
   const seen = props.getProperty(KEY);
   if (!seen){ props.setProperty(KEY, new Date().toISOString()); return 0; }
-  const hour = +Utilities.formatDate(new Date(), TZ, "HH");
-  const days = hour < 4 ? [today, addDays(today, -1)] : [today];          // a rating just after midnight may carry the guest phone's date
-  let rows = [];
-  days.forEach(d => { rows = rows.concat(queryWhere("feedback", "date", d)); });
-  rows = rows.filter(r => r.createdAt && String(r.createdAt) > seen)
-             .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+  // only ratings newer than the last look (a quiet minute reads nothing), at most 50 at a time
+  const rows = runQuery("feedback", [["createdAt", "GREATER_THAN", { ts: seen }]], { orderBy: "createdAt", limit: 50 });
   if (!rows.length) return 0;
   props.setProperty(KEY, String(rows[rows.length - 1].createdAt));
   const bad = rows.filter(r => +r.rating >= 1 && +r.rating <= BAD_RATING);
   if (!bad.length) return 0;                                             // good ratings are counted, not pushed
   const office = officeDevices();
   if (!office.length) return 0;
-  const line = r => "\u2605".repeat(+r.rating) + " " + (r.staffName ? r.staffName + " · " : "") +
-    (r.comment ? String(r.comment).slice(0, 120) : "no comment") + (r.guestName ? " — " + r.guestName : "");
+  // the hotel and the team member come from the database, never from what the rating page sent
+  const hotels = cachedHotels(props), employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f })).filter(e => e.status === "approved");
+  const hotelOf = r => (hotels.filter(h => h.id === r.hotelId)[0] || {}).name || "";
+  const line = r => "\u2605".repeat(Math.max(1, Math.min(5, +r.rating || 1))) + " " + (r.staffUid ? staffName(employees, r.staffUid, "a team member") + " · " : "") +
+    (r.comment ? String(r.comment).slice(0, 120) : "no comment") + (r.guestName ? " — " + String(r.guestName).slice(0, 40) : "");
   const title = bad.length === 1
-    ? bad[0].rating + "\u2605 from a guest" + (bad[0].hotelName ? " at " + bad[0].hotelName : "")
+    ? bad[0].rating + "\u2605 from a guest" + (hotelOf(bad[0]) ? " at " + hotelOf(bad[0]) : "")
     : bad.length + " unhappy guests";
   return sendPush(office, title, bad.map(line).join("\n").slice(0, 300), ADMIN_URL + "#guests", "badrating");
 }
@@ -539,12 +588,14 @@ function tellOfficeAboutBadRatings(props, today){
     its location this note IS the check-in, so the office should be able to confirm it while the person is there.
     Marked notifiedAt once sent, so the minute job and the quarter-hour job never both announce the same note. */
 function tellOfficeAboutNotes(){
-  const fresh = queryWhere("requests", "status", "open").filter(r => !r.notifiedAt);
+  const today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd");
+  const fresh = queryWhere("requests", "date", today).filter(r => r.status === "open" && !r.notifiedAt);   // today's notes only: a quiet minute reads a handful
   if (!fresh.length) return 0;
   fresh.forEach(r => restPatch("requests/" + r.id, { notifiedAt: new Date().toISOString() }));
   const office = officeDevices();
   if (!office.length) return 0;
-  const who = r => (r.name || r.email || "Someone") + (r.shiftName ? " · " + r.shiftName : "");
+  const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f }));
+  const who = r => staffName(employees, r.uid, "Someone not on the staff list") + (r.shiftName ? " · " + String(r.shiftName).slice(0, 30) : "");
   return sendPush(office,
     fresh.length === 1 ? "Can't check in: " + who(fresh[0]) : fresh.length + " staff can't check in",
     fresh.length === 1 ? String(fresh[0].reason || "").slice(0, 160) + " — tap to decide." : fresh.map(who).join("\n").slice(0, 300),
@@ -631,8 +682,8 @@ function sendDigest(){
   const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f }));
   const hotels = Object.fromEntries(fetchAll("hotels").map(d => [d.id, d.f]));
   const att = queryWhere("attendance", "date", today);
-  const plansToday = fetchAll("plans").map(d => ({ id: d.id, ...d.f })).filter(p => p.date === today);
-  const reqs = fetchAll("requests").map(d => ({ id: d.id, ...d.f })).filter(r => r.status === "open");
+  const plansToday = queryWhere("plans", "date", today);
+  const reqs = queryWhere("requests", "status", "open");
   const admins = fetchAll("admins").map(d => d.id);
   const to = [...new Set(BUILT_IN_ADMINS.concat(admins))].join(",");
   const name = e => e.preferredName || e.fullName || e.email;
@@ -656,7 +707,7 @@ function sendDigest(){
   lines.push(`Checked in today: ${present.length} of ${active.length} assigned staff.`, ...Object.keys(perShift).filter(k => perShift[k].started).map(k => `  ${k}: ${perShift[k].in} of ${perShift[k].started} checked in`), "");
   if (pending.length) lines.push(`PENDING REGISTRATIONS (${pending.length}):`, ...pending.map(e => `  • ${name(e)} — ${e.email}`), "");
   if (late.length) lines.push(`LATE CHECK-INS — NEED A DECISION (${late.length}):`, ...late.map(x => "  • " + x), "");
-  if (reqs.length) lines.push(`REQUESTS FROM STAFF (${reqs.length}):`, ...reqs.map(r => `  • ${r.name || r.email} — ${r.date}${r.shiftName ? " " + r.shiftName : ""}: "${r.reason}"`), "");
+  if (reqs.length) lines.push(`REQUESTS FROM STAFF (${reqs.length}):`, ...reqs.map(r => `  • ${staffName(employees, r.uid, r.email || "?")} — ${r.date}${r.shiftName ? " " + String(r.shiftName).slice(0, 30) : ""}: "${String(r.reason || "").slice(0, 300)}"`), "");
   if (absent.length) lines.push(`MISSED SHIFT CHECK-INS (${absent.length}):`, ...absent.map(x => "  • " + x), "");
   if (!pending.length && !late.length && !reqs.length && !absent.length) lines.push("Nothing needs a decision right now.", "");
   lines.push(`Decide here: ${ADMIN_URL}#att`, "", "This e-mail is generated by the attendance sheet script. Personal data — do not forward outside the office.");

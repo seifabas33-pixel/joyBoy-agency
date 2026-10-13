@@ -8,8 +8,7 @@ animation management for Red Sea resorts.
 | File | What it is |
 | --- | --- |
 | `anjum-dashboard.html` | Pitch dashboard for the SUNRISE Anjum Resort meeting, 22 Aug 2026 |
-| `anjum-proposal.html` | The Anjum proposal as sent — kept as the record, no longer deployed |
-| `proposal-template.html` | Reusable proposal template for the next hotel |
+| `proposal-template.html` | Old static proposal template (prices are `[[PRICE_n]]` placeholders — real prices never go in this public repo). New proposals are made in the team portal's **Proposals** tab, behind a private link |
 | `portfolio.html` | The agency portfolio (English source) — no prices, sendable to any client |
 | `de.html`, `it.html` | German and Italian versions, **generated** from `portfolio.html` — edit the English page, then re-run the generator (see below) |
 | `team/` | Staff portal: Google sign-in registration + admin roster on Firebase (setup in `team/README.md`) |
@@ -62,10 +61,12 @@ is `tools/i18n.py` (`python3 tools/i18n.py`); the dictionaries are inside it.
 
 ## Making a proposal for a new hotel
 
-`proposal-template.html` is the finished Anjum proposal with the
-hotel-specific text replaced by tokens. To produce a new one, copy it to
-`<hotel>-proposal.html`, replace the tokens, and (if it should go live) add a
-copy line for it in `.github/workflows/pages.yml`:
+Use the team portal: admin page → **Proposals** builds a page per hotel behind a private
+24-character link (`team/proposal.html?p=…`); its prices live only in Firestore.
+
+`proposal-template.html` is the old static version with the hotel-specific text replaced by
+tokens and every price replaced by `[[PRICE_n]]`. **Never commit a filled-in copy** — this
+repository is public. Fill a copy locally and send it as a file if you ever need it:
 
 | Token | Example |
 | --- | --- |
