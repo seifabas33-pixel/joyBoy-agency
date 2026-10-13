@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-og0vVXoPIqG68qWqrpmFZf7N1sWm6bMBRsVopxMTQqU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-WM40KJXg30u/gmtuQOHBaeuzWqXomM5a06jF1Afp4DE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team portal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,8 +20,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202610131413">
-<script src="firebase-config.js?v=202610131413"></script>
+<link rel="stylesheet" href="portal.css?v=202610131424">
+<script src="firebase-config.js?v=202610131424"></script>
 <script>
 (function(){
   var KEY = "jb-theme2", ORDER = ["auto", "light", "dark"];   // new key (2026-10-03): everyone starts again on Auto
@@ -248,7 +248,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState, hotelSpots, signupCount, firstWord } from "./portal.js?v=202610131413";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState, hotelSpots, signupCount, firstWord } from "./portal.js?v=202610131424";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -342,11 +342,14 @@ $("form").addEventListener("submit", async e => {
   if (!validate(5)) return;
   const btn = $("submit"); btn.disabled = true; btn.textContent = "Saving…"; err("");
   try {
-    const data = collect();
-    if (photoBlob){ const r = await be.uploadImage(user.uid, "avatar.jpg", photoBlob); data.photoPath = r.path; data.photoThumb = await blobToDataUrl(await shrink(photoBlob, 128, .8)); }
-    if (scanBlob){ const r = await be.uploadImage(user.uid, "id.jpg", scanBlob); data.idScanPath = r.path; }
-    if (profile){ await be.updateProfile(user.uid, data); }
-    else { data.status = "pending"; data.consentAt = new Date().toISOString(); data.inviteCodeUsed = val("inviteCode").trim().toUpperCase(); await be.createProfile(user.uid, data); }
+    const data = collect(), isNew = !profile, paths = {};
+    if (photoBlob) data.photoThumb = await blobToDataUrl(await shrink(photoBlob, 128, .8));
+    // a new profile is saved first (that is where the invite code is checked); the server takes photos only for an existing profile
+    if (isNew){ data.status = "pending"; data.consentAt = new Date().toISOString(); data.inviteCodeUsed = val("inviteCode").trim().toUpperCase(); await be.createProfile(user.uid, data); }
+    if (photoBlob){ const r = await be.uploadImage(user.uid, "avatar.jpg", photoBlob); paths.photoPath = r.path; }
+    if (scanBlob){ const r = await be.uploadImage(user.uid, "id.jpg", scanBlob); paths.idScanPath = r.path; }
+    if (!isNew) await be.updateProfile(user.uid, { ...data, ...paths });
+    else if (Object.keys(paths).length) await be.updateProfile(user.uid, paths);
     profile = await be.getProfile(user.uid); photoBlob = scanBlob = null;
     toast("Profile saved"); renderProfile();
   } catch (ex) {
@@ -382,7 +385,7 @@ async function loadAttendance(){
   allShifts = hotelShifts(hotel);
   const today = dayKey();
   be.signupsOn(today, hotel.id).then(l => { signups = l.filter(r => r.hotelId === hotel.id); if (plan) paintProg(); }).catch(() => {});   // guests signed up for today's activities
-  [hist, plan, reqs, planTmrw, weekPlans] = await Promise.all([be.myAttendance(user.uid, addDays(today, -14)).catch(ex => { console.warn(ex); return []; }), be.getPlan(hotel.id, today).catch(() => null), be.myRequests(user.uid, today).catch(() => []), be.getPlan(hotel.id, addDays(today, 1)).catch(() => null), be.plansRange(today, addDays(today, 6)).then(ps => ps.filter(p => p.hotelId === hotel.id)).catch(() => [])]);
+  [hist, plan, reqs, planTmrw, weekPlans] = await Promise.all([be.myAttendance(user.uid, addDays(today, -14)).catch(ex => { console.warn(ex); return []; }), be.getPlan(hotel.id, today).catch(() => null), be.myRequests(user.uid, today).catch(() => []), be.getPlan(hotel.id, addDays(today, 1)).catch(() => null), Promise.all(Array.from({ length: 7 }, (_, i) => be.getPlan(hotel.id, addDays(today, i)).catch(() => null))).then(ps => ps.filter(Boolean))]);   // own hotel, day by day (the rules show staff no other hotel)
   shifts = scheduledShifts(allShifts, plan, user.uid);
   dayRec = hist.find(r => r.date === today && !r.shift) || null; recs = hist.filter(r => r.date === today && r.shift);
   $("att-hotel").textContent = hotel.name; $("att-date").textContent = today; show("att", true); paintAtt(); paintProg(); paintPush();

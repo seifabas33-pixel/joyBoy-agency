@@ -79,7 +79,9 @@ async function firebaseBackend(){
     adminUpdate: (uid, patch) => F.updateDoc(F.doc(db, "employees", uid), { ...patch, reviewedAt: ts() }),
     getNotes: async uid => { const s = await F.getDoc(F.doc(db, "employees", uid, "private", "notes")); return s.exists() ? (s.data().text || "") : ""; },
     setNotes: (uid, text, by) => F.setDoc(F.doc(db, "employees", uid, "private", "notes"), { text, by, updatedAt: ts() }),
-    deleteEmployee: async uid => { for (const f of ["avatar.jpg", "id.jpg"]) { try { await F.deleteDoc(F.doc(db, "employees", uid, "files", f)); } catch {} } try { await F.deleteDoc(F.doc(db, "employees", uid, "private", "notes")); } catch {} await F.deleteDoc(F.doc(db, "employees", uid)); },
+    deleteEmployee: async uid => { for (const f of ["avatar.jpg", "id.jpg"]) { try { await F.deleteDoc(F.doc(db, "employees", uid, "files", f)); } catch {} } for (const p of ["notes", "pay"]) { try { await F.deleteDoc(F.doc(db, "employees", uid, "private", p)); } catch {} }
+      try { const ds = await F.getDocs(F.collection(db, "employees", uid, "devices")); await Promise.all(ds.docs.map(d => F.deleteDoc(d.ref))); } catch {}   // nothing of the person is left behind
+      await F.deleteDoc(F.doc(db, "employees", uid)); },
     getSettings: async () => { const s = await F.getDoc(F.doc(db, "settings", "registration")); return s.exists() ? s.data() : {}; },
     setSettings: patch => F.setDoc(F.doc(db, "settings", "registration"), patch, { merge: true }),
     // push notifications: this device registers itself; tools/sheets-sync.gs sends to the stored tokens
@@ -162,7 +164,7 @@ async function firebaseBackend(){
         let sk = "";
         if (!pr.ok) out.push("Your phone is not allowed to read today's plan — that usually means your profile is not approved on the server.");
         else if (pr.s.exists()) { const pl = pr.s.data(); sk = pl.shifts && pl.shifts[rec.shift] ? (pl.shifts[rec.shift].spot || "") : ""; }
-        if (rec.method !== "code" && sk !== (rec.spot || "")) out.push(`The office planned this shift at "${(h.spots && h.spots[sk] && h.spots[sk].name) || sk || "anywhere at the hotel"}", but your phone was checking in for "${rec.spotName || "anywhere at the hotel"}". Close the portal completely and open it again.`);
+        if (sk !== (rec.spot || "")) out.push(`The office planned this shift at "${(h.spots && h.spots[sk] && h.spots[sk].name) || sk || "anywhere at the hotel"}", but your phone was checking in for "${rec.spotName || "anywhere at the hotel"}". Close the portal completely and open it again.`);
         const t = sk && h.spots && h.spots[sk] ? h.spots[sk] : h;
         if (rec.method === "code") {}   // no pin needed; the code itself is checked below
         else if (typeof t.lat !== "number" || typeof t.lng !== "number" || typeof t.cosLat !== "number" || typeof t.radiusM !== "number") out.push(`The pin for ${t === h ? "the hotel" : "the " + (t.name || sk)} is incomplete on the server. The office must fix it in Hotels.`);

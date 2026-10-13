@@ -213,6 +213,15 @@ function diagnose(){
  * One line per registered person: is he in the attendance tab, and if not, why.
  * Written on every sync, so a missing colleague is always explainable without opening the script.
  */
+/** Approved staff's display names by uid, cached like the hotels — the check-in alert names people from their profile,
+    never from the name a phone wrote into its own check-in. */
+function cachedNames(props){
+  const raw = props.getProperty("namesCache");
+  if (raw){ try { const c = JSON.parse(raw); if (new Date().getTime() - c.at < 1800000) return c.names; } catch (e) {} }
+  const names = {}; fetchAll("employees").forEach(d => { if (d.f.status === "approved") names[d.id] = d.f.preferredName || d.f.fullName || d.f.email || ""; });
+  try { props.setProperty("namesCache", JSON.stringify({ at: new Date().getTime(), names: names })); } catch (e) {}
+  return names;
+}
 function writeSyncReport(employees, byHotel, recs, from, today){
   const seen = {}; recs.forEach(r => { seen[r.uid] = (seen[r.uid] || 0) + 1; });
   const rows = employees.map(e => {
@@ -490,6 +499,25 @@ function housekeeping(props, today){
   props.getKeys().forEach(k => { const m = /^(rem|task|miss)_(\d{4}-\d{2}-\d{2})_/.exec(k); if (m && m[2] < keep) props.deleteProperty(k); });
   try { const old = runQuery("signups", [["date", "LESS_THAN", addDays(today, -7)]], { limit: 300 }); old.forEach(d => restDelete("signups/" + d.id)); if (old.length) Logger.log("deleted " + old.length + " old guest sign-ups"); }
   catch (e) { Logger.log("sign-up cleanup: " + e); }
+  try { const n = deleteOrphanFiles(); if (n) Logger.log("deleted the photos / ID scans of " + n + " abandoned registration(s)"); } catch (e) { Logger.log("orphan cleanup: " + e); }
+}
+/** Photos and ID scans uploaded by someone who never finished registering (e.g. a wrong invite code, before 2026-10-13
+    the page uploaded them first) sit under employees/{uid}/files with no profile — invisible to the office. Delete them. */
+function deleteOrphanFiles(){
+  const base = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/employees?showMissing=true&pageSize=300&mask.fieldPaths=uid`;
+  let token = "", n = 0;
+  do {
+    const res = UrlFetchApp.fetch(base + (token ? "&pageToken=" + encodeURIComponent(token) : ""), { headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
+    if (res.getResponseCode() !== 200) throw new Error(res.getContentText().slice(0, 200));
+    const j = JSON.parse(res.getContentText());
+    (j.documents || []).filter(d => !d.createTime).forEach(d => {          // no createTime = the profile does not exist, only things under it
+      const uid = d.name.split("/").pop(); n++;
+      ["avatar.jpg", "id.jpg"].forEach(f => restDelete("employees/" + uid + "/files/" + f));
+      try { fetchAll("employees/" + uid + "/devices").forEach(x => restDelete("employees/" + uid + "/devices/" + x.id)); } catch (e) {}
+    });
+    token = j.nextPageToken || "";
+  } while (token);
+  return n;
 }
 /** Who a programme item is for: the people named on it, or — when it is marked "everyone" — the staff
     of that hotel who are actually scheduled today. Someone with the day off is never reminded. */
@@ -548,15 +576,15 @@ function tellOfficeAboutCheckIns(props, today){
   props.setProperty(KEY, String(fresh[fresh.length - 1].checkInAt));
   const office = officeDevices();
   if (!office.length) return 0;
-  const hotels = cachedHotels(props);
+  const hotels = cachedHotels(props), names = cachedNames(props), nameOf = r => names[r.uid] || "Someone not on the staff list";
   const line = r => {
     const h = hotels.filter(x => x.id === r.hotelId)[0] || {};
     const sh = hotelShifts(h).filter(x => x.key === r.shift)[0] || null;
     const at = hhmm(r.checkInAt);
     const lateBy = sh ? toMin(at) - (toMin(sh.start) + (sh.graceMin == null ? 5 : +sh.graceMin)) : 0;
-    return (r.name || r.email || "Someone") + " · " + (sh ? sh.name : r.shift) + " · " + at + (lateBy > 0 ? " · " + lateBy + " min late" : "") + (r.method === "code" ? " · hotel code" : "");
+    return nameOf(r) + " · " + (sh ? sh.name : r.shift) + " · " + at + (lateBy > 0 ? " · " + lateBy + " min late" : "") + (r.method === "code" ? " · hotel code" : "");
   };
-  const title = fresh.length === 1 ? "Checked in: " + (fresh[0].name || fresh[0].email || "someone") : fresh.length + " just checked in";
+  const title = fresh.length === 1 ? "Checked in: " + nameOf(fresh[0]) : fresh.length + " just checked in";
   const body = fresh.map(line).join("\n").slice(0, 300);
   return sendPush(office, title, body, ADMIN_URL, "checkin");
 }

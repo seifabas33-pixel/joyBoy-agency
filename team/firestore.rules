@@ -153,10 +153,14 @@ service cloud.firestore {
       // Profile photo and document scan, stored as data URLs (avatar.jpg / id.jpg).
       match /files/{file} {
         allow read: if isOwner(uid) || isAdmin();
+        // only once the profile exists (an abandoned registration must not leave an ID scan behind), images only
         allow create, update: if isOwner(uid)
           && file in ['avatar.jpg', 'id.jpg']
+          && exists(/databases/$(database)/documents/employees/$(uid))
+          && request.resource.data.keys().hasOnly(['data', 'type', 'size', 'updatedAt'])
           && request.resource.data.data is string
           && request.resource.data.data.size() < 1000000
+          && request.resource.data.data.matches('data:image/[a-z+.-]+;base64,[A-Za-z0-9+/=]+')
           && request.resource.data.type is string
           && request.resource.data.type.matches('image/.*');
         allow delete: if isOwner(uid) || isAdmin();
@@ -180,13 +184,22 @@ service cloud.firestore {
     }
 
     // ── Hotels: where the teams work. Staff read them (for check-in), admins manage them. ──
+    // Staff read their own hotel only (one get); the office reads and lists all.
     match /hotels/{hotelId} {
-      allow read: if isApproved() || isAdmin();
+      allow get: if isAdmin() || (signedIn() && approvedAt(request.auth.uid, hotelId));
+      allow list: if isAdmin();
       allow write: if isAdmin();
     }
+    function planOfMyHotel(id) {
+      let e = get(/databases/$(database)/documents/employees/$(request.auth.uid)).data;
+      return e.status == 'approved' && e.get('hotelId', '') is string && e.get('hotelId', '') != ''
+        && id.matches(e.hotelId + '_[0-9]{4}-[0-9]{2}-[0-9]{2}');
+    }
     // Daily plan: which spot each shift checks in at — plans/{hotelId}_{date}, set by the office.
+    // Staff read their own hotel's plans, one day at a time by id ({hotelId}_{date}); other hotels' rosters and notes stay closed.
     match /plans/{id} {
-      allow read: if isApproved() || isAdmin();
+      allow get: if isAdmin() || (signedIn() && planOfMyHotel(id));
+      allow list: if isAdmin();
       allow write: if isAdmin();
     }
 
@@ -199,12 +212,15 @@ service cloud.firestore {
       let e = get(/databases/$(database)/documents/employees/$(uid)).data;
       return e.status == 'approved' && e.hotelId == hotelId;
     }
-    function insideFence(d) {
-      let h = get(/databases/$(database)/documents/hotels/$(d.hotelId)).data;
+    // the spot the office planned for this shift today ('' = anywhere at the hotel); a check-in must name the same spot
+    function plannedKey(d) {
       let pid = d.hotelId + '_' + d.date;
       let plan = exists(/databases/$(database)/documents/plans/$(pid)) ? get(/databases/$(database)/documents/plans/$(pid)).data : {};
-      // the spot planned for this shift today ('' = anywhere at the hotel); the record must name the same spot
-      let sk = ('shifts' in plan && d.shift in plan.shifts) ? plan.shifts[d.shift].get('spot', '') : '';
+      return ('shifts' in plan && d.shift in plan.shifts) ? plan.shifts[d.shift].get('spot', '') : '';
+    }
+    function insideFence(d) {
+      let h = get(/databases/$(database)/documents/hotels/$(d.hotelId)).data;
+      let sk = plannedKey(d);
       let t = (sk != '' && 'spots' in h && sk in h.spots) ? h.spots[sk] : h;
       let dx = (d.lng - t.lng) * t.cosLat * 111320.0;
       let dy = (d.lat - t.lat) * 110540.0;
@@ -235,7 +251,7 @@ service cloud.firestore {
     }
     // GPS (the normal way) or the hotel code shown by the office.
     function atHotel(d) {
-      return d.get('method', 'gps') == 'code' ? (codeOk(d) && shiftExists(d)) : insideFence(d);
+      return d.get('method', 'gps') == 'code' ? (codeOk(d) && shiftExists(d) && d.get('spot', '') == plannedKey(d)) : insideFence(d);
     }
     // What a staff phone may put in a check-in: numbers for the location, short text for the names.
     function checkinFieldsOk(d) {
@@ -252,6 +268,7 @@ service cloud.firestore {
         && request.resource.data.checkInAt == request.time
         && request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'hotelId', 'hotelName', 'date', 'shift', 'shiftName', 'spot', 'spotName', 'checkInAt', 'lat', 'lng', 'accuracy', 'distM', 'method', 'code'])
         && checkinFieldsOk(request.resource.data)
+        && (!('email' in request.resource.data) || request.resource.data.email == request.auth.token.email)
         && approvedAt(request.auth.uid, request.resource.data.hotelId)
         && atHotel(request.resource.data));
       // Owner may (a) check out once (with where they were, if the phone gave it), until the next morning, or (b) add their real check-in on a day the office already marked (manual mark / grid import) — once, on that day, inside the fence or with the hotel code.
@@ -259,15 +276,18 @@ service cloud.firestore {
       allow update: if isAdmin() || (isOwner(resource.data.uid) && (
         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checkOutAt', 'outLat', 'outLng', 'outAccuracy', 'outDistM'])
           && (!('checkOutAt' in resource.data) || resource.data.checkOutAt == null)
+          && 'shift' in resource.data && resource.data.get('checkInAt', null) != null
           && request.resource.data.checkOutAt == request.time
           && request.time < dayStart(resource.data.date) + duration.value(30, 'h')
           && numOrNull(request.resource.data, 'outLat') && numOrNull(request.resource.data, 'outLng')
           && numOrNull(request.resource.data, 'outAccuracy') && numOrNull(request.resource.data, 'outDistM'))
         || ((!('checkInAt' in resource.data) || resource.data.checkInAt == null) && 'shift' in resource.data
+          && !('editedBy' in resource.data)          // a check-in the office removed or set by hand stays the office's
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checkInAt', 'lat', 'lng', 'accuracy', 'distM', 'email', 'name', 'hotelName', 'shiftName', 'spot', 'spotName', 'method', 'code'])
           && request.resource.data.checkInAt == request.time
           && isToday(resource.data.date)
           && checkinFieldsOk(request.resource.data)
+          && (!('email' in request.resource.data) || request.resource.data.email == request.auth.token.email)
           && approvedAt(request.auth.uid, request.resource.data.hotelId)
           && atHotel(request.resource.data))));
       allow delete: if isAdmin();
