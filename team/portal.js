@@ -192,6 +192,7 @@ async function firebaseBackend(){
     // mergeFields: re-saving the programme never touches the live counts the guests raise.
     savePublicProgramme: (hotelId, hotelName, date, items) => F.setDoc(F.doc(db, "publicProgramme", `${hotelId}_${date}`), { hotelId, hotelName, date, items, updatedAt: ts() }, { mergeFields: ["hotelId", "hotelName", "date", "items", "updatedAt"] }),
     // the office resets an activity's guest-page number to the sign-ups it can see (e.g. after fake sign-ups made it read "Full")
+    deleteSignup: id => F.deleteDoc(F.doc(db, "signups", id)),
     setGuestCount: (hotelId, date, taskId, n) => F.updateDoc(F.doc(db, "publicProgramme", `${hotelId}_${date}`), { ["counts." + taskId]: n }),
     // staff must name their hotel (the rules let them read only their own hotel's sign-ups); the office may leave it out
     signupsOn: async (date, hotelId) => { const s = await F.getDocs(F.query(F.collection(db, "signups"), F.where("date", "==", date), ...(hotelId ? [F.where("hotelId", "==", hotelId)] : []))); return s.docs.map(att); },
@@ -310,6 +311,7 @@ function demoBackend(){
     diagnoseCheckIn: async () => [],
     checkOut: async (id, where) => { const a = get("att") || {}; if (!a[id]) throw new Error("No check-in for this shift"); a[id] = { ...a[id], checkOutAt: now(), ...(where || {}) }; set("att", a); return { id, ...a[id] }; },
     savePublicProgramme: async (hotelId, hotelName, date, items) => { const pp = get("pubprog") || {}, id = `${hotelId}_${date}`; pp[id] = { ...(pp[id] || {}), hotelId, hotelName, date, items, updatedAt: now() }; set("pubprog", pp); },
+    deleteSignup: async id => set("signups", (get("signups") || []).filter(r => r.id !== id)),
     setGuestCount: async (hotelId, date, taskId, n) => { const pp = get("pubprog") || {}, id = `${hotelId}_${date}`; if (pp[id]) { pp[id].counts = { ...(pp[id].counts || {}), [taskId]: n }; set("pubprog", pp); } },
     signupsOn: async (date, hotelId) => (get("signups") || []).filter(r => r.date === date && (!hotelId || r.hotelId === hotelId)),
     cleanupSignups: async before => { const l = get("signups") || [], keep = l.filter(r => r.date >= before); set("signups", keep); return l.length - keep.length; },
@@ -385,6 +387,7 @@ export async function initGuest(){
       const l = JSON.parse(localStorage.getItem("jb-demo-signups") || "[]"); l.push({ id: "s" + Date.now(), ...rec, createdAt: new Date().toISOString() }); localStorage.setItem("jb-demo-signups", JSON.stringify(l));
       return c[rec.taskId];
     },
+    mySignup: async () => false,
   };
   const [{ initializeApp }, A, F] = await Promise.all([import(FB + "firebase-app.js"), import(FB + "firebase-auth.js"), import(FB + "firebase-firestore.js")]);
   const app = initializeApp(cfg), auth = A.getAuth(app), db = F.getFirestore(app);
@@ -403,6 +406,8 @@ export async function initGuest(){
       b.update(pref, { ["counts." + rec.taskId]: F.increment(rec.count), last: ref.id });
       await b.commit();
     },
+    // did this phone's sign-up arrive? (a reply lost on hotel Wi-Fi makes the retry look refused)
+    mySignup: async rec => { const s = await F.getDoc(F.doc(db, "signups", `${auth.currentUser.uid}_${rec.date}_${rec.taskId}`)); return s.exists(); },
   };
 }
 
@@ -509,7 +514,11 @@ export function currentShift(shifts, nowMin){
 export function shiftStatus(rec, shift, date, today = dayKey(), nowMin = toMin(hhmm(new Date()))){
   const start = toMin(shift.start) ?? 0, grace = shift.graceMin != null ? +shift.graceMin : 5;
   if (rec && rec.override) return { code: rec.override, lateMin: rec.checkInAt ? Math.max(0, toMin(hhmm(rec.checkInAt)) - start) : null, auto: false };
-  if (rec && rec.checkInAt){ const late = toMin(hhmm(rec.checkInAt)) - start; return late <= grace ? { code: "present", lateMin: Math.max(0, late), auto: true } : { code: "late", lateMin: late, auto: true, review: true }; }
+  if (rec && rec.checkInAt){
+    // a check-in stamped on another day than its record (only possible for records made before 2026-10-13) is never "on time"
+    const dd = Math.round((Date.parse(dayKey(rec.checkInAt)) - Date.parse(date)) / 864e5), late = dd * 1440 + toMin(hhmm(rec.checkInAt)) - start;
+    if (dd !== 0) return { code: "late", lateMin: late, auto: true, review: true, otherDay: true };
+    return late <= grace ? { code: "present", lateMin: Math.max(0, late), auto: true } : { code: "late", lateMin: late, auto: true, review: true }; }
   if (date > today || (date === today && nowMin <= start + grace)) return { code: "pending", lateMin: null, auto: true };
   return { code: "absent", lateMin: null, auto: true };
 }

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-WM40KJXg30u/gmtuQOHBaeuzWqXomM5a06jF1Afp4DE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-dCblm0JxvHh6ta8PI/LudfGQ27/4J2Qz9pPof3jI3OM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team portal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,8 +20,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202610131424">
-<script src="firebase-config.js?v=202610131424"></script>
+<link rel="stylesheet" href="portal.css?v=202610131440">
+<script src="firebase-config.js?v=202610131440"></script>
 <script>
 (function(){
   var KEY = "jb-theme2", ORDER = ["auto", "light", "dark"];   // new key (2026-10-03): everyone starts again on Auto
@@ -108,8 +108,8 @@
             <div class="pv" id="pv"><span>Your photo</span></div>
             <div class="f" id="f-photo"><label class="btn ghost small filebtn">Choose a photo from your gallery <input type="file" id="photo" accept="image/*"></label><p class="hint">Pick any clear photo of your face from your phone — a normal picture is fine, no studio shot needed. Any size: we shrink it on your phone before saving.</p><p class="err" id="e-photo">Please add a profile photo.</p></div>
           </div>
-          <label class="f full"><span>Full name <b class="req">*</b></span><input class="in" id="fullName" autocomplete="name" placeholder="As in your passport"><span class="err">Enter your full name.</span></label>
-          <label class="f"><span>Preferred / stage name</span><input class="in" id="preferredName" placeholder="What guests call you"></label>
+          <label class="f full"><span>Full name <b class="req">*</b></span><input class="in" id="fullName" autocomplete="name" maxlength="120" placeholder="As in your passport"><span class="err">Enter your full name.</span></label>
+          <label class="f"><span>Preferred / stage name</span><input class="in" id="preferredName" maxlength="60" placeholder="What guests call you"></label>
           <label class="f"><span>Date of birth <b class="req">*</b></span><input class="in" type="date" id="dob"><span class="err">You must be at least 18.</span></label>
           <div class="f full" id="f-gender"><span>Gender <b class="req">*</b></span><div class="seg" role="radiogroup" aria-label="Gender"><label><input type="radio" name="gender" value="Male"><span>Male</span></label><label><input type="radio" name="gender" value="Female"><span>Female</span></label></div><span class="err">Please choose.</span></div>
           <label class="f"><span>Nationality <b class="req">*</b></span><select class="in" id="nationality"></select><span class="err">Choose your nationality.</span></label>
@@ -248,7 +248,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState, hotelSpots, signupCount, firstWord } from "./portal.js?v=202610131424";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState, hotelSpots, signupCount, firstWord } from "./portal.js?v=202610131440";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -333,9 +333,10 @@ function fill(p){
   (p.skills || []).forEach(v => { const el = document.querySelector(`input[name="skills"][value="${v}"]`); if (el) el.checked = true; });
   const existing = p.photoThumb || p.photoUrl; if (existing){ $("pv").innerHTML = `<img src="${esc(existing)}" alt="">`; $("pv").classList.add("has"); }
   show("f-invite", false); show("f-consent", false);
+  $("fullName").readOnly = p.status === "approved"; $("fullName").title = p.status === "approved" ? "Approved: ask the office to correct your full name" : "";   // the office owns the legal name once approved
   if (p.idScanPath){ be.imageUrl(p.idScanPath).then(u => { if (u){ $("docpv").src = u; $("docpv").classList.add("has"); } }).catch(() => {}); }
 }
-function resetForm(){ $("form").reset(); photoBlob = scanBlob = null; $("pv").innerHTML = "<span>Your photo</span>"; $("pv").classList.remove("has"); $("docpv").classList.remove("has"); $("docpv").removeAttribute("src"); document.querySelectorAll(".pay-extra").forEach(x => x.classList.remove("on")); document.querySelectorAll(".f.bad").forEach(x => x.classList.remove("bad")); show("f-invite", true); show("f-consent", true); $("form-eyebrow").textContent = "New registration"; }
+function resetForm(){ $("form").reset(); $("fullName").readOnly = false; photoBlob = scanBlob = null; $("pv").innerHTML = "<span>Your photo</span>"; $("pv").classList.remove("has"); $("docpv").classList.remove("has"); $("docpv").removeAttribute("src"); document.querySelectorAll(".pay-extra").forEach(x => x.classList.remove("on")); document.querySelectorAll(".f.bad").forEach(x => x.classList.remove("bad")); show("f-invite", true); show("f-consent", true); $("form-eyebrow").textContent = "New registration"; }
 $("form").addEventListener("submit", async e => {
   e.preventDefault();
   if (step < 5){ if (validate(step)){ step++; paint(); } return; }
@@ -354,7 +355,9 @@ $("form").addEventListener("submit", async e => {
     toast("Profile saved"); renderProfile();
   } catch (ex) {
     console.error(ex);
-    err(/permission|denied/i.test(String(ex)) ? "Saving was refused. The invite code is wrong, or your account is not allowed — check with the office." : "Could not save: " + (ex.message || ex));
+    err(!/permission|denied/i.test(String(ex)) ? "Could not save: " + (ex.message || ex)
+      : profile ? "Saving was refused. Check the name fields (no line breaks; full name up to 120 letters, stage name up to 60). Once you are approved, only the office can change your full name."
+      : "Saving was refused. The invite code is wrong, or your account is not allowed — check with the office.");
   } finally { btn.disabled = false; btn.textContent = "Save my profile"; }
 });
 

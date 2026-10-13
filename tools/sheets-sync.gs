@@ -29,8 +29,8 @@
  * Import (sheet → portal): open one of your monthly grid tabs (names in column B, one
  * column per day with a letter) and use Joy Boy → "Import this month tab into the portal".
  * Letters: P present · H half day · A absent · S sick · V vacation · O day off · E excused.
- * Names are matched to approved staff by full name first, then stage name; a name that fits more than one person is
- * never guessed. For anyone it cannot match, add a tab "Portal names" with the sheet name in column A and the person's Gmail in column B.
+ * Names are matched to approved staff by full name (or a first name that only one person has); stage names are not used
+ * and a name that fits more than one person is never guessed. For anyone it cannot match, add a tab "Portal names" with the sheet name in column A and the person's Gmail in column B.
  *
  * Digest e-mails: Joy Boy → "Install twice-daily digest" sends the office accounts a short e-mail at
  * about 10:30 and 20:30 Egypt time with pending registrations, late check-ins and requests that need a
@@ -46,9 +46,9 @@ const PROJECT_ID = "joy-boy-agency";
 const DAYS_BACK = 62;                 // how much history to (re)write each run
 const TZ = "Africa/Cairo";
 const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)", REPORT_TAB = "Sync report (portal)";
-const SCRIPT_VERSION = "2026-10-13a";   // shown in every toast, so you can tell which copy the sheet is running
+const SCRIPT_VERSION = "2026-10-13b";   // shown in every toast, so you can tell which copy the sheet is running
 
-function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addSeparator().addItem("Reminders: install (every 15 min)", "installPushTriggers").addItem("Reminders: send a test", "testPush").addItem("Reminders: test a programme item", "testTaskPush").addItem("Reminders: check for arrivals now", "checkinTick").addToUi(); }
+function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addSeparator().addItem("Reminders: install (every 15 min)", "installPushTriggers").addItem("Reminders: send a test", "testPush").addItem("Reminders: test a programme item", "testTaskPush").addItem("Reminders: check for arrivals now", "checkinTick").addSeparator().addItem("Security check: look for odd records", "securityCheck").addToUi(); }
 function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); note("Done — the sheet now refreshes every hour."); }
 /** Non-blocking confirmation: a toast in the sheet if it is open, otherwise just the log (an alert would wait for a click and time out). */
 function note(msg){ Logger.log(msg); try { SpreadsheetApp.getActive().toast(msg, "Joy Boy", 8); } catch (e) {} }
@@ -98,7 +98,10 @@ function hotelShifts(h){
 function shiftStatus(r, sh, date, today, nowMin){
   const start = toMin(sh.start) == null ? 0 : toMin(sh.start), grace = sh.graceMin == null ? 5 : +sh.graceMin;
   if (r && r.override) return { code: r.override, label: LABEL[r.override] || r.override, lateMin: r.checkInAt ? Math.max(0, toMin(hhmm(r.checkInAt)) - start) : null };
-  if (r && r.checkInAt){ const late = toMin(hhmm(r.checkInAt)) - start; return late <= grace ? { code: "present", label: LABEL.present, lateMin: Math.max(0, late) } : { code: "late", label: "Late (undecided)", lateMin: late, review: true }; }
+  if (r && r.checkInAt){
+    const dd = Math.round((new Date(Utilities.formatDate(new Date(r.checkInAt), TZ, "yyyy-MM-dd") + "T00:00:00Z") - new Date(date + "T00:00:00Z")) / 864e5), late = dd * 1440 + toMin(hhmm(r.checkInAt)) - start;
+    if (dd !== 0) return { code: "late", label: "Check-in on another day (undecided)", lateMin: late, review: true };   // mirror of portal.js shiftStatus
+    return late <= grace ? { code: "present", label: LABEL.present, lateMin: Math.max(0, late) } : { code: "late", label: "Late (undecided)", lateMin: late, review: true }; }
   if (date > today || (date === today && nowMin <= start + grace)) return { code: "pending", label: LABEL.pending, lateMin: null };
   return { code: "absent", label: LABEL.absent, lateMin: null };
 }
@@ -167,7 +170,9 @@ function runQuery(collection, filters, opts){
     .map(r => ({ id: r.document.name.split("/").pop(), ...unwrap(r.document.fields || {}) }));
 }
 /** Display name of a staff member from their profile — never from a name typed into a note, a rating or a check-in. */
-function staffName(employees, uid, fallback){ const e = employees.filter(x => x.uid === uid)[0]; return e ? (e.preferredName || e.fullName || e.email || fallback) : fallback; }
+function staffName(employees, uid, fallback){ const e = employees.filter(x => x.uid === uid)[0]; return oneLine(e ? (e.preferredName || e.fullName || e.email || fallback) : fallback, 60); }
+/** Text typed by staff or guests, made safe for a push or an e-mail line: no line breaks (no injected "ACTION NEEDED…" lines), bounded. */
+function oneLine(t, n){ return String(t == null ? "" : t).replace(/[\r\n\t\u2028\u2029]+/g, " ").replace(/\s{2,}/g, " ").trim().slice(0, n || 120); }
 /** Hotel names and shift times, kept in Script Properties for half an hour — the fast tick needs them
     for the "x min late" line and must not fetch the hotels every single minute. */
 function cachedHotels(props){
@@ -285,12 +290,12 @@ function importGrid(){
   const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f })).filter(e => e.status === "approved");   // only approved staff can receive marks
   const hotels = Object.fromEntries(fetchAll("hotels").map(d => [d.id, d.f]));
   const map = {}; const mt = ss.getSheetByName("Portal names"); if (mt) mt.getDataRange().getValues().forEach(r => { if (r[0] && r[1]) map[norm(r[0])] = String(r[1]).toLowerCase().trim(); });
-  // Full name first (the office's own record), then the stage name the person chose, then a lone first name.
-  // A sheet name that fits two people is never guessed: it goes to the "not found" list instead.
+  // Full name (staff cannot change it once approved — only the office can), then a lone first name of a full name.
+  // Stage names are never used: staff choose them. Nicknames go in the "Portal names" tab. A name that fits two people is never guessed.
   const ambiguous = new Set();
   const findEmp = name => { const n = norm(name); if (!n) return null;
     if (map[n]) return employees.find(e => String(e.email).toLowerCase() === map[n]) || null;
-    const tries = [e => norm(e.fullName) === n, e => norm(e.preferredName) === n, e => n.split(" ").length === 1 && norm(e.fullName).split(" ")[0] === n];
+    const tries = [e => norm(e.fullName) === n, e => n.split(" ").length === 1 && norm(e.fullName).split(" ")[0] === n];
     for (const t of tries){ const hits = employees.filter(t); if (hits.length === 1) return hits[0]; if (hits.length > 1){ ambiguous.add(String(name).trim()); return null; } }
     return null; };
   const days = dayCols.map(x => x.date).sort(), existing = {};
@@ -408,7 +413,7 @@ function sendPush(devices, title, body, url, tag){
 function pushTick(){
   const props = PropertiesService.getScriptProperties();
   const today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd"), nowMin = toMin(hhmm(new Date()));
-  const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f })).filter(e => e.status === "approved" && e.hotelId);
+  const employees = queryWhere("employees", "status", "approved").map(e => ({ ...e, uid: e.id })).filter(e => e.hotelId);
   const hotels = fetchAll("hotels").map(d => ({ id: d.id, ...d.f })), byHotel = {}; hotels.forEach(h => { byHotel[h.id] = h; });
   const att = queryWhere("attendance", "date", today);
   const plans = queryWhere("plans", "date", today);
@@ -463,7 +468,7 @@ function pushTick(){
       if (!expected.length || !missing.length) return;                                     // everybody in: no news is good news
       const office = officeDevices();
       if (!office.length) return;
-      const who = e => e.preferredName || e.fullName || e.email;
+      const who = e => oneLine(e.preferredName || e.fullName || e.email, 40);
       sent += sendPush(office, sh.name + " shift · " + missing.length + " missing",
         (expected.length - missing.length) + " of " + expected.length + " checked in at " + (h.name || "the hotel") +
         " · missing: " + missing.map(who).join(", "), ADMIN_URL + "#att", "missing-" + sh.key);
@@ -569,11 +574,12 @@ function tellOfficeAboutCheckIns(props, today){
   const KEY = "seenCheckIn";
   const seen = props.getProperty(KEY);
   if (!seen){ props.setProperty(KEY, new Date().toISOString()); return 0; }   // first run: start from now, do not replay the day
-  const fresh = queryWhere("attendance", "date", today)
-    .filter(r => r.shift && r.checkInAt && String(r.checkInAt) > seen)
-    .sort((a, b) => String(a.checkInAt).localeCompare(String(b.checkInAt)));
+  // only check-ins newer than the last look: a quiet minute reads nothing (it used to re-read all of today's records every minute)
+  const rows = runQuery("attendance", [["checkInAt", "GREATER_THAN", { ts: seen }]], { orderBy: "checkInAt", limit: 50 });
+  if (!rows.length) return 0;
+  props.setProperty(KEY, String(rows[rows.length - 1].checkInAt));
+  const fresh = rows.filter(r => r.shift && r.date === today);
   if (!fresh.length) return 0;
-  props.setProperty(KEY, String(fresh[fresh.length - 1].checkInAt));
   const office = officeDevices();
   if (!office.length) return 0;
   const hotels = cachedHotels(props), names = cachedNames(props), nameOf = r => names[r.uid] || "Someone not on the staff list";
@@ -606,7 +612,7 @@ function tellOfficeAboutBadRatings(props, today){
   const hotels = cachedHotels(props), employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f })).filter(e => e.status === "approved");
   const hotelOf = r => (hotels.filter(h => h.id === r.hotelId)[0] || {}).name || "";
   const line = r => "\u2605".repeat(Math.max(1, Math.min(5, +r.rating || 1))) + " " + (r.staffUid ? staffName(employees, r.staffUid, "a team member") + " · " : "") +
-    (r.comment ? String(r.comment).slice(0, 120) : "no comment") + (r.guestName ? " — " + String(r.guestName).slice(0, 40) : "");
+    (r.comment ? oneLine(r.comment, 120) : "no comment") + (r.guestName ? " — " + oneLine(r.guestName, 40) : "");
   const title = bad.length === 1
     ? bad[0].rating + "\u2605 from a guest" + (hotelOf(bad[0]) ? " at " + hotelOf(bad[0]) : "")
     : bad.length + " unhappy guests";
@@ -616,8 +622,11 @@ function tellOfficeAboutBadRatings(props, today){
     its location this note IS the check-in, so the office should be able to confirm it while the person is there.
     Marked notifiedAt once sent, so the minute job and the quarter-hour job never both announce the same note. */
 function tellOfficeAboutNotes(){
-  const today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd");
-  const fresh = queryWhere("requests", "date", today).filter(r => r.status === "open" && !r.notifiedAt);   // today's notes only: a quiet minute reads a handful
+  const props = PropertiesService.getScriptProperties(), KEY = "seenNote";
+  const seen = props.getProperty(KEY) || new Date(new Date().getTime() - 3600000).toISOString();   // first run: look back an hour (notifiedAt stops repeats)
+  const rows = runQuery("requests", [["createdAt", "GREATER_THAN", { ts: seen }]], { orderBy: "createdAt", limit: 50 });   // also catches a note sent just before midnight
+  if (rows.length) props.setProperty(KEY, String(rows[rows.length - 1].createdAt));
+  const fresh = rows.filter(r => r.status === "open" && !r.notifiedAt);
   if (!fresh.length) return 0;
   fresh.forEach(r => restPatch("requests/" + r.id, { notifiedAt: new Date().toISOString() }));
   const office = officeDevices();
@@ -626,7 +635,7 @@ function tellOfficeAboutNotes(){
   const who = r => staffName(employees, r.uid, "Someone not on the staff list") + (r.shiftName ? " · " + String(r.shiftName).slice(0, 30) : "");
   return sendPush(office,
     fresh.length === 1 ? "Can't check in: " + who(fresh[0]) : fresh.length + " staff can't check in",
-    fresh.length === 1 ? String(fresh[0].reason || "").slice(0, 160) + " — tap to decide." : fresh.map(who).join("\n").slice(0, 300),
+    fresh.length === 1 ? oneLine(fresh[0].reason, 160) + " — tap to decide." : fresh.map(who).join("\n").slice(0, 300),
     ADMIN_URL + "#att", "requests");
 }
 /** Office messages (Today → Send a message, roll calls, programme changes, payslips) go out within the minute.
@@ -677,6 +686,33 @@ function checkinTick(){
   const today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd");
   return tellOfficeAboutCheckIns(props, today) + tellOfficeAboutNotes() + tellOfficeAboutBadRatings(props, today) + sendQueuedNow() + tellOfficeAboutRollCalls();
 }
+/** One-off check for records that the rules before 2026-10-13 let through: check-ins stamped on another day than their
+    record (fake on-time days), profiles whose registration date is not a server time (it hides absences), open notes from
+    accounts that are not approved staff, ratings naming someone who is not on the staff. Writes the tab "Security check (portal)"
+    — nothing is changed; correct or delete what it lists from the admin page or the Firebase console. */
+function securityCheck(){
+  const today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd"), rows = [];
+  const emp = {}; let token = "";
+  do {   // raw fields, so a text createdAt can be told from a real timestamp
+    const res = UrlFetchApp.fetch(`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/employees?pageSize=300` + (token ? "&pageToken=" + encodeURIComponent(token) : ""), { headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
+    const j = JSON.parse(res.getContentText() || "{}");
+    (j.documents || []).forEach(d => { const f = d.fields || {}, uid = d.name.split("/").pop(), e = unwrap(f); emp[uid] = e;
+      const c = f.createdAt;
+      if (!c || !c.timestampValue) rows.push(["Profile", e.fullName || uid, e.email || "", "registration date is not a server time: " + JSON.stringify(c || null).slice(0, 60)]);
+      else if (c.timestampValue > new Date().toISOString()) rows.push(["Profile", e.fullName || uid, e.email || "", "registration date is in the future: " + c.timestampValue]);
+      if (e.adminNotes) rows.push(["Profile", e.fullName || uid, e.email || "", "carries office notes in the profile itself (the person can read them) — move them to the notes box"]); });
+    token = j.nextPageToken || "";
+  } while (token);
+  runQuery("attendance", [["date", "GREATER_THAN_OR_EQUAL", addDays(today, -62)]], { strict: true }).forEach(r => {
+    if (!r.shift || !r.checkInAt || r.editedBy || r.source) return;
+    const d = Utilities.formatDate(new Date(r.checkInAt), TZ, "yyyy-MM-dd");
+    if (d !== r.date) rows.push(["Check-in", (emp[r.uid] || {}).fullName || r.uid, r.date + " " + r.shift, "stamped on " + d + " " + hhmm(r.checkInAt) + " — not on the day it counts for"]);
+  });
+  queryWhere("requests", "status", "open").forEach(r => { const e = emp[r.uid]; if (!e || e.status !== "approved") rows.push(["Note", oneLine(r.name || r.email, 60), r.date, "open note from an account that is not approved staff"]); });
+  runQuery("feedback", [["date", "GREATER_THAN_OR_EQUAL", addDays(today, -31)]]).forEach(r => { if (r.staffUid && !(emp[r.staffUid] && emp[r.staffUid].status === "approved")) rows.push(["Rating", r.id, r.date, "names a team member who is not on the staff (" + oneLine(r.staffName, 40) + ")"]); });
+  writeTab("Security check (portal)", ["What", "Who / id", "Day", "Why it is listed"], rows.length ? rows : [["—", "", "", "Nothing odd found on " + today]]);
+  note("v" + SCRIPT_VERSION + " · Security check: " + rows.length + " item(s) listed in the tab \"Security check (portal)\".");
+}
 function installPushTriggers(){
   ScriptApp.getProjectTriggers().filter(t => ["pushTick", "checkinTick"].indexOf(t.getHandlerFunction()) >= 0).forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger("pushTick").timeBased().everyMinutes(15).create();      // reminders, the office queue, staff notes
@@ -714,7 +750,7 @@ function sendDigest(){
   const reqs = queryWhere("requests", "status", "open");
   const admins = fetchAll("admins").map(d => d.id);
   const to = [...new Set(BUILT_IN_ADMINS.concat(admins))].join(",");
-  const name = e => e.preferredName || e.fullName || e.email;
+  const name = e => oneLine(e.preferredName || e.fullName || e.email, 60);
   const pending = employees.filter(e => (e.status || "pending") === "pending");
   const active = employees.filter(e => e.status === "approved" && e.hotelId);
   const late = [], absent = [], present = [], perShift = {};
@@ -733,9 +769,9 @@ function sendDigest(){
   const lines = [];
   lines.push(`Joy Boy office digest — ${today} ${hhmm(new Date())} (Egypt time)`, "");
   lines.push(`Checked in today: ${present.length} of ${active.length} assigned staff.`, ...Object.keys(perShift).filter(k => perShift[k].started).map(k => `  ${k}: ${perShift[k].in} of ${perShift[k].started} checked in`), "");
-  if (pending.length) lines.push(`PENDING REGISTRATIONS (${pending.length}):`, ...pending.map(e => `  • ${name(e)} — ${e.email}`), "");
+  if (pending.length) lines.push(`PENDING REGISTRATIONS (${pending.length}):`, ...pending.map(e => `  • ${name(e)} — ${oneLine(e.email, 80)}`), "");
   if (late.length) lines.push(`LATE CHECK-INS — NEED A DECISION (${late.length}):`, ...late.map(x => "  • " + x), "");
-  if (reqs.length) lines.push(`REQUESTS FROM STAFF (${reqs.length}):`, ...reqs.map(r => `  • ${staffName(employees, r.uid, r.email || "?")} — ${r.date}${r.shiftName ? " " + String(r.shiftName).slice(0, 30) : ""}: "${String(r.reason || "").slice(0, 300)}"`), "");
+  if (reqs.length) lines.push(`REQUESTS FROM STAFF (${reqs.length}):`, ...reqs.map(r => `  • ${staffName(employees, r.uid, r.email || "?")} — ${r.date}${r.shiftName ? " " + oneLine(r.shiftName, 30) : ""}: "${oneLine(r.reason, 300)}"`), "");
   if (absent.length) lines.push(`MISSED SHIFT CHECK-INS (${absent.length}):`, ...absent.map(x => "  • " + x), "");
   if (!pending.length && !late.length && !reqs.length && !absent.length) lines.push("Nothing needs a decision right now.", "");
   lines.push(`Decide here: ${ADMIN_URL}#att`, "", "This e-mail is generated by the attendance sheet script. Personal data — do not forward outside the office.");

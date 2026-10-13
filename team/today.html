@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-s2N60wBrTAWDzkJlgu9WnBUBGvKXBxBFYgc8MDwbeEE=' 'sha256-mG6nKDCvSy8NZi7cXecA8JSV0fhsgr7Yv2g4biIObnY='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-s2N60wBrTAWDzkJlgu9WnBUBGvKXBxBFYgc8MDwbeEE=' 'sha256-V2CLWYVAj/uCtxJz0e/gP0gYKO3Y776g4UA+WzjscTE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — What's on today?</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -33,8 +33,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202610131424">
-<script src="firebase-config.js?v=202610131424"></script>
+<link rel="stylesheet" href="portal.css?v=202610131440">
+<script src="firebase-config.js?v=202610131440"></script>
 </head>
 <body class="guest">
 <main class="gwrap" id="main">
@@ -51,7 +51,7 @@
 </main>
 
 <script type="module">
-import { initGuest, dayKey, hhmm, toMin, fromCairo, esc } from "./portal.js?v=202610131424";
+import { initGuest, dayKey, hhmm, toMin, fromCairo, esc } from "./portal.js?v=202610131440";
 
 // Guests are never chased: signing up is optional, no account, no messages — two fields, and a calendar entry only if they ask.
 const DICT = {
@@ -83,13 +83,15 @@ const DICT = {
 const AGES = ["4–7", "8–12"];
 
 const q = new URLSearchParams(location.search);
-const hotelId = (q.get("h") || "").slice(0, 60), date = dayKey(), pid = `${hotelId}_${date}`;
+const hotelId = (q.get("h") || "").slice(0, 60);
+let date = dayKey(), pid = `${hotelId}_${date}`;   // the page can stay open overnight: newDay() moves it to today
 let lang = (q.get("l") || (navigator.language || "en").slice(0, 2)).toLowerCase(); if (!DICT[lang]) lang = "en";
 let be = null, prog = null, open = "", busy = false, msg = {};      // msg[taskId] = {ok|err, text}
 const $ = id => document.getElementById(id), T = () => DICT[lang];
-const MINE = "jb-mine-" + pid;
-const mine = () => { try { return JSON.parse(localStorage.getItem(MINE) || "{}"); } catch { return {}; } };
-const saveMine = m => { try { localStorage.setItem(MINE, JSON.stringify(m)); } catch {} };
+const MINE = () => "jb-mine-" + pid;
+const mine = () => { try { return JSON.parse(localStorage.getItem(MINE()) || "{}"); } catch { return {}; } };
+const saveMine = m => { try { localStorage.setItem(MINE(), JSON.stringify(m)); } catch {} };
+async function newDay(){ const d = dayKey(); if (d === date) return false; date = d; pid = `${hotelId}_${date}`; open = ""; msg = {}; prog = be ? await be.programme(hotelId, date).catch(() => null) : null; paint(); return true; }
 
 function items(){
   const its = (prog && prog.items) || {}, now = toMin(hhmm(new Date()));
@@ -133,6 +135,7 @@ async function send(it){
   if (!it || busy) return;
   const t = T(), name = $("f-name").value.trim().slice(0, 30), count = +$("f-count").value || 1, age = it.kids && $("f-age") ? $("f-age").value : "";
   if (!name) { $("f-name").focus(); msg[it.id] = { ok: false, text: t.needName }; return paintKeep(name); }
+  if (await newDay()) return;    // yesterday's list was still on screen: show today's instead of sending
   busy = true; paintKeep(name);
   try {
     await be.signUp({ hotelId, date, taskId: it.id, title: it.title, time: it.time, firstName: name, count, kids: !!it.kids, age, lang });
@@ -141,7 +144,9 @@ async function send(it){
     prog = await be.programme(hotelId, date).catch(() => prog);
   } catch (ex) {
     const denied = ex && (ex.code === "permission-denied" || /insufficient permissions/i.test(String(ex.message || ex)));
-    msg[it.id] = { ok: false, text: denied ? t.fullNow : t.fail }; open = denied ? "" : open;
+    if (denied && await be.mySignup({ date, taskId: it.id }).catch(() => false)) {   // it did arrive — the reply was lost on the way back
+      const m = mine(); m[it.id] = (m[it.id] || 0) + count; saveMine(m); msg[it.id] = { ok: true, text: t.done(name, it.time, it.place) }; open = "";
+    } else { msg[it.id] = { ok: false, text: denied ? t.fullNow : t.fail }; open = denied ? "" : open; }
     if (denied) prog = await be.programme(hotelId, date).catch(() => prog);
   } finally { busy = false; paint(); }
 }
@@ -161,7 +166,7 @@ try {
   be = await initGuest();
   if (hotelId) prog = await be.programme(hotelId, date).catch(() => null);
   paint();
-  document.addEventListener("visibilitychange", async () => { if (document.visibilityState === "visible" && !open) { prog = await be.programme(hotelId, date).catch(() => prog); paint(); } });
+  document.addEventListener("visibilitychange", async () => { if (document.visibilityState === "visible" && !open && !(await newDay())) { prog = await be.programme(hotelId, date).catch(() => prog); paint(); } });
 } catch (ex) { $("list").innerHTML = `<p class="ghint">${esc(T().fail)}</p>`; }
 </script>
 </body>

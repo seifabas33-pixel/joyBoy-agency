@@ -91,7 +91,8 @@ service cloud.firestore {
     // ── Guest feedback from the QR cards. Written by guests (anonymous sign-in), read by the office.
     // Staff may read the feedback that names them, so their card can show their own rating.
     match /feedback/{id} {
-      // One rating per guest phone, day and team member (id = guest uid _ date _ staffUid), for a hotel that exists, today, every field bounded.
+      // One rating per guest phone, day and team member (id = guest uid _ date _ staffUid), for a real hotel and a real team member
+      // of that hotel, today, every field bounded. A later rating the same day replaces the earlier one (update below).
       allow create: if request.auth != null
         && request.resource.data.keys().hasOnly(['hotelId', 'hotelName', 'staffUid', 'staffName', 'rating', 'comment', 'guestName', 'lang', 'date', 'createdAt', 'source'])
         && request.resource.data.keys().hasAll(['hotelId', 'rating', 'date', 'createdAt'])
@@ -104,9 +105,17 @@ service cloud.firestore {
         && textMax(request.resource.data, 'hotelName', 80) && textMax(request.resource.data, 'source', 20)
         && (!('lang' in request.resource.data) || request.resource.data.lang in ['en', 'de', 'it'])
         && id == request.auth.uid + '_' + request.resource.data.date + '_' + request.resource.data.get('staffUid', '')
-        && exists(/databases/$(database)/documents/publicHotels/$(request.resource.data.hotelId));
+        && exists(/databases/$(database)/documents/hotels/$(request.resource.data.hotelId))
+        && (request.resource.data.get('staffUid', '') == '' || approvedAt(request.resource.data.staffUid, request.resource.data.hotelId));
       allow read: if isAdmin() || (signedIn() && resource.data.staffUid == request.auth.uid);
-      allow update, delete: if isAdmin();
+      allow update: if isAdmin() || (request.auth != null && id.matches(request.auth.uid + '_.+')
+        && isToday(resource.data.date)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rating', 'comment', 'guestName', 'lang', 'createdAt'])
+        && request.resource.data.rating is int && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
+        && request.resource.data.createdAt == request.time
+        && textMax(request.resource.data, 'comment', 600) && textMax(request.resource.data, 'guestName', 60)
+        && (!('lang' in request.resource.data) || request.resource.data.lang in ['en', 'de', 'it']));
+      allow delete: if isAdmin();
     }
 
     // Phones of the office accounts, for decisions and tests. Admins only.
@@ -127,7 +136,11 @@ service cloud.firestore {
     }
 
     // The display names the office screens and the sheet use: text only, of a sane length.
-    function nameFieldsOk(d) { return d.get('preferredName', '') == null || (d.get('preferredName', '') is string && d.get('preferredName', '').size() <= 60); }
+    function nameFieldsOk(d) {
+      return !d.fullName.matches('(?s).*[\\r\\n\\t].*')
+        && (d.get('preferredName', '') == null || (d.get('preferredName', '') is string && d.get('preferredName', '').size() <= 60
+          && !d.get('preferredName', '').matches('(?s).*[\\r\\n\\t].*')));
+    }
     // One document per employee, keyed by their Google uid.
     match /employees/{uid} {
       allow read: if isOwner(uid) || isAdmin();
@@ -146,7 +159,9 @@ service cloud.firestore {
           && pathsOk(uid)
           && request.resource.data.fullName is string && request.resource.data.fullName.size() >= 2 && request.resource.data.fullName.size() <= 120
           && nameFieldsOk(request.resource.data)
-          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(adminOnlyFields().concat(['email', 'uid', 'inviteCodeUsed', 'consentAt', 'createdAt'])))
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(adminOnlyFields().concat(['email', 'uid', 'inviteCodeUsed', 'consentAt', 'createdAt']))
+          // once approved, the legal name is the office's to change (contracts, payroll and the sheet import go by it)
+          && !(resource.data.get('status', '') == 'approved' && request.resource.data.diff(resource.data).affectedKeys().hasAny(['fullName'])))
         || isAdmin();
       allow delete: if isAdmin();
 
@@ -249,6 +264,20 @@ service cloud.firestore {
       let h = get(/databases/$(database)/documents/hotels/$(d.hotelId)).data;
       return h.active == true && (('shifts' in h) ? (d.shift in h.shifts) : (d.shift in ['s1', 's2', 's3']));
     }
+    // A check-in belongs to its shift's window: the page opens it 90 min before the start and closes it 30 min after the
+    // end (Cairo time). Cairo is UTC+2 or UTC+3, so accept the union of both (dayStart is UTC midnight of the record's date).
+    function hm(t) { let p = t.split(':'); return int(p[0]) * 60 + int(p[1]); }
+    function shiftOf(h, k) {
+      return ('shifts' in h) ? h.shifts[k]
+        : {'s1': {'start': '09:45', 'end': '12:30'}, 's2': {'start': '14:45', 'end': '16:30'}, 's3': {'start': '20:00', 'end': '23:00'}}[k];
+    }
+    function inShiftWindow(d) {
+      let sh = shiftOf(get(/databases/$(database)/documents/hotels/$(d.hotelId)).data, d.shift);
+      let st = hm(sh.start);
+      let en = (sh.get('end', '') is string && sh.get('end', '').matches('[0-9]{1,2}:[0-9]{2}')) ? hm(sh.end) : st + 180;
+      return request.time >= dayStart(d.date) + duration.value(st - 90 - 180, 'm')
+        && request.time <= dayStart(d.date) + duration.value(en + 30 - 120, 'm');
+    }
     // GPS (the normal way) or the hotel code shown by the office.
     function atHotel(d) {
       return d.get('method', 'gps') == 'code' ? (codeOk(d) && shiftExists(d) && d.get('spot', '') == plannedKey(d)) : insideFence(d);
@@ -270,6 +299,7 @@ service cloud.firestore {
         && checkinFieldsOk(request.resource.data)
         && (!('email' in request.resource.data) || request.resource.data.email == request.auth.token.email)
         && approvedAt(request.auth.uid, request.resource.data.hotelId)
+        && inShiftWindow(request.resource.data)
         && atHotel(request.resource.data));
       // Owner may (a) check out once (with where they were, if the phone gave it), until the next morning, or (b) add their real check-in on a day the office already marked (manual mark / grid import) — once, on that day, inside the fence or with the hotel code.
       // A field the office left empty (null) counts as not set: an office edit without a check-out time must not block the person's own checkout.
@@ -289,6 +319,7 @@ service cloud.firestore {
           && checkinFieldsOk(request.resource.data)
           && (!('email' in request.resource.data) || request.resource.data.email == request.auth.token.email)
           && approvedAt(request.auth.uid, request.resource.data.hotelId)
+          && inShiftWindow(request.resource.data)
           && atHotel(request.resource.data))));
       allow delete: if isAdmin();
     }
@@ -352,6 +383,7 @@ service cloud.firestore {
     // A guest phone signs up once per activity (id = guest uid _ date _ activity), today, with bounded fields.
     match /signups/{sid} {
       allow read: if isAdmin() || (signedIn() && approvedAt(request.auth.uid, resource.data.hotelId));
+      allow get: if request.auth != null && sid.matches(request.auth.uid + '_.+');
       allow create: if request.auth != null
         && request.resource.data.keys().hasOnly(['hotelId', 'date', 'taskId', 'title', 'time', 'firstName', 'count', 'kids', 'age', 'lang', 'createdAt'])
         && request.resource.data.firstName is string && request.resource.data.firstName.size() >= 1 && request.resource.data.firstName.size() <= 30
