@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-dCblm0JxvHh6ta8PI/LudfGQ27/4J2Qz9pPof3jI3OM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-sATi31TJBO9kmA+MMzvq2LLwOEnZUABzZ5q6lmuogCA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team portal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,8 +20,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202610131440">
-<script src="firebase-config.js?v=202610131440"></script>
+<link rel="stylesheet" href="portal.css?v=202610131500">
+<script src="firebase-config.js?v=202610131500"></script>
 <script>
 (function(){
   var KEY = "jb-theme2", ORDER = ["auto", "light", "dark"];   // new key (2026-10-03): everyone starts again on Auto
@@ -248,7 +248,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState, hotelSpots, signupCount, firstWord } from "./portal.js?v=202610131440";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState, hotelSpots, signupCount, firstWord } from "./portal.js?v=202610131500";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -346,7 +346,7 @@ $("form").addEventListener("submit", async e => {
     const data = collect(), isNew = !profile, paths = {};
     if (photoBlob) data.photoThumb = await blobToDataUrl(await shrink(photoBlob, 128, .8));
     // a new profile is saved first (that is where the invite code is checked); the server takes photos only for an existing profile
-    if (isNew){ data.status = "pending"; data.consentAt = new Date().toISOString(); data.inviteCodeUsed = val("inviteCode").trim().toUpperCase(); await be.createProfile(user.uid, data); }
+    if (isNew){ data.status = "pending"; data.consentAt = new Date().toISOString(); data.inviteCodeUsed = val("inviteCode").trim().toUpperCase(); await be.createProfile(user.uid, data); profile = await be.getProfile(user.uid); }   // a retry after a failed upload is then an edit
     if (photoBlob){ const r = await be.uploadImage(user.uid, "avatar.jpg", photoBlob); paths.photoPath = r.path; }
     if (scanBlob){ const r = await be.uploadImage(user.uid, "id.jpg", scanBlob); paths.idScanPath = r.path; }
     if (!isNew) await be.updateProfile(user.uid, { ...data, ...paths });
@@ -470,7 +470,10 @@ const ROUGH_M = 500;
 const ROUGH_LOC = acc => `Your phone is only sharing a rough location (±${acc >= 1000 ? (acc / 1000).toFixed(1) + " km" : acc + " m"}), so it cannot tell that you are at the hotel. ` + (/iPhone|iPad|iPod/.test(navigator.userAgent)
   ? "iPhone: Settings → Privacy & Security → Location Services → Safari Websites → turn ON “Precise Location”. Then close the portal completely and open it again."
   : "Android: Settings → Location → turn on “Google Location Accuracy” (or “Improve accuracy”); in Chrome tap the lock icon next to the address → Permissions → Location → Allow, with precise location. Then reload the page.") + " Until then, ask the office for the hotel code.";
+// The screen may have been drawn hours ago (an app left open): work out the open shift again before sending.
+function freshShift(){ const sh = currentShift(shifts, nowMin()), n = nowMin(); return sh && n >= toMin(sh.start) - SHIFT_OPEN_MIN && n <= shiftEndMin(sh) + SHIFT_CLOSE_MIN ? sh : null; }
 $("btn-in").addEventListener("click", async () => {
+  if (freshShift() !== cur){ paintAtt(); return toast("The shift changed since the screen was drawn — check the button again."); }
   const b = $("btn-in"); b.disabled = true; b.textContent = "Locating…"; const sh = cur; let attempt = null;
   try {
     if (!sh) throw new Error("No shift to check in for right now.");
@@ -557,7 +560,8 @@ async function sendRoll(busy){
 $("rc-here").addEventListener("click", () => sendRoll(false));
 $("rc-busy").addEventListener("click", () => sendRoll(true));
 window.addEventListener("jb-push", e => { if (e.detail && e.detail.tag === "rollcall") loadRoll(); });
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && hotel) loadRoll().catch(() => {}); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && hotel){ loadRoll().catch(() => {}); try { paintAtt(); } catch {} } });
+setInterval(() => { if (hotel && document.visibilityState === "visible") try { paintAtt(); } catch {} }, 60000);   // the open shift changes with the clock
 setInterval(() => { if (roll && !rollAns) paintRoll(); }, 30000);
 
 // Backup for a phone whose location fails: the office shows a 6-digit code that changes every minute; the server checks it.
@@ -566,6 +570,7 @@ $("code-in").addEventListener("keydown", e => { if (e.key === "Enter") $("code-g
 $("code-go").addEventListener("click", async () => {
   const code = $("code-in").value.replace(/\D/g, ""), sh = cur, b = $("code-go");
   if (code.length !== 6) return toast("Type the 6 digits shown on the office screen.");
+  if (freshShift() !== cur){ paintAtt(); return toast("The shift changed since the screen was drawn — check the screen and type the code again."); }
   if (!sh) return toast("No shift to check in for right now.");
   if (profile.status !== "approved") return toast("Your profile is not approved yet, so check-in is not open for you. Ask the office.");
   b.disabled = true; b.textContent = "Checking…"; let attempt = null;

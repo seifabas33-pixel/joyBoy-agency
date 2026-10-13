@@ -46,7 +46,7 @@ const PROJECT_ID = "joy-boy-agency";
 const DAYS_BACK = 62;                 // how much history to (re)write each run
 const TZ = "Africa/Cairo";
 const ATT_TAB = "Attendance (portal)", HOTEL_TAB = "Hotels (portal)", REPORT_TAB = "Sync report (portal)";
-const SCRIPT_VERSION = "2026-10-13b";   // shown in every toast, so you can tell which copy the sheet is running
+const SCRIPT_VERSION = "2026-10-13c";   // shown in every toast, so you can tell which copy the sheet is running
 
 function onOpen(){ SpreadsheetApp.getUi().createMenu("Joy Boy").addItem("Sync attendance now", "syncAttendance").addItem("Import this month tab into the portal", "importGrid").addSeparator().addItem("Send digest now", "sendDigest").addItem("Install twice-daily digest", "installDigestTriggers").addSeparator().addItem("Refresh every hour (install)", "installHourlyTrigger").addSeparator().addItem("Reminders: install (every 15 min)", "installPushTriggers").addItem("Reminders: send a test", "testPush").addItem("Reminders: test a programme item", "testTaskPush").addItem("Reminders: check for arrivals now", "checkinTick").addSeparator().addItem("Security check: look for odd records", "securityCheck").addToUi(); }
 function installHourlyTrigger(){ ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === "syncAttendance").forEach(t => ScriptApp.deleteTrigger(t)); ScriptApp.newTrigger("syncAttendance").timeBased().everyHours(1).create(); note("Done — the sheet now refreshes every hour."); }
@@ -172,7 +172,7 @@ function runQuery(collection, filters, opts){
 /** Display name of a staff member from their profile — never from a name typed into a note, a rating or a check-in. */
 function staffName(employees, uid, fallback){ const e = employees.filter(x => x.uid === uid)[0]; return oneLine(e ? (e.preferredName || e.fullName || e.email || fallback) : fallback, 60); }
 /** Text typed by staff or guests, made safe for a push or an e-mail line: no line breaks (no injected "ACTION NEEDED…" lines), bounded. */
-function oneLine(t, n){ return String(t == null ? "" : t).replace(/[\r\n\t\u2028\u2029]+/g, " ").replace(/\s{2,}/g, " ").trim().slice(0, n || 120); }
+function oneLine(t, n){ return String(t == null ? "" : t).replace(/[\r\n\t\v\f\u0085\u2028\u2029]+/g, " ").replace(/\s{2,}/g, " ").trim().slice(0, n || 120); }
 /** Hotel names and shift times, kept in Script Properties for half an hour — the fast tick needs them
     for the "x min late" line and must not fetch the hotels every single minute. */
 function cachedHotels(props){
@@ -223,7 +223,7 @@ function diagnose(){
 function cachedNames(props){
   const raw = props.getProperty("namesCache");
   if (raw){ try { const c = JSON.parse(raw); if (new Date().getTime() - c.at < 1800000) return c.names; } catch (e) {} }
-  const names = {}; fetchAll("employees").forEach(d => { if (d.f.status === "approved") names[d.id] = d.f.preferredName || d.f.fullName || d.f.email || ""; });
+  const names = {}; fetchAll("employees").forEach(d => { if (d.f.status === "approved") names[d.id] = oneLine(d.f.preferredName || d.f.fullName || d.f.email || "", 60); });
   try { props.setProperty("namesCache", JSON.stringify({ at: new Date().getTime(), names: names })); } catch (e) {}
   return names;
 }
@@ -296,7 +296,9 @@ function importGrid(){
   const findEmp = name => { const n = norm(name); if (!n) return null;
     if (map[n]) return employees.find(e => String(e.email).toLowerCase() === map[n]) || null;
     const tries = [e => norm(e.fullName) === n, e => n.split(" ").length === 1 && norm(e.fullName).split(" ")[0] === n];
-    for (const t of tries){ const hits = employees.filter(t); if (hits.length === 1) return hits[0]; if (hits.length > 1){ ambiguous.add(String(name).trim()); return null; } }
+    for (const t of tries){ const hits = employees.filter(t);
+      if (hits.length === 1 && t === tries[1] && employees.some(e => e !== hits[0] && norm(e.preferredName) === n)){ ambiguous.add(String(name).trim()); return null; }   // "Sasha" may be someone else's stage name
+      if (hits.length === 1) return hits[0]; if (hits.length > 1){ ambiguous.add(String(name).trim()); return null; } }
     return null; };
   const days = dayCols.map(x => x.date).sort(), existing = {};
   runQuery("attendance", [["date", "GREATER_THAN_OR_EQUAL", days[0]], ["date", "LESS_THAN_OR_EQUAL", days[days.length - 1]]], { strict: true }).forEach(d => { const id = d.id; delete d.id; existing[id] = d; });
@@ -413,7 +415,7 @@ function sendPush(devices, title, body, url, tag){
 function pushTick(){
   const props = PropertiesService.getScriptProperties();
   const today = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd"), nowMin = toMin(hhmm(new Date()));
-  const employees = queryWhere("employees", "status", "approved").map(e => ({ ...e, uid: e.id })).filter(e => e.hotelId);
+  const employees = runQuery("employees", [["status", "EQUAL", "approved"]], { strict: true }).map(e => ({ ...e, uid: e.id })).filter(e => e.hotelId);   // strict: a failed read must not mark the reminders as sent
   const hotels = fetchAll("hotels").map(d => ({ id: d.id, ...d.f })), byHotel = {}; hotels.forEach(h => { byHotel[h.id] = h; });
   const att = queryWhere("attendance", "date", today);
   const plans = queryWhere("plans", "date", today);
@@ -501,7 +503,7 @@ function housekeeping(props, today){
   if (props.getProperty("housekept") === today) return;
   props.setProperty("housekept", today);
   const keep = addDays(today, -1);
-  props.getKeys().forEach(k => { const m = /^(rem|task|miss)_(\d{4}-\d{2}-\d{2})_/.exec(k); if (m && m[2] < keep) props.deleteProperty(k); });
+  props.getKeys().forEach(k => { const m = /^(rem|task|miss)_(\d{4}-\d{2}-\d{2})_/.exec(k); if ((m && m[2] < keep) || (/^fbp_/.test(k) && String(props.getProperty(k)) < keep)) props.deleteProperty(k); });
   try { const old = runQuery("signups", [["date", "LESS_THAN", addDays(today, -7)]], { limit: 300 }); old.forEach(d => restDelete("signups/" + d.id)); if (old.length) Logger.log("deleted " + old.length + " old guest sign-ups"); }
   catch (e) { Logger.log("sign-up cleanup: " + e); }
   try { const n = deleteOrphanFiles(); if (n) Logger.log("deleted the photos / ID scans of " + n + " abandoned registration(s)"); } catch (e) { Logger.log("orphan cleanup: " + e); }
@@ -575,14 +577,16 @@ function tellOfficeAboutCheckIns(props, today){
   const seen = props.getProperty(KEY);
   if (!seen){ props.setProperty(KEY, new Date().toISOString()); return 0; }   // first run: start from now, do not replay the day
   // only check-ins newer than the last look: a quiet minute reads nothing (it used to re-read all of today's records every minute)
-  const rows = runQuery("attendance", [["checkInAt", "GREATER_THAN", { ts: seen }]], { orderBy: "checkInAt", limit: 50 });
+  const rows = runQuery("attendance", [["checkInAt", "GREATER_THAN", { ts: seen }], ["checkInAt", "LESS_THAN_OR_EQUAL", { ts: new Date().toISOString() }]], { orderBy: "checkInAt", limit: 50 });   // never past now: a future time typed by the office must not hide real arrivals
   if (!rows.length) return 0;
   props.setProperty(KEY, String(rows[rows.length - 1].checkInAt));
   const fresh = rows.filter(r => r.shift && r.date === today);
   if (!fresh.length) return 0;
   const office = officeDevices();
   if (!office.length) return 0;
-  const hotels = cachedHotels(props), names = cachedNames(props), nameOf = r => names[r.uid] || "Someone not on the staff list";
+  let names = cachedNames(props);
+  if (fresh.some(r => !names[r.uid])){ props.deleteProperty("namesCache"); names = cachedNames(props); }   // someone approved in the last half hour
+  const hotels = cachedHotels(props), nameOf = r => names[r.uid] || "Someone not on the staff list";
   const line = r => {
     const h = hotels.filter(x => x.id === r.hotelId)[0] || {};
     const sh = hotelShifts(h).filter(x => x.key === r.shift)[0] || null;
@@ -604,8 +608,9 @@ function tellOfficeAboutBadRatings(props, today){
   const rows = runQuery("feedback", [["createdAt", "GREATER_THAN", { ts: seen }]], { orderBy: "createdAt", limit: 50 });
   if (!rows.length) return 0;
   props.setProperty(KEY, String(rows[rows.length - 1].createdAt));
-  const bad = rows.filter(r => +r.rating >= 1 && +r.rating <= BAD_RATING);
-  if (!bad.length) return 0;                                             // good ratings are counted, not pushed
+  const bad = rows.filter(r => +r.rating >= 1 && +r.rating <= BAD_RATING && !props.getProperty("fbp_" + r.id));   // each rating is pushed once, even if the guest edits it
+  if (!bad.length) return 0;
+  bad.forEach(r => props.setProperty("fbp_" + r.id, today));                                             // good ratings are counted, not pushed
   const office = officeDevices();
   if (!office.length) return 0;
   // the hotel and the team member come from the database, never from what the rating page sent
@@ -632,7 +637,7 @@ function tellOfficeAboutNotes(){
   const office = officeDevices();
   if (!office.length) return 0;
   const employees = fetchAll("employees").map(d => ({ uid: d.id, ...d.f }));
-  const who = r => staffName(employees, r.uid, "Someone not on the staff list") + (r.shiftName ? " · " + String(r.shiftName).slice(0, 30) : "");
+  const who = r => staffName(employees, r.uid, "Someone not on the staff list") + (r.shiftName ? " · " + oneLine(r.shiftName, 30) : "");
   return sendPush(office,
     fresh.length === 1 ? "Can't check in: " + who(fresh[0]) : fresh.length + " staff can't check in",
     fresh.length === 1 ? oneLine(fresh[0].reason, 160) + " — tap to decide." : fresh.map(who).join("\n").slice(0, 300),
@@ -661,7 +666,7 @@ function tellOfficeAboutRollCalls(){
   due.forEach(r => {
     restPatch("rollcalls/" + r.id, { status: "closed", closedAt: new Date().toISOString() });
     const ans = queryWhere("rollcallAnswers", "rollId", r.id), names = r.names || {}, radius = Number(r.radiusM) || 300;
-    const nm = uid => String(names[uid] || "?").split(" ")[0], km = m => m >= 1000 ? (m / 1000).toFixed(1) + " km" : m + " m";
+    const nm = uid => oneLine(names[uid] || "?", 60).split(" ")[0], km = m => m >= 1000 ? (m / 1000).toFixed(1) + " km" : m + " m";
     const outside = [], none = [], noloc = []; let inside = 0;
     (r.uids || []).forEach(uid => {
       const a = ans.filter(x => x.uid === uid)[0];
@@ -695,6 +700,7 @@ function securityCheck(){
   const emp = {}; let token = "";
   do {   // raw fields, so a text createdAt can be told from a real timestamp
     const res = UrlFetchApp.fetch(`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/employees?pageSize=300` + (token ? "&pageToken=" + encodeURIComponent(token) : ""), { headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
+    if (res.getResponseCode() !== 200) throw new Error("Security check could not read the staff list: " + res.getContentText().slice(0, 200));
     const j = JSON.parse(res.getContentText() || "{}");
     (j.documents || []).forEach(d => { const f = d.fields || {}, uid = d.name.split("/").pop(), e = unwrap(f); emp[uid] = e;
       const c = f.createdAt;
@@ -708,8 +714,8 @@ function securityCheck(){
     const d = Utilities.formatDate(new Date(r.checkInAt), TZ, "yyyy-MM-dd");
     if (d !== r.date) rows.push(["Check-in", (emp[r.uid] || {}).fullName || r.uid, r.date + " " + r.shift, "stamped on " + d + " " + hhmm(r.checkInAt) + " — not on the day it counts for"]);
   });
-  queryWhere("requests", "status", "open").forEach(r => { const e = emp[r.uid]; if (!e || e.status !== "approved") rows.push(["Note", oneLine(r.name || r.email, 60), r.date, "open note from an account that is not approved staff"]); });
-  runQuery("feedback", [["date", "GREATER_THAN_OR_EQUAL", addDays(today, -31)]]).forEach(r => { if (r.staffUid && !(emp[r.staffUid] && emp[r.staffUid].status === "approved")) rows.push(["Rating", r.id, r.date, "names a team member who is not on the staff (" + oneLine(r.staffName, 40) + ")"]); });
+  runQuery("requests", [["status", "EQUAL", "open"]], { strict: true }).forEach(r => { const e = emp[r.uid]; if (!e || e.status !== "approved") rows.push(["Note", oneLine(r.name || r.email, 60), r.date, "open note from an account that is not approved staff"]); });
+  runQuery("feedback", [["date", "GREATER_THAN_OR_EQUAL", addDays(today, -31)]], { strict: true }).forEach(r => { if (r.staffUid && !(emp[r.staffUid] && emp[r.staffUid].status === "approved")) rows.push(["Rating", r.id, r.date, "names a team member who is not on the staff (" + oneLine(r.staffName, 40) + ")"]); });
   writeTab("Security check (portal)", ["What", "Who / id", "Day", "Why it is listed"], rows.length ? rows : [["—", "", "", "Nothing odd found on " + today]]);
   note("v" + SCRIPT_VERSION + " · Security check: " + rows.length + " item(s) listed in the tab \"Security check (portal)\".");
 }

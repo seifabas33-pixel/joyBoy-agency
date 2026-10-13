@@ -163,7 +163,9 @@ async function firebaseBackend(){
         const pr = await srv(F.doc(db, "plans", `${rec.hotelId}_${rec.date}`));
         let sk = "";
         if (!pr.ok) out.push("Your phone is not allowed to read today's plan — that usually means your profile is not approved on the server.");
-        else if (pr.s.exists()) { const pl = pr.s.data(); sk = pl.shifts && pl.shifts[rec.shift] ? (pl.shifts[rec.shift].spot || "") : ""; }
+        else if (pr.s.exists()) { const pl = pr.s.data(); sk = pl.shifts && pl.shifts[rec.shift] ? (pl.shifts[rec.shift].spot || "") : ""; if (sk && !(h.spots && h.spots[sk])) sk = ""; }   // a deleted spot = anywhere (as the rules)
+        const shd = h.shifts ? h.shifts[rec.shift] : DEFAULT_SHIFTS[rec.shift], nowM = toMin(hhmm(new Date()));
+        if (shd && (nowM < toMin(shd.start) - SHIFT_OPEN_MIN || nowM > shiftEndMin(shd) + SHIFT_CLOSE_MIN)) out.push(`The ${shd.name || rec.shift} check-in is only open from ${String(Math.floor((toMin(shd.start) - SHIFT_OPEN_MIN) / 60)).padStart(2, "0")}:${String((toMin(shd.start) - SHIFT_OPEN_MIN) % 60).padStart(2, "0")} until 30 minutes after the shift ends. Close the portal and open it again so it shows the right shift.`);
         if (sk !== (rec.spot || "")) out.push(`The office planned this shift at "${(h.spots && h.spots[sk] && h.spots[sk].name) || sk || "anywhere at the hotel"}", but your phone was checking in for "${rec.spotName || "anywhere at the hotel"}". Close the portal completely and open it again.`);
         const t = sk && h.spots && h.spots[sk] ? h.spots[sk] : h;
         if (rec.method === "code") {}   // no pin needed; the code itself is checked below
@@ -387,7 +389,7 @@ export async function initGuest(){
       const l = JSON.parse(localStorage.getItem("jb-demo-signups") || "[]"); l.push({ id: "s" + Date.now(), ...rec, createdAt: new Date().toISOString() }); localStorage.setItem("jb-demo-signups", JSON.stringify(l));
       return c[rec.taskId];
     },
-    mySignup: async () => false,
+    mySignup: async () => null,
   };
   const [{ initializeApp }, A, F] = await Promise.all([import(FB + "firebase-app.js"), import(FB + "firebase-auth.js"), import(FB + "firebase-firestore.js")]);
   const app = initializeApp(cfg), auth = A.getAuth(app), db = F.getFirestore(app);
@@ -407,7 +409,7 @@ export async function initGuest(){
       await b.commit();
     },
     // did this phone's sign-up arrive? (a reply lost on hotel Wi-Fi makes the retry look refused)
-    mySignup: async rec => { const s = await F.getDoc(F.doc(db, "signups", `${auth.currentUser.uid}_${rec.date}_${rec.taskId}`)); return s.exists(); },
+    mySignup: async rec => { const s = await F.getDoc(F.doc(db, "signups", `${auth.currentUser.uid}_${rec.date}_${rec.taskId}`)); return s.exists() ? s.data() : null; },
   };
 }
 

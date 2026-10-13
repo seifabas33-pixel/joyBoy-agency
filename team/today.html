@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-s2N60wBrTAWDzkJlgu9WnBUBGvKXBxBFYgc8MDwbeEE=' 'sha256-V2CLWYVAj/uCtxJz0e/gP0gYKO3Y776g4UA+WzjscTE='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-s2N60wBrTAWDzkJlgu9WnBUBGvKXBxBFYgc8MDwbeEE=' 'sha256-tpXR0fv5PszNHFDOsj1IyHwVhykvbnx3Ae6yf8mkNCM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — What's on today?</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -33,8 +33,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202610131440">
-<script src="firebase-config.js?v=202610131440"></script>
+<link rel="stylesheet" href="portal.css?v=202610131500">
+<script src="firebase-config.js?v=202610131500"></script>
 </head>
 <body class="guest">
 <main class="gwrap" id="main">
@@ -51,7 +51,7 @@
 </main>
 
 <script type="module">
-import { initGuest, dayKey, hhmm, toMin, fromCairo, esc } from "./portal.js?v=202610131440";
+import { initGuest, dayKey, hhmm, toMin, fromCairo, esc } from "./portal.js?v=202610131500";
 
 // Guests are never chased: signing up is optional, no account, no messages — two fields, and a calendar entry only if they ask.
 const DICT = {
@@ -60,7 +60,7 @@ const DICT = {
         left: n => n === 1 ? "1 place left" : `${n} places left`, kids: "Kids", name: "Your first name", kidName: "Child's first name",
         people: "How many people?", kidsCount: "How many children?", age: "Age", send: "Sign up", sending: "Signing up…", cancel: "Cancel",
         done: (n, t, p) => `You're in, ${n}! See you at ${t}${p ? " · " + p : ""}.`, mine: c => `✓ You're signed up${c > 1 ? " (" + c + ")" : ""}`, cal: "Add to my calendar",
-        needName: "Please write a first name.", fullNow: "Sorry — that just filled up.", fail: "Could not sign up. Please check your connection and try again.",
+        needName: "Please write a first name.", fullNow: "Sorry — that just filled up.", already: n => `You are already signed up for this one (${n}). To change it, ask a team member.`, fail: "Could not sign up. Please check your connection and try again.",
         nothing: "No activities are listed for today yet — ask the animation team!", over: "That's all for today — see you tomorrow!",
         privacy: "We keep only the first name you type, for 7 days.", foot: "entertainment &amp; animation" },
   de: { lang: "Deutsch", title: "Was ist heute los?", lead: "Anmelden ist freiwillig — Sie können auch einfach vorbeikommen.",
@@ -68,7 +68,7 @@ const DICT = {
         left: n => n === 1 ? "Noch 1 Platz frei" : `Noch ${n} Plätze frei`, kids: "Kinder", name: "Ihr Vorname", kidName: "Vorname des Kindes",
         people: "Wie viele Personen?", kidsCount: "Wie viele Kinder?", age: "Alter", send: "Anmelden", sending: "Wird angemeldet…", cancel: "Abbrechen",
         done: (n, t, p) => `Sie sind dabei, ${n}! Bis ${t} Uhr${p ? " · " + p : ""}.`, mine: c => `✓ Angemeldet${c > 1 ? " (" + c + ")" : ""}`, cal: "Zum Kalender hinzufügen",
-        needName: "Bitte einen Vornamen eingeben.", fullNow: "Leider gerade ausgebucht.", fail: "Anmeldung fehlgeschlagen. Bitte Verbindung prüfen und erneut versuchen.",
+        needName: "Bitte einen Vornamen eingeben.", fullNow: "Leider gerade ausgebucht.", already: n => `Sie sind hierfür schon angemeldet (${n}). Für eine Änderung fragen Sie bitte das Team.`, fail: "Anmeldung fehlgeschlagen. Bitte Verbindung prüfen und erneut versuchen.",
         nothing: "Für heute ist noch nichts eingetragen — fragen Sie das Animationsteam!", over: "Das war's für heute — bis morgen!",
         privacy: "Wir speichern nur den Vornamen, den Sie eingeben, für 7 Tage.", foot: "Entertainment &amp; Animation" },
   it: { lang: "Italiano", title: "Cosa c'è oggi?", lead: "L'iscrizione è facoltativa — puoi sempre venire e basta.",
@@ -76,7 +76,7 @@ const DICT = {
         left: n => n === 1 ? "Ancora 1 posto" : `Ancora ${n} posti`, kids: "Bambini", name: "Il tuo nome", kidName: "Nome del bambino",
         people: "Quante persone?", kidsCount: "Quanti bambini?", age: "Età", send: "Iscriviti", sending: "Iscrizione…", cancel: "Annulla",
         done: (n, t, p) => `Ci sei, ${n}! Ci vediamo alle ${t}${p ? " · " + p : ""}.`, mine: c => `✓ Iscritto${c > 1 ? " (" + c + ")" : ""}`, cal: "Aggiungi al calendario",
-        needName: "Scrivi un nome, per favore.", fullNow: "Peccato — appena esaurito.", fail: "Iscrizione non riuscita. Controlla la connessione e riprova.",
+        needName: "Scrivi un nome, per favore.", fullNow: "Peccato — appena esaurito.", already: n => `Sei già iscritto/a a questa attività (${n}). Per cambiare, chiedi a qualcuno del team.`, fail: "Iscrizione non riuscita. Controlla la connessione e riprova.",
         nothing: "Per oggi non c'è ancora nulla in programma — chiedi al team di animazione!", over: "Per oggi è tutto — a domani!",
         privacy: "Conserviamo solo il nome che scrivi, per 7 giorni.", foot: "entertainment &amp; animation" },
 };
@@ -144,9 +144,11 @@ async function send(it){
     prog = await be.programme(hotelId, date).catch(() => prog);
   } catch (ex) {
     const denied = ex && (ex.code === "permission-denied" || /insufficient permissions/i.test(String(ex.message || ex)));
-    if (denied && await be.mySignup({ date, taskId: it.id }).catch(() => false)) {   // it did arrive — the reply was lost on the way back
-      const m = mine(); m[it.id] = (m[it.id] || 0) + count; saveMine(m); msg[it.id] = { ok: true, text: t.done(name, it.time, it.place) }; open = "";
-    } else { msg[it.id] = { ok: false, text: denied ? t.fullNow : t.fail }; open = denied ? "" : open; }
+    const had = denied ? await be.mySignup({ date, taskId: it.id }).catch(() => null) : null;   // this phone already has a sign-up for it?
+    if (had && had.count === count && had.firstName === name) {         // it is this one — the reply was lost on the way back
+      const m = mine(); m[it.id] = count; saveMine(m); msg[it.id] = { ok: true, text: t.done(name, it.time, it.place) }; open = "";
+    } else if (had) { const m = mine(); m[it.id] = had.count; saveMine(m); msg[it.id] = { ok: false, text: t.already(had.count) }; open = ""; }
+    else { msg[it.id] = { ok: false, text: denied ? t.fullNow : t.fail }; open = denied ? "" : open; }
     if (denied) prog = await be.programme(hotelId, date).catch(() => prog);
   } finally { busy = false; paint(); }
 }
