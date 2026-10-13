@@ -79,7 +79,9 @@ async function firebaseBackend(){
     adminUpdate: (uid, patch) => F.updateDoc(F.doc(db, "employees", uid), { ...patch, reviewedAt: ts() }),
     getNotes: async uid => { const s = await F.getDoc(F.doc(db, "employees", uid, "private", "notes")); return s.exists() ? (s.data().text || "") : ""; },
     setNotes: (uid, text, by) => F.setDoc(F.doc(db, "employees", uid, "private", "notes"), { text, by, updatedAt: ts() }),
-    deleteEmployee: async uid => { for (const f of ["avatar.jpg", "id.jpg"]) { try { await F.deleteDoc(F.doc(db, "employees", uid, "files", f)); } catch {} } try { await F.deleteDoc(F.doc(db, "employees", uid, "private", "notes")); } catch {} await F.deleteDoc(F.doc(db, "employees", uid)); },
+    deleteEmployee: async uid => { for (const f of ["avatar.jpg", "id.jpg"]) { try { await F.deleteDoc(F.doc(db, "employees", uid, "files", f)); } catch {} } for (const p of ["notes", "pay"]) { try { await F.deleteDoc(F.doc(db, "employees", uid, "private", p)); } catch {} }
+      try { const ds = await F.getDocs(F.collection(db, "employees", uid, "devices")); await Promise.all(ds.docs.map(d => F.deleteDoc(d.ref))); } catch {}   // nothing of the person is left behind
+      await F.deleteDoc(F.doc(db, "employees", uid)); },
     getSettings: async () => { const s = await F.getDoc(F.doc(db, "settings", "registration")); return s.exists() ? s.data() : {}; },
     setSettings: patch => F.setDoc(F.doc(db, "settings", "registration"), patch, { merge: true }),
     // push notifications: this device registers itself; tools/sheets-sync.gs sends to the stored tokens
@@ -161,8 +163,10 @@ async function firebaseBackend(){
         const pr = await srv(F.doc(db, "plans", `${rec.hotelId}_${rec.date}`));
         let sk = "";
         if (!pr.ok) out.push("Your phone is not allowed to read today's plan — that usually means your profile is not approved on the server.");
-        else if (pr.s.exists()) { const pl = pr.s.data(); sk = pl.shifts && pl.shifts[rec.shift] ? (pl.shifts[rec.shift].spot || "") : ""; }
-        if (rec.method !== "code" && sk !== (rec.spot || "")) out.push(`The office planned this shift at "${(h.spots && h.spots[sk] && h.spots[sk].name) || sk || "anywhere at the hotel"}", but your phone was checking in for "${rec.spotName || "anywhere at the hotel"}". Close the portal completely and open it again.`);
+        else if (pr.s.exists()) { const pl = pr.s.data(); sk = pl.shifts && pl.shifts[rec.shift] ? (pl.shifts[rec.shift].spot || "") : ""; if (sk && !(h.spots && h.spots[sk])) sk = ""; }   // a deleted spot = anywhere (as the rules)
+        const shd = h.shifts ? h.shifts[rec.shift] : DEFAULT_SHIFTS[rec.shift], nowM = toMin(hhmm(new Date()));
+        if (shd && (nowM < toMin(shd.start) - SHIFT_OPEN_MIN || nowM > shiftEndMin(shd) + SHIFT_CLOSE_MIN)) out.push(`The ${shd.name || rec.shift} check-in is only open from ${String(Math.floor((toMin(shd.start) - SHIFT_OPEN_MIN) / 60)).padStart(2, "0")}:${String((toMin(shd.start) - SHIFT_OPEN_MIN) % 60).padStart(2, "0")} until 30 minutes after the shift ends. Close the portal and open it again so it shows the right shift.`);
+        if (sk !== (rec.spot || "")) out.push(`The office planned this shift at "${(h.spots && h.spots[sk] && h.spots[sk].name) || sk || "anywhere at the hotel"}", but your phone was checking in for "${rec.spotName || "anywhere at the hotel"}". Close the portal completely and open it again.`);
         const t = sk && h.spots && h.spots[sk] ? h.spots[sk] : h;
         if (rec.method === "code") {}   // no pin needed; the code itself is checked below
         else if (typeof t.lat !== "number" || typeof t.lng !== "number" || typeof t.cosLat !== "number" || typeof t.radiusM !== "number") out.push(`The pin for ${t === h ? "the hotel" : "the " + (t.name || sk)} is incomplete on the server. The office must fix it in Hotels.`);
@@ -189,7 +193,11 @@ async function firebaseBackend(){
     // Guest page ("What's on today?"): the trimmed public copy of the day's programme, and the sign-ups (first names only).
     // mergeFields: re-saving the programme never touches the live counts the guests raise.
     savePublicProgramme: (hotelId, hotelName, date, items) => F.setDoc(F.doc(db, "publicProgramme", `${hotelId}_${date}`), { hotelId, hotelName, date, items, updatedAt: ts() }, { mergeFields: ["hotelId", "hotelName", "date", "items", "updatedAt"] }),
-    signupsOn: async date => { const s = await F.getDocs(F.query(F.collection(db, "signups"), F.where("date", "==", date))); return s.docs.map(att); },
+    // the office resets an activity's guest-page number to the sign-ups it can see (e.g. after fake sign-ups made it read "Full")
+    deleteSignup: id => F.deleteDoc(F.doc(db, "signups", id)),
+    setGuestCount: (hotelId, date, taskId, n) => F.updateDoc(F.doc(db, "publicProgramme", `${hotelId}_${date}`), { ["counts." + taskId]: n }),
+    // staff must name their hotel (the rules let them read only their own hotel's sign-ups); the office may leave it out
+    signupsOn: async (date, hotelId) => { const s = await F.getDocs(F.query(F.collection(db, "signups"), F.where("date", "==", date), ...(hotelId ? [F.where("hotelId", "==", hotelId)] : []))); return s.docs.map(att); },
     cleanupSignups: async before => { const s = await F.getDocs(F.query(F.collection(db, "signups"), F.where("date", "<", before))); await Promise.all(s.docs.map(d => F.deleteDoc(d.ref))); return s.size; },
     // Roll call ("Where is everyone?"): the office's record, a pointer per hotel that staff phones read, one answer per person.
     startRollCall: async roll => {
@@ -305,7 +313,9 @@ function demoBackend(){
     diagnoseCheckIn: async () => [],
     checkOut: async (id, where) => { const a = get("att") || {}; if (!a[id]) throw new Error("No check-in for this shift"); a[id] = { ...a[id], checkOutAt: now(), ...(where || {}) }; set("att", a); return { id, ...a[id] }; },
     savePublicProgramme: async (hotelId, hotelName, date, items) => { const pp = get("pubprog") || {}, id = `${hotelId}_${date}`; pp[id] = { ...(pp[id] || {}), hotelId, hotelName, date, items, updatedAt: now() }; set("pubprog", pp); },
-    signupsOn: async date => (get("signups") || []).filter(r => r.date === date),
+    deleteSignup: async id => set("signups", (get("signups") || []).filter(r => r.id !== id)),
+    setGuestCount: async (hotelId, date, taskId, n) => { const pp = get("pubprog") || {}, id = `${hotelId}_${date}`; if (pp[id]) { pp[id].counts = { ...(pp[id].counts || {}), [taskId]: n }; set("pubprog", pp); } },
+    signupsOn: async (date, hotelId) => (get("signups") || []).filter(r => r.date === date && (!hotelId || r.hotelId === hotelId)),
     cleanupSignups: async before => { const l = get("signups") || [], keep = l.filter(r => r.date >= before); set("signups", keep); return l.length - keep.length; },
     startRollCall: async roll => { const r = get("rolls") || {}; r[roll.id] = { ...roll, askedAt: now(), status: "open" }; set("rolls", r); const n = get("rollnow") || {}; n[roll.hotelId] = { id: roll.id, hotelId: roll.hotelId, date: roll.date, shift: roll.shift, shiftName: roll.shiftName, uids: roll.uids, windowMin: roll.windowMin, askedAt: r[roll.id].askedAt }; set("rollnow", n); return { id: roll.id, ...r[roll.id] }; },
     rollCallsOn: async date => Object.entries(get("rolls") || {}).map(([id, r]) => ({ id, ...r })).filter(r => r.date === date).sort((a, b) => String(b.askedAt).localeCompare(String(a.askedAt))),
@@ -379,23 +389,27 @@ export async function initGuest(){
       const l = JSON.parse(localStorage.getItem("jb-demo-signups") || "[]"); l.push({ id: "s" + Date.now(), ...rec, createdAt: new Date().toISOString() }); localStorage.setItem("jb-demo-signups", JSON.stringify(l));
       return c[rec.taskId];
     },
+    mySignup: async () => null,
   };
   const [{ initializeApp }, A, F] = await Promise.all([import(FB + "firebase-app.js"), import(FB + "firebase-auth.js"), import(FB + "firebase-firestore.js")]);
   const app = initializeApp(cfg), auth = A.getAuth(app), db = F.getFirestore(app);
   if (!auth.currentUser) await A.signInAnonymously(auth);
   return {
     mode: "firebase",
-    send: rec => F.addDoc(F.collection(db, "feedback"), { ...rec, createdAt: F.serverTimestamp() }),
+    // one rating per guest phone, day and team member: the id is fixed, so a second one is refused by the rules
+    send: rec => F.setDoc(F.doc(db, "feedback", `${auth.currentUser.uid}_${rec.date}_${rec.staffUid || ""}`), { ...rec, createdAt: F.serverTimestamp() }),
     publicHotel: async id => { const s = await F.getDoc(F.doc(db, "publicHotels", id)); return s.exists() ? s.data() : null; },
     publicProposal: async token => { const s = await F.getDoc(F.doc(db, "publicProposals", token)); return s.exists() ? s.data() : null; },
     programme: async (hotelId, date) => { const s = await F.getDoc(F.doc(db, "publicProgramme", `${hotelId}_${date}`)); return s.exists() ? s.data() : null; },
     // one batch: the sign-up + the activity's count raised by exactly its people (the rules check both together)
     signUp: async rec => {
-      const ref = F.doc(F.collection(db, "signups")), pref = F.doc(db, "publicProgramme", `${rec.hotelId}_${rec.date}`), b = F.writeBatch(db);
+      const ref = F.doc(db, "signups", `${auth.currentUser.uid}_${rec.date}_${rec.taskId}`), pref = F.doc(db, "publicProgramme", `${rec.hotelId}_${rec.date}`), b = F.writeBatch(db);   // one sign-up per guest phone and activity
       b.set(ref, { ...rec, createdAt: F.serverTimestamp() });
       b.update(pref, { ["counts." + rec.taskId]: F.increment(rec.count), last: ref.id });
       await b.commit();
     },
+    // did this phone's sign-up arrive? (a reply lost on hotel Wi-Fi makes the retry look refused)
+    mySignup: async rec => { const s = await F.getDoc(F.doc(db, "signups", `${auth.currentUser.uid}_${rec.date}_${rec.taskId}`)); return s.exists() ? s.data() : null; },
   };
 }
 
@@ -481,7 +495,11 @@ export function rollState(ans, hotel, roll, nowMs = Date.now()){
   if (ans.noLocation || ans.distM == null) return { code: "noloc", label: ans.busy ? "Busy · no location" : "No location", late };
   return { code: ans.busy ? "busy" : "in", label: ans.busy ? "Busy · at the hotel" : "At the hotel", late };
 }
-export const distText = m => m == null ? "" : m >= 1000 ? (m / 1000).toFixed(1) + " km" : m + " m";
+// Distances come from staff phones: only a real number is ever shown (a text in that field must never reach the page as HTML).
+export const distText = m => { const n = Number(m); return m == null || m === "" || !Number.isFinite(n) ? "" : n >= 1000 ? (n / 1000).toFixed(1) + " km" : Math.round(n) + " m"; };
+export const accText = a => { const n = Number(a); return a == null || a === "" || !Number.isFinite(n) || n <= 0 ? "?" : String(Math.round(n)); };
+/** First word of a display name; tolerates a missing or non-text value. */
+export const firstWord = (...v) => String(v.find(x => x) || "").split(" ")[0];
 
 // Hotel code: six random digits, never the same as the one before. A new one every CODE_EVERY_S seconds while the office screen is open.
 export const CODE_EVERY_S = 60;
@@ -498,7 +516,11 @@ export function currentShift(shifts, nowMin){
 export function shiftStatus(rec, shift, date, today = dayKey(), nowMin = toMin(hhmm(new Date()))){
   const start = toMin(shift.start) ?? 0, grace = shift.graceMin != null ? +shift.graceMin : 5;
   if (rec && rec.override) return { code: rec.override, lateMin: rec.checkInAt ? Math.max(0, toMin(hhmm(rec.checkInAt)) - start) : null, auto: false };
-  if (rec && rec.checkInAt){ const late = toMin(hhmm(rec.checkInAt)) - start; return late <= grace ? { code: "present", lateMin: Math.max(0, late), auto: true } : { code: "late", lateMin: late, auto: true, review: true }; }
+  if (rec && rec.checkInAt){
+    // a check-in stamped on another day than its record (only possible for records made before 2026-10-13) is never "on time"
+    const dd = Math.round((Date.parse(dayKey(rec.checkInAt)) - Date.parse(date)) / 864e5), late = dd * 1440 + toMin(hhmm(rec.checkInAt)) - start;
+    if (dd !== 0) return { code: "late", lateMin: late, auto: true, review: true, otherDay: true };
+    return late <= grace ? { code: "present", lateMin: Math.max(0, late), auto: true } : { code: "late", lateMin: late, auto: true, review: true }; }
   if (date > today || (date === today && nowMin <= start + grace)) return { code: "pending", lateMin: null, auto: true };
   return { code: "absent", lateMin: null, auto: true };
 }
@@ -531,10 +553,11 @@ export const daysInMonth = m => { const [y, mo] = String(m).split("-").map(Numbe
 export const monthRange = m => [m + "-01", m + "-" + String(daysInMonth(m)).padStart(2, "0")];
 /** Things staff sell; the office edits names, prices and commission on the Pay & sales tab. */
 /** Each item has a price and a commission per unit for every currency a guest may pay in; the seller's commission follows the currency the guest paid. */
+/** The real prices and commissions live only in settings/sales (approved staff + office) — never in this public file. */
 export const DEFAULT_SALES_ITEMS = [
-  { key: "lottery", name: "Lottery", unit: "tickets", prices: { USD: 4 }, commissions: { USD: 1 } },
-  { key: "tshirt", name: "T-shirts", unit: "pieces", prices: {}, commissions: { USD: 5, EUR: 5 } },
-  { key: "disco", name: "Disco tour", unit: "guests", prices: { USD: 25, EUR: 20 }, commissions: { USD: 5, EUR: 5 } }
+  { key: "lottery", name: "Lottery", unit: "tickets", prices: {}, commissions: {} },
+  { key: "tshirt", name: "T-shirts", unit: "pieces", prices: {}, commissions: {} },
+  { key: "disco", name: "Disco tour", unit: "guests", prices: {}, commissions: {} }
 ];
 /** Older item shape (one price/currency/commissionUnit) → per-currency maps. */
 export function normItem(i){

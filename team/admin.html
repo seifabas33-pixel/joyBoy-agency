@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-xfQ803q5pEWx22Mm2XXb1DQmn4+SZUBrmCPsnftHEac='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-0wyEfkl449cgkl6SR8E/f8d9PosWFe1GUK1xzR1BPaA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202610031053">
-<script src="firebase-config.js?v=202610031053"></script>
+<link rel="stylesheet" href="portal.css?v=202610131500">
+<script src="firebase-config.js?v=202610131500"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 <script>
 (function(){
@@ -115,6 +115,7 @@
     </div>
 
     <div id="v-pay" hidden>
+      <div class="banner demo" id="pay-noitems" hidden><span>⚠️</span><span><b>Prices and commission are not saved yet.</b> Open <b>Items &amp; commission</b>, type the guest price and the seller's commission for each item, and press Save — sales and payroll use them. (They are kept in the database only, never in the website's code.)</span></div>
       <div class="paytabs"><button class="on" data-pv="sales" type="button">Sales</button><button data-pv="payroll" type="button">Payroll</button><button data-pv="items" type="button">Items &amp; commission</button></div>
 
       <div id="pv-sales">
@@ -159,7 +160,7 @@
       <div id="pv-items" hidden>
         <div class="card">
           <h2 style="font-size:20px;font-weight:800">Items &amp; commission</h2>
-          <p class="hint" style="margin-top:6px">For each item: the price a guest pays in each currency, and the commission the seller gets per unit <b>in that same currency</b>. Example: Disco tour 25 USD or 20 EUR, commission 5 USD or 5 EUR. When you record a sale you enter the cash per currency; the portal works out the units (cash ÷ price) and the commission per currency. Leave a currency empty if the item is not sold in it.</p>
+          <p class="hint" style="margin-top:6px">For each item: the price a guest pays in each currency, and the commission the seller gets per unit <b>in that same currency</b>. Example: an item sold for X USD or Y EUR, with a commission of Z per unit in the same currency. When you record a sale you enter the cash per currency; the portal works out the units (cash ÷ price) and the commission per currency. Leave a currency empty if the item is not sold in it.</p>
           <div id="i-rows" style="margin-top:12px"></div>
           <div class="actions"><button class="btn ghost small" id="i-add" type="button">Add item</button><span style="flex:1"></span><button class="btn small" id="i-save" type="button">Save items</button></div>
         </div>
@@ -193,7 +194,7 @@
         <div class="grid" style="margin-top:12px">
           <label class="f"><span>Starts <b class="req">*</b></span><input class="in" type="time" id="t-time"></label>
           <label class="f"><span>Until</span><input class="in" type="time" id="t-end"></label>
-          <label class="f full"><span>Activity <b class="req">*</b></span><input class="in" id="t-title" placeholder="Aqua gym · Darts · Mini disco · Show: White Sensation · Meeting"></label>
+          <label class="f full"><span>Activity <b class="req">*</b></span><input class="in" id="t-title" maxlength="200" placeholder="Aqua gym · Darts · Mini disco · Show: White Sensation · Meeting"></label>
           <label class="f"><span>Place</span><select class="in" id="t-place"></select></label>
           <label class="f"><span>Other place</span><input class="in" id="t-place-other" placeholder="Pool bar, lobby, kids club…"></label>
           <div class="f full"><span>Who</span><div class="chips" id="t-who" style="margin-top:6px"></div></div>
@@ -236,7 +237,7 @@
       <div class="card">
         <h2 style="font-size:22px;font-weight:800" id="h-title">Add a hotel</h2>
         <div class="grid" style="margin-top:14px">
-          <label class="f"><span>Hotel name <b class="req">*</b></span><input class="in" id="h-name" placeholder="True Beach Resort"></label>
+          <label class="f"><span>Hotel name <b class="req">*</b></span><input class="in" id="h-name" maxlength="80" placeholder="True Beach Resort"></label>
           <label class="f"><span>Town</span><input class="in" id="h-city" placeholder="Marsa Alam"></label>
           <label class="f full"><span>Location <b class="req">*</b> — paste a Google Maps link or "lat, lng"</span><input class="in" id="h-loc" placeholder="25.0676, 34.8934  (or a Maps link that contains @lat,lng)"><span class="hint" id="h-loc-hint">In Google Maps press and hold on the animation office or stage, copy the two numbers shown at the top and paste them here. Or tap the button while standing at the hotel.</span></label>
           <div class="full" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn ghost small" id="h-here" type="button">Use my current location</button><button class="btn ghost small" id="h-test" type="button">How far am I from this pin?</button><span class="hint" id="h-test-hint">Stand where the staff check in (stage, meeting area) and tap: it shows the distance the server will see.</span></div>
@@ -248,7 +249,7 @@
             <span class="hint">Staff check in and out for each shift separately. Clear a name to remove that shift. Grace = minutes after the start that still count as on time; later is "Late · needs decision".</span></div>
           <div class="full"><h3 class="sub">Spots — places a shift can check in</h3>
             <div class="spots" id="h-spots"></div>
-            <div class="spotadd"><input class="in" id="sp-name" placeholder="Spot name, e.g. Beach"><input class="in" id="sp-loc" placeholder="lat, lng or a Maps link with @lat,lng"><input class="in" id="sp-radius" type="number" value="150" min="50" max="1000" title="radius in metres"></div>
+            <div class="spotadd"><input class="in" id="sp-name" maxlength="60" placeholder="Spot name, e.g. Beach"><input class="in" id="sp-loc" placeholder="lat, lng or a Maps link with @lat,lng"><input class="in" id="sp-radius" type="number" value="150" min="50" max="1000" title="radius in metres"></div>
             <div class="actions" style="margin-top:8px"><button class="btn ghost small" id="sp-here" type="button">Use my current location</button><button class="btn small" id="sp-add" type="button">Add spot</button></div>
             <span class="hint">Stand at the spot and tap "Use my current location", or paste the pin from Google Maps. 100–200 m is a sensible radius for one area. Spots are stored when you press <b>Save hotel</b>. In the Attendance tab you choose, per day, which spot each shift uses.</span></div>
         </div>
@@ -382,7 +383,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText, newHotelCode, CODE_EVERY_S, ROLL_WINDOW_MIN, rollId, rollState, distText, isOutside, guestItems, signupCount } from "./portal.js?v=202610031053";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText, newHotelCode, CODE_EVERY_S, ROLL_WINDOW_MIN, rollId, rollState, distText, accText, firstWord, isOutside, guestItems, signupCount } from "./portal.js?v=202610131500";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -399,6 +400,8 @@ function filtered(){
 const LABEL = { pending: "Pending", approved: "Approved", rejected: "Needs changes" };
 const badge = s => { const k = LABEL[s] ? s : "pending"; return `<span class="status ${k}">${LABEL[k]}</span>`; };
 const fmtDate = d => d ? String(d).slice(0, 10) : "—";
+/** A staff member's name from the roster (never the name a phone typed into a note or a check-in). */
+const rosterName = uid => { const p = all.find(x => x.uid === uid); return p ? (p.fullName || p.preferredName || p.email || "") : ""; };
 function render(){
   const list = filtered();
   const pend = all.filter(p => (p.status || "pending") === "pending").length, appr = all.filter(p => p.status === "approved").length;
@@ -422,7 +425,7 @@ async function openDrawer(p){
       <div><h2>${esc(p.fullName || "—")}</h2><p style="color:var(--ink-3);font-size:13px">${esc(p.preferredName ? p.preferredName + " · " : "")}${esc(p.email)}</p>
       <p style="margin-top:10px">${badge(p.status)} <span class="hint" style="margin-left:8px">${completeness(p)}% complete</span></p>
       <div class="actions"><button class="btn ok small" data-st="approved">Approve</button><button class="btn danger small" data-st="rejected">Needs changes</button><button class="btn ghost small" data-st="pending">Back to pending</button>
-      ${waNumber(p.phone) ? `<a class="btn ghost small" href="https://wa.me/${waNumber(p.phone)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}</div>
+      ${waNumber(p.phone) ? `<a class="btn ghost small" href="https://wa.me/${waNumber(p.phone)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}<button class="btn ghost small" id="d-rename" type="button" title="Once approved, staff cannot change their legal name themselves">Correct the name</button></div>
       <label class="f" style="max-width:320px"><span>Hotel assignment</span><select class="in" id="d-hotel"><option value="">— not assigned —</option>${hotels.map(h => `<option value="${esc(h.id)}" ${h.id === p.hotelId ? "selected" : ""}>${esc(h.name)}${h.active === false ? " (closed)" : ""}</option>`).join("")}</select><span class="hint">Only approved staff with a hotel can check in.</span></label></div></div>
     <div class="kv">${kv("Gender", p.gender)}${kv("Date of birth", p.dob ? p.dob + " (" + age(p.dob) + ")" : "")}${kv("Nationality", p.nationality)}${kv("City", p.city)}${kv("WhatsApp", p.phone)}${kv("Emergency contact", [p.emergencyName, p.emergencyPhone, p.emergencyRelation].filter(Boolean).join(" · "))}
       ${kv("Document", p.idType ? `${p.idType} · ${p.idNumber || ""} · exp. ${p.idExpiry || "?"}` : "")}${kv("Payment", pay)}${kv("Payroll notes", p.payNotes)}
@@ -442,6 +445,13 @@ async function openDrawer(p){
   $("dclose").onclick = closeDrawer;
   let savedNotes = "";
   const saveNotes = async () => { const v = $("notes").value; if (v === savedNotes) return; await be.setNotes(p.uid, v, user.email); savedNotes = v; };
+  $("d-rename").onclick = async () => {
+    const full = prompt("Full name, as in the passport:", p.fullName || ""); if (full === null) return;
+    const stage = prompt("Stage name (what guests call them) — leave empty for none:", p.preferredName || ""); if (stage === null) return;
+    const f = full.replace(/\s+/g, " ").trim().slice(0, 120), s2 = stage.replace(/\s+/g, " ").trim().slice(0, 60);
+    if (f.length < 3) return toast("The full name needs at least 3 letters.");
+    try { await be.adminUpdate(p.uid, { fullName: f, preferredName: s2 }); p.fullName = f; p.preferredName = s2; toast("Name saved"); openDrawer(p); render(); } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
+  };
   $("panel").querySelectorAll("[data-st]").forEach(b => b.onclick = async () => { try { await saveNotes(); await be.adminUpdate(p.uid, { status: b.dataset.st, reviewedBy: user.email }); p.status = b.dataset.st; toast("Marked as " + LABEL[b.dataset.st]); render(); openDrawer(p); } catch (ex) { toast("Could not update: " + (ex.message || ex)); } });
   $("d-hotel").onchange = async () => { const id = $("d-hotel").value; try { await be.adminUpdate(p.uid, { hotelId: id || null, reviewedBy: user.email }); p.hotelId = id || null; toast(id ? "Assigned to " + hotelName(id) : "Assignment removed"); render(); } catch (ex) { toast("Could not assign: " + (ex.message || ex)); } };
   $("save-notes").onclick = async () => { try { await saveNotes(); toast("Notes saved"); } catch (ex) { toast("Could not save notes: " + (ex.message || ex)); } };
@@ -498,7 +508,7 @@ $("h-radius").addEventListener("input", () => { const v = +$("h-radius").value |
 let editSpots = {};
 function paintShiftGrid(list){
   const by = Object.fromEntries(list.map(x => [x.key, x]));
-  $("h-shifts").innerHTML = `<span class="hd">Shift</span><span class="hd">Start</span><span class="hd">End</span><span class="hd">Grace</span>` + SHIFT_KEYS.map(k => { const x = by[k] || {}; return `<input class="in" data-sk="${k}" data-f="name" placeholder="${k === "s4" ? "(unused)" : "Name"}" value="${esc(x.name || "")}"><input class="in" type="time" data-sk="${k}" data-f="start" value="${esc(x.start || "")}"><input class="in" type="time" data-sk="${k}" data-f="end" value="${esc(x.end || "")}"><input class="in" type="number" min="0" max="120" data-sk="${k}" data-f="graceMin" value="${x.graceMin != null ? x.graceMin : 5}">`; }).join("");
+  $("h-shifts").innerHTML = `<span class="hd">Shift</span><span class="hd">Start</span><span class="hd">End</span><span class="hd">Grace</span>` + SHIFT_KEYS.map(k => { const x = by[k] || {}; return `<input class="in" data-sk="${k}" data-f="name" maxlength="40" placeholder="${k === "s4" ? "(unused)" : "Name"}" value="${esc(x.name || "")}"><input class="in" type="time" data-sk="${k}" data-f="start" value="${esc(x.start || "")}"><input class="in" type="time" data-sk="${k}" data-f="end" value="${esc(x.end || "")}"><input class="in" type="number" min="0" max="120" data-sk="${k}" data-f="graceMin" value="${x.graceMin != null ? x.graceMin : 5}">`; }).join("");
 }
 function readShiftGrid(){
   const out = {};
@@ -631,9 +641,9 @@ function paintAttInner(){
   $("a-stats").innerHTML = [["Expected", rows.filter(x => x.shifts.length || (x.dayRec && x.dayRec.override)).length], ["Off today", rows.filter(x => !x.shifts.length && !(x.dayRec && x.dayRec.override)).length], ["Present", n("present")], ["Half day", n("half-day")], ["Absent", n("absent")], ["Needs decision", openReqs.length + lateShifts.length + lateDays.length], ["Sick / vacation / off", n("sick") + n("vacation") + n("excused") + n("off")]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
   const btns = (uid, sk, rid) => `<span class="acts">${SHIFT_DECISIONS.map(c => `<button class="btn small ${c === "present" ? "ok" : c === "absent" ? "danger" : "ghost"}" data-dec="${c}" data-uid="${esc(uid)}" data-sk="${esc(sk)}" ${rid ? `data-req="${esc(rid)}"` : ""}>${ATT_LABEL[c]}</button>`).join("")}</span>`;
   const dbtns = uid => `<span class="acts">${["present","half-day","absent"].map(c => `<button class="btn small ${c === "present" ? "ok" : c === "absent" ? "danger" : "ghost"}" data-ddec="${c}" data-uid="${esc(uid)}">${ATT_LABEL[c]}</button>`).join("")}</span>`;
-  $("a-decide").innerHTML = lateShifts.map(({ x, y }) => `<div class="d"><div><b>${esc(x.p.fullName || x.p.email)}</b><br><small>${esc(x.hotel.name || "")} · ${esc(y.shift.name)} · checked in ${hhmm(y.rec.checkInAt)} · ${y.st.lateMin} min late${y.rec.spotName ? ` · at the ${esc(y.rec.spotName)}` : ""}${y.rec.method === "code" ? " · with the hotel code" : y.rec.distM != null ? ` · ${y.rec.distM} m from the pin` : ""}</small></div><span class="why">Late check-in — decide this shift.</span>${btns(x.p.uid, y.shift.key)}</div>`).join("")
+  $("a-decide").innerHTML = lateShifts.map(({ x, y }) => `<div class="d"><div><b>${esc(x.p.fullName || x.p.email)}</b><br><small>${esc(x.hotel.name || "")} · ${esc(y.shift.name)} · checked in ${hhmm(y.rec.checkInAt)} · ${y.st.lateMin} min late${y.rec.spotName ? ` · at the ${esc(y.rec.spotName)}` : ""}${y.rec.method === "code" ? " · with the hotel code" : distText(y.rec.distM) ? ` · ${distText(y.rec.distM)} from the pin` : ""}</small></div><span class="why">Late check-in — decide this shift.</span>${btns(x.p.uid, y.shift.key)}</div>`).join("")
     + lateDays.map(x => `<div class="d"><div><b>${esc(x.p.fullName || x.p.email)}</b><br><small>${esc(x.hotel.name || "")} · checked in ${hhmm(x.dayRec.checkInAt)} (old day format)</small></div><span class="why">Late check-in — decide the day.</span>${dbtns(x.p.uid)}</div>`).join("")
-    + openReqs.map(r => `<div class="d"><div><b>${esc(r.name || r.email)}</b><br><small>${esc(r.hotelName || hotelName(r.hotelId))}${r.shiftName ? ` · ${esc(r.shiftName)}` : ""} · sent ${hhmm(r.createdAt)}${r.distM != null ? ` · was ${r.distM >= 1000 ? (r.distM / 1000).toFixed(1) + " km" : r.distM + " m"} from the pin (±${r.accuracy || "?"} m)` : ""}</small></div><span class="why">“${esc(r.reason || "")}”</span>${r.shift ? btns(r.uid, r.shift, r.id) : dbtns(r.uid)}</div>`).join("");
+    + openReqs.map(r => `<div class="d"><div><b>${esc(rosterName(r.uid) || "Not on the staff list (" + String(r.email || "?") + ")")}</b><br><small>${esc(r.hotelName || hotelName(r.hotelId))}${r.shiftName ? ` · ${esc(r.shiftName)}` : ""} · sent ${hhmm(r.createdAt)}${distText(r.distM) ? ` · was ${distText(r.distM)} from the pin (±${accText(r.accuracy)} m)` : ""}</small></div><span class="why">“${esc(r.reason || "")}”</span>${r.shift ? btns(r.uid, r.shift, r.id) : dbtns(r.uid)}</div>`).join("");
   $("a-decide").querySelectorAll("[data-dec]").forEach(b => b.onclick = () => decide(b.dataset.uid, b.dataset.sk, b.dataset.dec, b.dataset.req ? attReqs.find(r => r.id === b.dataset.req) : null));
   $("a-decide").querySelectorAll("[data-ddec]").forEach(b => b.onclick = () => decideDay(b.dataset.uid, b.dataset.ddec));
   // table: one column per shift (names from the first hotel shown), then the day
@@ -645,7 +655,7 @@ function paintAttInner(){
     if (early > 10) f.push(`left ${early} min early`);
     if (isOutside(rec.outDistM, h)) f.push(`checked out ${distText(rec.outDistM)} from the hotel`);
     return f.length ? `<br><small style="color:var(--t-bad)">${esc(f.join(" · "))}</small>` : ""; };
-  const cell = (y, sh, uid) => !y ? (sh ? `<td class="cell-shift dim">off ${pen(uid, sh)}</td>` : "<td>—</td>") : `<td class="cell-shift">${y.rec && y.rec.checkInAt ? `${hhmm(y.rec.checkInAt)}${y.rec.checkOutAt ? " → " + hhmm(y.rec.checkOutAt) : ""}${outFlag(y.rec, sh)}` : "—"} ${pen(uid, sh)}<br><span class="status att-${y.st.review ? "review" : y.st.code}">${y.st.review ? "Late" : ATT_LABEL[y.st.code]}</span>${y.st.auto ? "" : " <small class='hint'>manual</small>"}${y.rec && y.rec.editedBy ? ` <small class='hint' title='${esc(y.rec.editReason || "")}'>edited</small>` : ""}${y.rec && y.rec.method === "code" ? `<small>hotel code</small>` : y.rec && (y.rec.spotName || y.rec.distM != null) ? `<small>${esc(y.rec.spotName || "")}${y.rec.distM != null ? ` ${y.rec.distM} m` : ""}</small>` : ""}</td>`;
+  const cell = (y, sh, uid) => !y ? (sh ? `<td class="cell-shift dim">off ${pen(uid, sh)}</td>` : "<td>—</td>") : `<td class="cell-shift">${y.rec && y.rec.checkInAt ? `${hhmm(y.rec.checkInAt)}${y.rec.checkOutAt ? " → " + hhmm(y.rec.checkOutAt) : ""}${outFlag(y.rec, sh)}` : "—"} ${pen(uid, sh)}<br><span class="status att-${y.st.review ? "review" : y.st.code}">${y.st.review ? "Late" : ATT_LABEL[y.st.code]}</span>${y.st.auto ? "" : " <small class='hint'>manual</small>"}${y.rec && y.rec.editedBy ? ` <small class='hint' title='${esc(y.rec.editReason || "")}'>edited</small>` : ""}${y.rec && y.rec.method === "code" ? `<small>hotel code</small>` : y.rec && (y.rec.spotName || distText(y.rec.distM)) ? `<small>${esc(y.rec.spotName || "")}${distText(y.rec.distM) ? ` ${distText(y.rec.distM)}` : ""}</small>` : ""}</td>`;
   $("a-rows").innerHTML = rows.map(x => `<tr data-uid="${esc(x.p.uid)}" style="cursor:default">
     <td><div class="who"><img src="${esc(x.p.photoThumb || "../media/img/logo.jpg")}" alt=""><div><b>${esc(x.p.fullName || x.p.email || "—")}</b><small>${esc(x.p.email || "")}</small></div></div></td>
     <td>${esc(x.hotel.name || hotelName(x.hotelId))}</td>${Array.from({ length: maxS }, (_, i) => { const sh = x.allShifts[i]; return cell(sh ? (x.day.shifts || []).find(y => y.shift.key === sh.key) : null, sh, x.p.uid); }).join("")}
@@ -752,7 +762,7 @@ $("a-csv").addEventListener("click", async () => {
     if (r.editedBy) return `Office (${r.editReason || "edited"})`;
     if (r.method === "code") return "Hotel code";
     if (r.source === "manual" || r.source === "request" || r.source === "decision") return "Office";
-    return r.distM != null ? `GPS · ${r.distM} m from ${r.spotName || "the hotel pin"}` : "GPS"; };
+    return distText(r.distM) ? `GPS · ${distText(r.distM)} from ${r.spotName || "the hotel pin"}` : "GPS"; };
   const outNote = (r, sh, x) => { if (!r || !r.checkOutAt) return ""; const h = hotels.find(z => z.id === r.hotelId) || x.hotel || {}, f = [], early = shiftEnd(sh) - toMin(hhmm(r.checkOutAt));
     if (early > 10) f.push(`left ${early} min early`); if (isOutside(r.outDistM, h)) f.push(`checked out ${distText(r.outDistM)} from the hotel`); return f.join(" · "); };
   const lines = [csvLine([`Joy Boy attendance · every shift · ${m.month} · ${m.hotelLabel}`]), ""];
@@ -791,13 +801,14 @@ async function loadProg(){
   const h = progHotel(); progPlan = null; progSignups = []; if (h){ try { progPlan = await be.getPlan(h.id, progDay); } catch (ex) { toast("Could not load the programme: " + (ex.message || ex)); } progSignups = (await be.signupsOn(progDay).catch(() => [])).filter(r => r.hotelId === h.id); }
   cancelTask(); paintProg();
 }
-function paintProgForm(){
+function paintProgForm(){ try { paintProgFormInner(); } catch (ex) { console.error(ex); toast("Could not draw the programme form: " + (ex.message || ex)); } }
+function paintProgFormInner(){
   const h = progHotel() || {}, spots = hotelSpots(h), staff = all.filter(p => p.status === "approved" && p.hotelId === h.id).sort((a, b) => String(a.fullName).localeCompare(String(b.fullName)));
   const cur = $("t-place").value;
   $("t-place").innerHTML = `<option value="">— no place —</option>` + spots.map(sp => `<option value="${esc(sp.key)}">${esc(sp.name)}</option>`).join("") + `<option value="__other">Other (type it) →</option>`;
   if ([...$("t-place").options].some(o => o.value === cur)) $("t-place").value = cur;
   const chosen = new Set([...$("t-who").querySelectorAll("input:checked")].map(i => i.value));
-  $("t-who").innerHTML = `<label class="chip"><input type="checkbox" value="__all" ${chosen.has("__all") ? "checked" : ""}><span>Everyone</span></label>` + staff.map(p => `<label class="chip"><input type="checkbox" value="${esc(p.uid)}" ${chosen.has(p.uid) ? "checked" : ""}><span>${esc((p.preferredName || p.fullName || p.email).split(" ")[0])}${staff.filter(q => (q.preferredName || q.fullName || "").split(" ")[0] === (p.preferredName || p.fullName || "").split(" ")[0]).length > 1 ? " " + esc((p.fullName || "").split(" ").slice(-1)[0]) : ""}</span></label>`).join("") + (staff.length ? "" : `<span class="hint">No approved staff assigned to this hotel yet.</span>`);
+  $("t-who").innerHTML = `<label class="chip"><input type="checkbox" value="__all" ${chosen.has("__all") ? "checked" : ""}><span>Everyone</span></label>` + staff.map(p => `<label class="chip"><input type="checkbox" value="${esc(p.uid)}" ${chosen.has(p.uid) ? "checked" : ""}><span>${esc(firstWord(p.preferredName, p.fullName, p.email))}${staff.filter(q => firstWord(q.preferredName, q.fullName) === firstWord(p.preferredName, p.fullName)).length > 1 ? " " + esc(String(p.fullName || "").split(" ").slice(-1)[0]) : ""}</span></label>`).join("") + (staff.length ? "" : `<span class="hint">No approved staff assigned to this hotel yet.</span>`);
 }
 function paintProg(){
   paintProgForm();
@@ -805,13 +816,17 @@ function paintProg(){
   $("p-rows").innerHTML = tasks.map(t => `<tr data-tid="${esc(t.id)}"><td class="tm">${esc(t.time)}${t.end ? `<br><small class="hint">– ${esc(t.end)}</small>` : ""}</td><td><b>${esc(t.title)}</b>${t.note ? `<br><small class="hint">${esc(t.note)}</small>` : ""}${guestBadge(t)}</td><td>${esc(t.place || "—")}</td><td>${t.all ? "Everyone" : esc((t.names || []).map(n => n.split(" ")[0]).join(", ") || "—")}</td><td><span class="rowacts"><button class="btn ghost small" type="button" data-edit="${esc(t.id)}">Edit</button><button class="btn ghost small" type="button" data-del="${esc(t.id)}" style="border-color:rgba(255,77,46,.6);color:#FFB3A3">Delete</button></span></td></tr>`).join("");
   show("p-empty", tasks.length === 0);
   $("p-rows").querySelectorAll("[data-edit]").forEach(b => b.onclick = () => startEdit(b.dataset.edit));
+  $("p-rows").querySelectorAll("[data-sdel]").forEach(b => b.onclick = async () => { const r = progSignups.find(x => x.id === b.dataset.sdel); if (!r || !confirm(`Remove the sign-up "${r.firstName}" (${r.count})? Then press ↻ recount.`)) return;
+    try { await be.deleteSignup(r.id); progSignups = progSignups.filter(x => x.id !== r.id); paintProg(); toast("Removed. Press ↻ recount to update the guest page."); } catch (ex) { toast("Could not remove: " + (ex.message || ex)); } });
+  $("p-rows").querySelectorAll("[data-recount]").forEach(b => b.onclick = async () => { const h = progHotel(), tid = b.dataset.recount, n = signupCount(progSignups, tid); if (!h) return;
+    try { await be.setGuestCount(h.id, progDay, tid, n); toast(`Guest page now shows ${n} signed up for this activity.`); } catch (ex) { toast("Could not recount: " + (ex.message || ex) + " (save the programme once, then try again)"); } });
   $("p-rows").querySelectorAll("[data-del]").forEach(b => b.onclick = async () => { const t = tasks.find(x => x.id === b.dataset.del); if (!t || !confirm(`Delete "${t.title}" at ${t.time}?`)) return; await saveTasks(tasks.filter(x => x.id !== t.id)); });
 }
 function guestBadge(t){
   if (t.guest === "show") return `<br><small class="gbadge">👀 on the guest page</small>`;
   if (t.guest !== "signup") return "";
   const mine = progSignups.filter(r => r.taskId === t.id), n = signupCount(progSignups, t.id), full = n >= (+t.places || 0);
-  return `<br><small class="gbadge ${full ? "full" : ""}">🙋 ${n} / ${+t.places || 0} signed up${t.kids ? " · kids" : ""}${full ? " · full" : ""}</small>${mine.length ? `<br><small class="hint">${mine.map(r => `${esc(r.firstName)}${r.count > 1 ? " · " + r.count : ""}${r.age ? " (" + esc(r.age) + ")" : ""}`).join(", ")}</small>` : ""}`;
+  return `<br><small class="gbadge ${full ? "full" : ""}">🙋 ${n} / ${+t.places || 0} signed up${t.kids ? " · kids" : ""}${full ? " · full" : ""}</small> <button class="lnk" type="button" data-recount="${esc(t.id)}" title="If the guest page shows a different number (or Full by mistake), set it back to the sign-ups listed here">↻ recount</button>${mine.length ? `<br><small class="hint">${mine.map(r => `${esc(r.firstName)}${r.count > 1 ? " · " + r.count : ""}${r.age ? " (" + esc(r.age) + ")" : ""} <button class="lnk" type="button" data-sdel="${esc(r.id)}" title="Remove this sign-up (e.g. a fake one), then press ↻ recount">×</button>`).join(", ")}</small>` : ""}`;
 }
 const paintGuestFields = () => { const v = $("t-guest").value; show("t-places-f", v === "signup"); show("t-kids-f", v === "signup"); };
 $("t-guest").addEventListener("change", paintGuestFields);
@@ -876,6 +891,7 @@ document.querySelectorAll(".paytabs button").forEach(b => b.addEventListener("cl
 const items = () => salesItems(salesCfg), itemOf = k => items().find(i => i.key === k) || null;
 async function loadPay(){
   try { salesCfg = await be.getSalesSettings(); } catch { salesCfg = {}; }
+  show("pay-noitems", !(salesCfg && Array.isArray(salesCfg.items) && salesCfg.items.length));
   const act = hotels.filter(h => h.active !== false), keep = $("s-hotel").value;
   $("s-hotel").innerHTML = act.map(h => `<option value="${esc(h.id)}">${esc(h.name)}</option>`).join("") || `<option value="">No active hotel</option>`; if (act.some(h => h.id === keep)) $("s-hotel").value = keep;
   $("pr-hotel").innerHTML = `<option value="">All hotels</option>` + hotels.map(h => `<option value="${esc(h.id)}">${esc(h.name)}</option>`).join("");
@@ -925,6 +941,8 @@ $("s-item").addEventListener("change", () => { autoFill(); previewComm(); });
 $("s-save").addEventListener("click", async () => {
   const uid = $("s-who").value, i = itemOf($("s-item").value), p = all.find(x => x.uid === uid); if (!uid || !p) return toast("Choose who sold it"); if (!i) return toast("Choose the item");
   const amounts = readAmts(), units = unitsMap(i, amounts), qty = +$("s-qty").value || Object.values(units).reduce((s, v) => s + v, 0); if (!Object.keys(amounts).length && !qty) return toast("Enter what was collected (in at least one currency)");
+  const noPrice = Object.keys(amounts).filter(c => !(+((i.prices || {})[c]) > 0));   // a missing commission simply counts as 0
+  if (noPrice.length) return toast(`Set the ${i.name} price in ${noPrice.join(", ")} first (Pay & sales → Items & commission), then save the sale.`);
   const id = `${uid}_${salesDay}_${i.key}`;
   try { await be.setSale(id, { uid, name: p.fullName || p.email, email: p.email || "", hotelId: p.hotelId || $("s-hotel").value, date: salesDay, item: i.key, itemName: i.name, qty, units, amounts, commissions: commissionMap(i, qty, amounts), note: $("s-note").value.trim(), by: user.email }); toast(`Saved: ${p.fullName} · ${i.name} · ${moneyMap(amounts)}`); ["s-qty","s-note"].forEach(k => $(k).value = ""); delete $("s-qty").dataset.touched; setAmts({}); $("s-comm").textContent = ""; $("s-formtitle").textContent = "Record a sale"; loadSales(); }
   catch (ex) { toast("Could not save: " + (ex.message || ex)); }
@@ -944,7 +962,7 @@ $("i-add").addEventListener("click", () => { editItems.push({ key: "", name: "",
 $("i-save").addEventListener("click", async () => {
   const clean = editItems.filter(i => (i.name || "").trim()).map(i => ({ key: i.key || slug(i.name) || "item" + Date.now(), name: i.name.trim(), unit: (i.unit || "").trim(), prices: i.prices || {}, commissions: i.commissions || {} }));
   if (!clean.length) return toast("Keep at least one item"); if (new Set(clean.map(i => i.key)).size !== clean.length) return toast("Two items have the same name");
-  try { await be.setSalesSettings({ items: clean, currency: CURRENCY }); salesCfg = { ...salesCfg, items: clean }; editItems = null; toast("Items saved"); paintItems(); paintSales(); } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
+  try { await be.setSalesSettings({ items: clean, currency: CURRENCY }); salesCfg = { ...salesCfg, items: clean }; editItems = null; show("pay-noitems", false); toast("Items saved"); paintItems(); paintSales(); } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
 });
 /* payroll */
 $("pr-month").addEventListener("change", () => { if ($("pr-month").value){ prMonth = $("pr-month").value; loadPayroll(); } });
@@ -1034,7 +1052,7 @@ function paintWeek(){
   $("w-head").innerHTML = `<tr><th>Person</th>${wDays().map(d => `<th class="${d === today ? "now" : ""}">${dayLabelShort(d)}${d === today ? "<br><small class='hint'>today</small>" : ""}</th>`).join("")}</tr>`;
   const cellFor = (uid, d) => { const e = wRoster[d][uid], sch = scheduledShifts(shifts, { roster: wRoster[d] }, uid), isOff = !!(e && (e.off || (Array.isArray(e.shifts) && !e.shifts.length)));
     return `<td class="day"><div class="sc">${shifts.map(s => `<button type="button" class="${sch.some(x => x.key === s.key) ? "on" : ""}" data-w="${esc(uid)}|${d}|${s.key}" title="${esc(s.name)} ${esc(s.start)}">${esc(s.name.slice(0, 1))}</button>`).join("")}<button type="button" class="off ${isOff ? "on" : ""}" data-w="${esc(uid)}|${d}|off">off</button></div></td>`; };
-  $("w-rows").innerHTML = staff.map(p => `<tr data-uid="${esc(p.uid)}" class="${[...wDirty].some(k => k.startsWith(p.uid + "|")) ? "dirty" : ""}"><td><div class="who"><img src="${esc(p.photoThumb || "../media/img/logo.jpg")}" alt=""><div><b>${esc((p.preferredName || p.fullName || p.email).split(" ")[0])}</b><small>${esc(p.fullName || "")}</small></div></div></td>${wDays().map(d => cellFor(p.uid, d)).join("")}</tr>`).join("");
+  $("w-rows").innerHTML = staff.map(p => `<tr data-uid="${esc(p.uid)}" class="${[...wDirty].some(k => k.startsWith(p.uid + "|")) ? "dirty" : ""}"><td><div class="who"><img src="${esc(p.photoThumb || "../media/img/logo.jpg")}" alt=""><div><b>${esc(firstWord(p.preferredName, p.fullName, p.email))}</b><small>${esc(p.fullName || "")}</small></div></div></td>${wDays().map(d => cellFor(p.uid, d)).join("")}</tr>`).join("");
   show("w-empty", staff.length === 0);
   $("w-rows").querySelectorAll("[data-w]").forEach(b => b.onclick = () => {
     const [uid, d, key] = b.dataset.w.split("|"), cur = scheduledShifts(shifts, { roster: wRoster[d] }, uid).map(s => s.key);
@@ -1250,7 +1268,7 @@ function openEdit(uid, shiftKey){
   $("e-title").textContent = `${x.p.fullName || x.p.email} · ${sh.name}`; $("e-sub").textContent = `${attDay} · ${x.hotel.name || ""} · shift ${sh.start}–${sh.end || "?"}`;
   $("e-in").value = rec && rec.checkInAt ? hhmm(rec.checkInAt) : ""; $("e-out").value = rec && rec.checkOutAt ? hhmm(rec.checkOutAt) : ""; $("e-why").value = "";
   show("e-del", !!(rec && rec.checkInAt));
-  $("e-hist").textContent = rec && rec.editedBy ? `Last edited by ${rec.editedBy}${rec.editedAt ? " at " + hhmm(rec.editedAt) : ""}: ${rec.editReason || ""}` : rec && rec.checkInAt && rec.method === "code" ? "Recorded from the phone with the hotel code shown by the office." : rec && rec.checkInAt ? `Recorded from the phone${rec.spotName ? " at the " + rec.spotName : ""}${rec.distM != null ? `, ${rec.distM} m from the pin` : ""}.` : "No check-in recorded for this shift. Set the times to add one by hand.";
+  $("e-hist").textContent = rec && rec.editedBy ? `Last edited by ${rec.editedBy}${rec.editedAt ? " at " + hhmm(rec.editedAt) : ""}: ${rec.editReason || ""}` : rec && rec.checkInAt && rec.method === "code" ? "Recorded from the phone with the hotel code shown by the office." : rec && rec.checkInAt ? `Recorded from the phone${rec.spotName ? " at the " + rec.spotName : ""}${distText(rec.distM) ? `, ${distText(rec.distM)} from the pin` : ""}.` : "No check-in recorded for this shift. Set the times to add one by hand.";
   $("edit").classList.add("open"); $("e-in").focus();
 }
 const closeEdit = () => { $("edit").classList.remove("open"); editCtx = null; };
@@ -1282,7 +1300,9 @@ async function cleanupGuestNames(){
   if (last === today) return;
   try { await be.cleanupSignups(addDays(today, -7)); try { localStorage.setItem(key, today); } catch {} } catch (ex) { console.warn("sign-up cleanup", ex); }
 }
-function paintToday(){
+// One odd record (a field of the wrong type) must never blank the whole Today view.
+function paintToday(){ try { paintTodayInner(); } catch (ex) { console.error(ex); toast("Could not draw part of Today: " + (ex.message || ex)); } }
+function paintTodayInner(){
   const today = dayKey(), now = toMin(hhmm(new Date())), hf = $("td-hotel").value, hs = hotels.filter(h => h.active !== false && (!hf || h.id === hf));
   const rows = attRows(today, tdRecs, tdPlans).filter(x => !hf || x.hotelId === hf);
   const started = sh => now > toMin(sh.start) + (sh.graceMin != null ? +sh.graceMin : 5);
@@ -1291,11 +1311,11 @@ function paintToday(){
   hs.forEach(h => { const cur = currentShift(hotelShifts(h), now); if (!cur) return; rows.filter(x => x.hotelId === h.id).forEach(x => { const y = (x.day.shifts || []).find(z => z.shift.key === cur.key); if (!y) return; expNow++; if (y.rec && y.rec.checkInAt) inNow++; }); });
   const openReqs = tdReqs.filter(r => r.status === "open" && (!hf || r.hotelId === hf)), salesLines = tdSales.filter(s => !hf || s.hotelId === hf);
   $("td-stats").innerHTML = [["Expected today", rows.filter(x => x.shifts.length).length], ["In the current shift", `${inNow} / ${expNow}`], ["Missed check-ins so far", missing.length], ["Need a decision", late.length + openReqs.length], ["Sales lines today", salesLines.length]].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
-  $("td-decide").innerHTML = (late.length + openReqs.length) ? `<div class="d"><div><b>${late.length + openReqs.length} to decide</b><br><small>${late.map(({ x, y }) => `${esc((x.p.fullName || x.p.email).split(" ")[0])} · ${esc(y.shift.name)} ${y.st.lateMin} min late`).concat(openReqs.map(r => `${esc((r.name || r.email).split(" ")[0])} · note${r.shiftName ? " · " + esc(r.shiftName) : ""}`)).join(" &nbsp;·&nbsp; ")}</small></div><span class="acts"><button class="btn small" type="button" id="td-goatt">Decide in Attendance</button></span></div>` : "";
+  $("td-decide").innerHTML = (late.length + openReqs.length) ? `<div class="d"><div><b>${late.length + openReqs.length} to decide</b><br><small>${late.map(({ x, y }) => `${esc(firstWord(x.p.fullName, x.p.email))} · ${esc(y.shift.name)} ${y.st.lateMin} min late`).concat(openReqs.map(r => `${esc(firstWord(rosterName(r.uid), r.email))} · note${r.shiftName ? " · " + esc(r.shiftName) : ""}`)).join(" &nbsp;·&nbsp; ")}</small></div><span class="acts"><button class="btn small" type="button" id="td-goatt">Decide in Attendance</button></span></div>` : "";
   const g = $("td-goatt"); if (g) g.onclick = () => { attDay = today; $("a-date").value = today; setView("att"); };
   $("td-hotels").innerHTML = hs.map(h => { const shifts = hotelShifts(h), cur = currentShift(shifts, now), plan = tdPlans[h.id], hr = rows.filter(x => x.hotelId === h.id);
     return `<div class="card tcard"><h2>${esc(h.name)}</h2><p class="hint">${hr.filter(x => x.shifts.length).length} scheduled · ${hr.filter(x => !x.shifts.length).length} off${plan && plan.setBy ? "" : " · no spot plan today"}</p>` + shifts.map(sh => { const sp = plannedSpot(h, plan, sh.key), ppl = hr.filter(x => x.shifts.some(s => s.key === sh.key)), inN = ppl.filter(x => (x.day.shifts || []).some(y => y.shift.key === sh.key && y.rec && y.rec.checkInAt)).length, miss = ppl.filter(x => !(x.day.shifts || []).some(y => y.shift.key === sh.key && y.rec && y.rec.checkInAt) && !(x.dayRec && x.dayRec.override)), isCur = cur && cur.key === sh.key, over = now > shiftEnd(sh);
-      return `<div class="tshift ${isCur ? "now" : ""} ${over ? "over" : ""}"><div><b>${esc(sh.name)}</b> <small>${esc(sh.start)}–${esc(sh.end || "?")} · ${sp ? "at the " + esc(sp.name) : "anywhere"}</small>${started(sh) && miss.length ? `<div class="tmiss">${over ? "missed" : "not in yet"}: ${miss.map(x => esc((x.p.preferredName || x.p.fullName || x.p.email).split(" ")[0])).join(", ")}</div>` : ""}</div><span class="status ${inN >= ppl.length && ppl.length ? "att-present" : started(sh) ? "att-review" : "att-pending"}">${inN} / ${ppl.length}</span></div>`; }).join("") + `</div>`; }).join("") || `<p class="hint">No active hotel.</p>`;
+      return `<div class="tshift ${isCur ? "now" : ""} ${over ? "over" : ""}"><div><b>${esc(sh.name)}</b> <small>${esc(sh.start)}–${esc(sh.end || "?")} · ${sp ? "at the " + esc(sp.name) : "anywhere"}</small>${started(sh) && miss.length ? `<div class="tmiss">${over ? "missed" : "not in yet"}: ${miss.map(x => esc(firstWord(x.p.preferredName, x.p.fullName, x.p.email))).join(", ")}</div>` : ""}</div><span class="status ${inN >= ppl.length && ppl.length ? "att-present" : started(sh) ? "att-review" : "att-pending"}">${inN} / ${ppl.length}</span></div>`; }).join("") + `</div>`; }).join("") || `<p class="hint">No active hotel.</p>`;
   const tasks = hs.flatMap(h => sortTasks(tdPlans[h.id] && tdPlans[h.id].tasks).map(t => ({ ...t, hotel: h.name, hid: h.id }))).sort((a, b) => String(a.time).localeCompare(String(b.time)));
   const upcoming = tasks.filter(t => toMin(t.end || t.time) + 30 >= now);
   $("td-prog").innerHTML = `<h2>Programme</h2>` + (tasks.length ? `<div class="tasks" style="margin-top:8px">${(upcoming.length ? upcoming : tasks.slice(-3)).slice(0, 8).map(t => `<div class="task mine ${toMin(t.time) <= now && now <= toMin(t.end || t.time) + 30 ? "next" : ""}"><span class="tm">${esc(t.time)}${t.end ? `<small>until ${esc(t.end)}</small>` : ""}</span><div><b>${esc(t.title)}</b>${t.guest === "signup" ? ` <small class="gbadge">🙋 ${signupCount(tdSignups.filter(r => r.hotelId === t.hid), t.id)} / ${+t.places || 0}</small>` : ""}${t.place ? `<div class="pl">${esc(t.place)}${hs.length > 1 ? " · " + esc(t.hotel) : ""}</div>` : ""}<div class="who">${t.all ? "<span>everyone</span>" : (t.names || []).map(n => `<span>${esc(n.split(" ")[0])}</span>`).join("")}</div></div></div>`).join("")}</div><p class="hint" style="margin-top:8px">${tasks.length} activities today${upcoming.length ? `, ${upcoming.length} still to come` : ", all done"}.</p>` : `<p class="hint" style="margin-top:8px">Nothing planned for today yet.</p>`) + `<div class="actions"><button class="btn ghost small" type="button" data-go="prog">Open Programme</button></div>`;
@@ -1389,7 +1409,7 @@ async function loadGuests(){
   try { gRows = await be.feedbackRange(from, to); } catch (ex) { gRows = []; toast("Could not load the feedback: " + (ex.message || ex)); }
   paintQrPickers(); paintGuests();
 }
-const staffName = uid => { const p = all.find(x => x.uid === uid); return p ? (p.preferredName || p.fullName || p.email) : ""; };
+const staffName = uid => { const p = all.find(x => x.uid === uid); return p ? (p.preferredName || p.fullName || p.email) : uid ? "unknown (not on the staff list)" : ""; };
 function paintGuests(){
   const hf = $("g-hotel").value, rows = gRows.filter(r => !hf || r.hotelId === hf).sort((a, b) => String(b.date).localeCompare(String(a.date)));
   const avg = list => list.length ? (list.reduce((s, r) => s + (+r.rating || 0), 0) / list.length).toFixed(1) : "—";
@@ -1398,9 +1418,9 @@ function paintGuests(){
     .map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
   const byStaff = {}; rows.forEach(r => { if (!r.staffUid) return; (byStaff[r.staffUid] = byStaff[r.staffUid] || []).push(r); });
   const people = Object.keys(byStaff).map(uid => ({ uid, list: byStaff[uid] })).sort((a, b) => b.list.length - a.list.length);
-  $("g-people").innerHTML = people.map(p => `<tr><td><b>${esc(staffName(p.uid) || p.list[0].staffName || "—")}</b></td><td>${p.list.length}</td><td><b>${avg(p.list)}</b> ★</td></tr>`).join("")
+  $("g-people").innerHTML = people.map(p => `<tr><td><b>${esc(staffName(p.uid) || "—")}</b></td><td>${p.list.length}</td><td><b>${avg(p.list)}</b> ★</td></tr>`).join("")
     || `<tr><td colspan="3" class="hint">No ratings name a person yet. Print the personal cards below.</td></tr>`;
-  $("g-list").innerHTML = rows.slice(0, 60).map(r => `<div class="feed"><div class="fh"><span class="fstars">${"★".repeat(Math.max(0, Math.min(5, +r.rating || 0)))}</span><small>${esc(r.date)}${r.staffUid || r.staffName ? " · " + esc(staffName(r.staffUid) || r.staffName) : ""}${r.hotelName ? " · " + esc(r.hotelName) : ""}${r.lang ? " · " + esc(String(r.lang).toUpperCase()) : ""}</small><button class="lnk" type="button" data-fdel="${esc(r.id)}" title="Delete">×</button></div>${(r.comment || "").trim() ? `<p class="fc">“${esc(r.comment)}”</p>` : ""}${r.guestName ? `<small class="hint">— ${esc(r.guestName)}</small>` : ""}</div>`).join("")
+  $("g-list").innerHTML = rows.slice(0, 60).map(r => `<div class="feed"><div class="fh"><span class="fstars">${"★".repeat(Math.max(0, Math.min(5, +r.rating || 0)))}</span><small>${esc(r.date)}${r.staffUid ? " · " + esc(staffName(r.staffUid)) : ""}${r.hotelName ? " · " + esc(r.hotelName) : ""}${r.lang ? " · " + esc(String(r.lang).toUpperCase()) : ""}</small><button class="lnk" type="button" data-fdel="${esc(r.id)}" title="Delete">×</button></div>${(r.comment || "").trim() ? `<p class="fc">“${esc(r.comment)}”</p>` : ""}${r.guestName ? `<small class="hint">— ${esc(r.guestName)}</small>` : ""}</div>`).join("")
     || `<p class="hint">Nothing yet this month.</p>`;
   $("g-list").querySelectorAll("[data-fdel]").forEach(b => b.onclick = async () => { if (!confirm("Delete this rating?")) return; try { await be.deleteFeedback(b.dataset.fdel); toast("Deleted"); loadGuests(); } catch (ex) { toast("Could not delete: " + (ex.message || ex)); } });
 }
@@ -1432,7 +1452,7 @@ async function drawQr(){
   const hid = $("qr-hotel").value; if (!hid){ $("qr-box").innerHTML = `<p class="hint">Pick a hotel first.</p>`; $("qr-link").textContent = ""; return; }
   const url = feedbackLink(); $("qr-link").textContent = url;
   try {
-    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202610031053"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
+    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202610131500"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
     const q = qrLib(0, "M"); q.addData(url); q.make();
     const who = $("qr-who").selectedOptions[0] ? $("qr-who").selectedOptions[0].textContent : "";
     const hotel = hotels.find(h => h.id === hid) || {};

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-aecynXEfuvaRSzsV1Vr8bk7G9Ggu98Hw0pfDtc21ofk='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-sATi31TJBO9kmA+MMzvq2LLwOEnZUABzZ5q6lmuogCA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team portal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,8 +20,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202610031053">
-<script src="firebase-config.js?v=202610031053"></script>
+<link rel="stylesheet" href="portal.css?v=202610131500">
+<script src="firebase-config.js?v=202610131500"></script>
 <script>
 (function(){
   var KEY = "jb-theme2", ORDER = ["auto", "light", "dark"];   // new key (2026-10-03): everyone starts again on Auto
@@ -108,8 +108,8 @@
             <div class="pv" id="pv"><span>Your photo</span></div>
             <div class="f" id="f-photo"><label class="btn ghost small filebtn">Choose a photo from your gallery <input type="file" id="photo" accept="image/*"></label><p class="hint">Pick any clear photo of your face from your phone — a normal picture is fine, no studio shot needed. Any size: we shrink it on your phone before saving.</p><p class="err" id="e-photo">Please add a profile photo.</p></div>
           </div>
-          <label class="f full"><span>Full name <b class="req">*</b></span><input class="in" id="fullName" autocomplete="name" placeholder="As in your passport"><span class="err">Enter your full name.</span></label>
-          <label class="f"><span>Preferred / stage name</span><input class="in" id="preferredName" placeholder="What guests call you"></label>
+          <label class="f full"><span>Full name <b class="req">*</b></span><input class="in" id="fullName" autocomplete="name" maxlength="120" placeholder="As in your passport"><span class="err">Enter your full name.</span></label>
+          <label class="f"><span>Preferred / stage name</span><input class="in" id="preferredName" maxlength="60" placeholder="What guests call you"></label>
           <label class="f"><span>Date of birth <b class="req">*</b></span><input class="in" type="date" id="dob"><span class="err">You must be at least 18.</span></label>
           <div class="f full" id="f-gender"><span>Gender <b class="req">*</b></span><div class="seg" role="radiogroup" aria-label="Gender"><label><input type="radio" name="gender" value="Male"><span>Male</span></label><label><input type="radio" name="gender" value="Female"><span>Female</span></label></div><span class="err">Please choose.</span></div>
           <label class="f"><span>Nationality <b class="req">*</b></span><select class="in" id="nationality"></select><span class="err">Choose your nationality.</span></label>
@@ -248,7 +248,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState, hotelSpots, signupCount } from "./portal.js?v=202610031053";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState, hotelSpots, signupCount, firstWord } from "./portal.js?v=202610131500";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -333,31 +333,37 @@ function fill(p){
   (p.skills || []).forEach(v => { const el = document.querySelector(`input[name="skills"][value="${v}"]`); if (el) el.checked = true; });
   const existing = p.photoThumb || p.photoUrl; if (existing){ $("pv").innerHTML = `<img src="${esc(existing)}" alt="">`; $("pv").classList.add("has"); }
   show("f-invite", false); show("f-consent", false);
+  $("fullName").readOnly = p.status === "approved"; $("fullName").title = p.status === "approved" ? "Approved: ask the office to correct your full name" : "";   // the office owns the legal name once approved
   if (p.idScanPath){ be.imageUrl(p.idScanPath).then(u => { if (u){ $("docpv").src = u; $("docpv").classList.add("has"); } }).catch(() => {}); }
 }
-function resetForm(){ $("form").reset(); photoBlob = scanBlob = null; $("pv").innerHTML = "<span>Your photo</span>"; $("pv").classList.remove("has"); $("docpv").classList.remove("has"); $("docpv").removeAttribute("src"); document.querySelectorAll(".pay-extra").forEach(x => x.classList.remove("on")); document.querySelectorAll(".f.bad").forEach(x => x.classList.remove("bad")); show("f-invite", true); show("f-consent", true); $("form-eyebrow").textContent = "New registration"; }
+function resetForm(){ $("form").reset(); $("fullName").readOnly = false; photoBlob = scanBlob = null; $("pv").innerHTML = "<span>Your photo</span>"; $("pv").classList.remove("has"); $("docpv").classList.remove("has"); $("docpv").removeAttribute("src"); document.querySelectorAll(".pay-extra").forEach(x => x.classList.remove("on")); document.querySelectorAll(".f.bad").forEach(x => x.classList.remove("bad")); show("f-invite", true); show("f-consent", true); $("form-eyebrow").textContent = "New registration"; }
 $("form").addEventListener("submit", async e => {
   e.preventDefault();
   if (step < 5){ if (validate(step)){ step++; paint(); } return; }
   if (!validate(5)) return;
   const btn = $("submit"); btn.disabled = true; btn.textContent = "Saving…"; err("");
   try {
-    const data = collect();
-    if (photoBlob){ const r = await be.uploadImage(user.uid, "avatar.jpg", photoBlob); data.photoPath = r.path; data.photoThumb = await blobToDataUrl(await shrink(photoBlob, 128, .8)); }
-    if (scanBlob){ const r = await be.uploadImage(user.uid, "id.jpg", scanBlob); data.idScanPath = r.path; }
-    if (profile){ await be.updateProfile(user.uid, data); }
-    else { data.status = "pending"; data.consentAt = new Date().toISOString(); data.inviteCodeUsed = val("inviteCode").trim().toUpperCase(); await be.createProfile(user.uid, data); }
+    const data = collect(), isNew = !profile, paths = {};
+    if (photoBlob) data.photoThumb = await blobToDataUrl(await shrink(photoBlob, 128, .8));
+    // a new profile is saved first (that is where the invite code is checked); the server takes photos only for an existing profile
+    if (isNew){ data.status = "pending"; data.consentAt = new Date().toISOString(); data.inviteCodeUsed = val("inviteCode").trim().toUpperCase(); await be.createProfile(user.uid, data); profile = await be.getProfile(user.uid); }   // a retry after a failed upload is then an edit
+    if (photoBlob){ const r = await be.uploadImage(user.uid, "avatar.jpg", photoBlob); paths.photoPath = r.path; }
+    if (scanBlob){ const r = await be.uploadImage(user.uid, "id.jpg", scanBlob); paths.idScanPath = r.path; }
+    if (!isNew) await be.updateProfile(user.uid, { ...data, ...paths });
+    else if (Object.keys(paths).length) await be.updateProfile(user.uid, paths);
     profile = await be.getProfile(user.uid); photoBlob = scanBlob = null;
     toast("Profile saved"); renderProfile();
   } catch (ex) {
     console.error(ex);
-    err(/permission|denied/i.test(String(ex)) ? "Saving was refused. The invite code is wrong, or your account is not allowed — check with the office." : "Could not save: " + (ex.message || ex));
+    err(!/permission|denied/i.test(String(ex)) ? "Could not save: " + (ex.message || ex)
+      : profile ? "Saving was refused. Check the name fields (no line breaks; full name up to 120 letters, stage name up to 60). Once you are approved, only the office can change your full name."
+      : "Saving was refused. The invite code is wrong, or your account is not allowed — check with the office.");
   } finally { btn.disabled = false; btn.textContent = "Save my profile"; }
 });
 
 function renderProfile(){
   const p = profile; show("s-auth", false); show("s-form", false); show("s-profile", true);
-  $("p-first").textContent = (p.preferredName || p.fullName || "you").split(" ")[0];
+  $("p-first").textContent = firstWord(p.preferredName, p.fullName, "you");
   $("p-name").textContent = p.fullName; $("p-email").textContent = p.email; $("p-avatar").src = p.photoThumb || p.photoUrl || "";
   if (p.photoPath) be.imageUrl(p.photoPath).then(u => { if (u) $("p-avatar").src = u; }).catch(() => {});
   const st = p.status || "pending"; $("p-status").className = "status " + st; $("p-status").textContent = { pending: "Pending review", approved: "Approved", rejected: "Needs changes" }[st] || st;
@@ -381,8 +387,8 @@ async function loadAttendance(){
   if (!hotel) return;
   allShifts = hotelShifts(hotel);
   const today = dayKey();
-  be.signupsOn(today).then(l => { signups = l.filter(r => r.hotelId === hotel.id); if (plan) paintProg(); }).catch(() => {});   // guests signed up for today's activities
-  [hist, plan, reqs, planTmrw, weekPlans] = await Promise.all([be.myAttendance(user.uid, addDays(today, -14)).catch(ex => { console.warn(ex); return []; }), be.getPlan(hotel.id, today).catch(() => null), be.myRequests(user.uid, today).catch(() => []), be.getPlan(hotel.id, addDays(today, 1)).catch(() => null), be.plansRange(today, addDays(today, 6)).then(ps => ps.filter(p => p.hotelId === hotel.id)).catch(() => [])]);
+  be.signupsOn(today, hotel.id).then(l => { signups = l.filter(r => r.hotelId === hotel.id); if (plan) paintProg(); }).catch(() => {});   // guests signed up for today's activities
+  [hist, plan, reqs, planTmrw, weekPlans] = await Promise.all([be.myAttendance(user.uid, addDays(today, -14)).catch(ex => { console.warn(ex); return []; }), be.getPlan(hotel.id, today).catch(() => null), be.myRequests(user.uid, today).catch(() => []), be.getPlan(hotel.id, addDays(today, 1)).catch(() => null), Promise.all(Array.from({ length: 7 }, (_, i) => be.getPlan(hotel.id, addDays(today, i)).catch(() => null))).then(ps => ps.filter(Boolean))]);   // own hotel, day by day (the rules show staff no other hotel)
   shifts = scheduledShifts(allShifts, plan, user.uid);
   dayRec = hist.find(r => r.date === today && !r.shift) || null; recs = hist.filter(r => r.date === today && r.shift);
   $("att-hotel").textContent = hotel.name; $("att-date").textContent = today; show("att", true); paintAtt(); paintProg(); paintPush();
@@ -464,7 +470,10 @@ const ROUGH_M = 500;
 const ROUGH_LOC = acc => `Your phone is only sharing a rough location (±${acc >= 1000 ? (acc / 1000).toFixed(1) + " km" : acc + " m"}), so it cannot tell that you are at the hotel. ` + (/iPhone|iPad|iPod/.test(navigator.userAgent)
   ? "iPhone: Settings → Privacy & Security → Location Services → Safari Websites → turn ON “Precise Location”. Then close the portal completely and open it again."
   : "Android: Settings → Location → turn on “Google Location Accuracy” (or “Improve accuracy”); in Chrome tap the lock icon next to the address → Permissions → Location → Allow, with precise location. Then reload the page.") + " Until then, ask the office for the hotel code.";
+// The screen may have been drawn hours ago (an app left open): work out the open shift again before sending.
+function freshShift(){ const sh = currentShift(shifts, nowMin()), n = nowMin(); return sh && n >= toMin(sh.start) - SHIFT_OPEN_MIN && n <= shiftEndMin(sh) + SHIFT_CLOSE_MIN ? sh : null; }
 $("btn-in").addEventListener("click", async () => {
+  if (freshShift() !== cur){ paintAtt(); return toast("The shift changed since the screen was drawn — check the button again."); }
   const b = $("btn-in"); b.disabled = true; b.textContent = "Locating…"; const sh = cur; let attempt = null;
   try {
     if (!sh) throw new Error("No shift to check in for right now.");
@@ -551,7 +560,8 @@ async function sendRoll(busy){
 $("rc-here").addEventListener("click", () => sendRoll(false));
 $("rc-busy").addEventListener("click", () => sendRoll(true));
 window.addEventListener("jb-push", e => { if (e.detail && e.detail.tag === "rollcall") loadRoll(); });
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && hotel) loadRoll().catch(() => {}); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && hotel){ loadRoll().catch(() => {}); try { paintAtt(); } catch {} } });
+setInterval(() => { if (hotel && document.visibilityState === "visible") try { paintAtt(); } catch {} }, 60000);   // the open shift changes with the clock
 setInterval(() => { if (roll && !rollAns) paintRoll(); }, 30000);
 
 // Backup for a phone whose location fails: the office shows a 6-digit code that changes every minute; the server checks it.
@@ -560,6 +570,7 @@ $("code-in").addEventListener("keydown", e => { if (e.key === "Enter") $("code-g
 $("code-go").addEventListener("click", async () => {
   const code = $("code-in").value.replace(/\D/g, ""), sh = cur, b = $("code-go");
   if (code.length !== 6) return toast("Type the 6 digits shown on the office screen.");
+  if (freshShift() !== cur){ paintAtt(); return toast("The shift changed since the screen was drawn — check the screen and type the code again."); }
   if (!sh) return toast("No shift to check in for right now.");
   if (profile.status !== "approved") return toast("Your profile is not approved yet, so check-in is not open for you. Ask the office.");
   b.disabled = true; b.textContent = "Checking…"; let attempt = null;
