@@ -131,6 +131,20 @@ service cloud.firestore {
       allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
       allow write: if isAdmin();
     }
+    // ── Employment contract: the office sends one per person; the person reads their own and accepts it once,
+    //    by typing their full name exactly as it stands on the contract. Only the office can change the terms. ──
+    match /contracts/{uid} {
+      allow get: if isAdmin() || isOwner(uid);
+      allow list, create, delete: if isAdmin();
+      allow update: if isAdmin() || (isOwner(uid)
+        && resource.data.status == 'sent'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'acceptedName', 'acceptedAt'])
+        && request.resource.data.status == 'accepted'
+        && request.resource.data.acceptedAt == request.time
+        && request.resource.data.acceptedName is string
+        && request.resource.data.acceptedName == resource.data.party.fullName);
+    }
+
     match /payroll/{id} {
       allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid && resource.data.status == 'paid');
       allow write: if isAdmin();

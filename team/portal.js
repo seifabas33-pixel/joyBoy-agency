@@ -79,7 +79,7 @@ async function firebaseBackend(){
     adminUpdate: (uid, patch) => F.updateDoc(F.doc(db, "employees", uid), { ...patch, reviewedAt: ts() }),
     getNotes: async uid => { const s = await F.getDoc(F.doc(db, "employees", uid, "private", "notes")); return s.exists() ? (s.data().text || "") : ""; },
     setNotes: (uid, text, by) => F.setDoc(F.doc(db, "employees", uid, "private", "notes"), { text, by, updatedAt: ts() }),
-    deleteEmployee: async uid => { for (const f of ["avatar.jpg", "id.jpg"]) { try { await F.deleteDoc(F.doc(db, "employees", uid, "files", f)); } catch {} } for (const p of ["notes", "pay"]) { try { await F.deleteDoc(F.doc(db, "employees", uid, "private", p)); } catch {} }
+    deleteEmployee: async uid => { for (const f of ["avatar.jpg", "id.jpg"]) { try { await F.deleteDoc(F.doc(db, "employees", uid, "files", f)); } catch {} } for (const p of ["notes", "pay"]) { try { await F.deleteDoc(F.doc(db, "employees", uid, "private", p)); } catch {} } try { await F.deleteDoc(F.doc(db, "contracts", uid)); } catch {}
       try { const ds = await F.getDocs(F.collection(db, "employees", uid, "devices")); await Promise.all(ds.docs.map(d => F.deleteDoc(d.ref))); } catch {}   // nothing of the person is left behind
       await F.deleteDoc(F.doc(db, "employees", uid)); },
     getSettings: async () => { const s = await F.getDoc(F.doc(db, "settings", "registration")); return s.exists() ? s.data() : {}; },
@@ -98,6 +98,10 @@ async function firebaseBackend(){
     deleteFeedback: id => F.deleteDoc(F.doc(db, "feedback", id)),
     savePublicHotel: (id, data) => F.setDoc(F.doc(db, "publicHotels", id), data, { merge: true }),
     // pay: salary per person (admin-only, employees/{uid}/private/pay), sales items (settings/sales, readable by staff), sales and payroll records
+    // employment contract: contracts/{uid} — the office sends it, the employee reads it and accepts it by typing the full name
+    getContract: async uid => { const s = await F.getDoc(F.doc(db, "contracts", uid)); return s.exists() ? plain(s) : null; },
+    sendContract: (uid, data, by) => F.setDoc(F.doc(db, "contracts", uid), { ...data, status: "sent", sentBy: by, sentAt: ts() }),
+    acceptContract: (uid, name) => F.updateDoc(F.doc(db, "contracts", uid), { status: "accepted", acceptedName: name, acceptedAt: ts() }),
     getPay: async uid => { const s = await F.getDoc(F.doc(db, "employees", uid, "private", "pay")); return s.exists() ? plain(s) : null; },
     setPay: (uid, data, by) => F.setDoc(F.doc(db, "employees", uid, "private", "pay"), { ...data, by, updatedAt: ts() }, { merge: true }),
     getSalesSettings: async () => { const s = await F.getDoc(F.doc(db, "settings", "sales")); return s.exists() ? s.data() : {}; },
@@ -278,6 +282,9 @@ function demoBackend(){
     myFeedback: async (uid, from) => JSON.parse(localStorage.getItem("jb-demo-feedback") || "[]").map((r, i) => ({ id: "f" + i, ...r })).filter(r => r.staffUid === uid && (!from || r.date >= from)),
     deleteFeedback: async id => { const all = JSON.parse(localStorage.getItem("jb-demo-feedback") || "[]"); all.splice(+String(id).slice(1), 1); localStorage.setItem("jb-demo-feedback", JSON.stringify(all)); },
     savePublicHotel: async (id, data) => { const p = get("pubhotels") || {}; p[id] = { ...(p[id] || {}), ...data }; set("pubhotels", p); },
+    getContract: async uid => get("contract-" + uid) || null,
+    sendContract: async (uid, data, by) => set("contract-" + uid, { ...data, status: "sent", sentBy: by, sentAt: now() }),
+    acceptContract: async (uid, name) => { const c = get("contract-" + uid); if (!c || c.status !== "sent") throw new Error("not open"); if (String(name).trim().toLowerCase() !== String((c.party || {}).fullName || "").trim().toLowerCase()) throw Object.assign(new Error("name"), { code: "permission-denied" }); set("contract-" + uid, { ...c, status: "accepted", acceptedName: name, acceptedAt: now() }); },
     getPay: async uid => get("pay-" + uid) || null,
     setPay: async (uid, data, by) => set("pay-" + uid, { ...(get("pay-" + uid) || {}), ...data, by, updatedAt: now() }),
     getSalesSettings: async () => get("salescfg") || {},
@@ -692,4 +699,106 @@ export function proposalText(p, url){
   lines.push("", "Everything is on this page:", url, "");
   lines.push("Questions any time — Moaz +20 102 128 1660");
   return lines.join("\n");
+}
+
+/* ── employment contract (admin drawer → 📄 Contract, staff card "Your contract") ──
+   One template for both pages. party = the person's details as sent, t = the terms, photo = data URL or "",
+   acc = {name, at} once accepted. Layout after the owner's reference draft (2026-10-26); no references to law (owner). */
+export const HOUSE_RULES = [
+  ["Always smile.", "With guests, with colleagues, with the hotel staff — on stage and off stage. A smile is part of the uniform."],
+  ["Never ignore a guest.", "Greet every guest you pass. When a guest asks you something, answer, or walk them to someone who can. No phone, chat or break comes before a guest."],
+  ["Bring the vibe.", "Energy and fun all day: join in, invite guests to join, keep the mood up."],
+  ["Smile to your colleagues too.", "Help each other, no gossip. Problems between colleagues go to the team leader, in private."],
+  ["Time is part of the show.", "Be at your spot, dressed and ready, 10 minutes before the shift starts, and check in on the portal there. Late or sick? Tell the team leader before the shift — not after."],
+  ["Respect everyone.", "Guests, colleagues, hotel staff, every nationality, culture and religion."],
+  ["Keep the right attitude.", "Positive, polite and professional. Take feedback calmly and use it."],
+  ["Follow your team leader.", "The team leader decides the programme, your place, your costume and the instructions of the day — follow them. If you disagree, do it first and talk about it afterwards, in private."],
+  ["Always give your best effort.", "Every show, every game, every guest — whether the audience is two people or two hundred."],
+  ["Look the part.", "Clean uniform or costume, name badge on, neat grooming. Costumes and equipment are handled with care and returned after use."],
+  ["Keep children safe.", "Children always stay in view of parents or other staff. Physical contact only as the activity needs."],
+];
+export const FORBIDDEN = [
+  "Going to a guest's room, or inviting guests to staff rooms.",
+  "Romantic relationships with guests.",
+  "Asking guests for money, tips or gifts.",
+  "Alcohol or drugs on duty; smoking where guests can see.",
+  "Shouting, insults, discrimination or harassment of any kind.",
+  "Arguing or complaining in front of guests.",
+  "Sitting together in a group away from the guests during a shift.",
+  "Leaving a spot early or empty, or leaving the hotel during a shift without the team leader's permission.",
+  "Using the phone during a shift for anything but check-in and work messages.",
+  "Photos or videos of guests — and never of children — without the parent's and the agency's permission.",
+  "Being alone with a child out of sight of parents or other staff.",
+  "Sharing guest information, hotel matters, programme plans, prices or salaries.",
+];
+
+const longDate = d => { if (!d) return ""; const x = new Date(String(d).slice(0, 10) + "T12:00:00Z"); return isNaN(x) ? String(d) : x.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }); };
+export function contractHtml(party, t, photo, acc){
+  party = party || {}; t = t || {};
+  const blank = (x, w = 40) => x ? esc(x) : `<span class="cblank" style="min-width:${w}mm"></span>`;
+  const prob = +t.prob || 0, sal = +t.salary || 0, per = t.per === "day" ? "per working day" : "per month";
+  const logo = "../media/img/logo.jpg";
+  const ribbon = n => `<svg class="cribbon" viewBox="0 0 210 44" preserveAspectRatio="none" aria-hidden="true"><defs>
+      <linearGradient id="cg1-${n}" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#2A1250"/><stop offset=".5" stop-color="#8B5CF6"/><stop offset=".8" stop-color="#F03FA8"/><stop offset="1" stop-color="#FF4D2E"/></linearGradient>
+      <linearGradient id="cg2-${n}" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#FF4D2E"/><stop offset="1" stop-color="#D63BC6"/></linearGradient></defs>
+    <path d="M0 0H210V42C204 26 192 15 170 11.5C140 7 95 7.2 45 6.6L0 6Z" fill="url(#cg1-${n})"/>
+    <path d="M210 42C204 26 192 15 170 11.5C186 16 199 25 210 34Z" fill="#FFD60A" opacity=".9"/>
+    <path d="M7 0H25C23 7 19 11.5 11 13.5C15 9 14 4 7 0Z" fill="url(#cg2-${n})"/></svg>`;
+  const foot = n => `<svg class="cfoot" viewBox="0 0 210 8" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="cg3-${n}" x1="0" x2="1"><stop offset="0" stop-color="#2A1250"/><stop offset=".55" stop-color="#8B5CF6"/><stop offset="1" stop-color="#F03FA8"/></linearGradient></defs>
+    <rect width="210" height="8" fill="url(#cg3-${n})"/><path d="M0 0H9L13 8H0Z" fill="#F03FA8"/><path d="M12 0H17L21 8H16Z" fill="#FF4D2E"/><path d="M20 0H23L27 8H24Z" fill="#FFD60A"/></svg>`;
+  const page = (n, body) => `<section class="cpage">${ribbon(n)}<img class="cwm" src="${logo}" alt="">
+    <header class="chd"><img class="clogo" src="${logo}" alt="Joy Boy Agency"><div class="ctitle"><b>EMPLOYMENT</b><i>AGREEMENT</i><span>joyboy-agency.com</span></div></header>
+    ${body}<div class="cpn"><span>${n}</span></div>${foot(n)}</section>`;
+  const sec = (title, items) => `<li><span class="csh">${title}</span><ul class="csub">${items.map(x => `<li>${x}</li>`).join("")}</ul></li>`;
+  const sign = (who, name) => `<div class="csig"><div class="cline"></div><b>${who}</b><span>${blank(name, 55)}</span><span>Date: <span class="cblank" style="min-width:30mm"></span></span></div>`;
+  const pic = photo && /^data:image\//.test(photo) ? `<img class="cphoto" src="${esc(photo)}" alt="">` : `<div class="cphoto"></div>`;
+  const payMethod = t.payMethod ? String(t.payMethod).toLowerCase() : "bank transfer, InstaPay or mobile wallet";
+  return page(1, `
+    <p class="cmade">This agreement is made on <b>${esc(longDate(t.date))}</b><small>Agreement no. ${esc(t.no || "")}</small></p>
+    <div class="chead2">Between</div>
+    <div class="cfirm"><span class="cm">Joy Boy Agency</span>, entertainment and animation agency, Red Sea, Egypt, represented by ${blank(t.signer, 50)} (“the Agency”).
+      <div><b>WhatsApp:</b> +20 102 128 1660 &nbsp;·&nbsp; <b>E-mail:</b> joyboyentertainmentagency@gmail.com</div></div>
+    <div class="chead2">And</div>
+    <div class="cptab">${pic}<table><tr><td><span>Full name:</span>${blank(party.fullName, 40)}</td><td><span>Nationality:</span>${blank(party.nationality, 25)}</td></tr>
+      <tr><td><span>Date of birth:</span>${blank(longDate(party.dob), 30)}</td><td><span>${esc(party.idType || "ID / passport")} no.:</span>${blank(party.idNumber, 30)}</td></tr>
+      <tr><td><span>Phone:</span>${blank(party.phone, 30)}</td><td><span>City:</span>${blank(party.city, 25)}</td></tr></table></div>
+    <p>(“the Employee”). The Agency wishes to employ the Employee, and the Employee wishes to work for the Agency, on the terms below.</p>
+    <p class="cagree">The parties agree as follows:</p>
+    <ul class="csec">
+      ${sec("Position", [`The Employee works as <b>${blank(t.pos, 40)}</b> in the Agency's entertainment and animation team.`, `Main place of work: <b>${esc(t.place || "any Red Sea resort the Agency serves")}</b>. The Agency may move the Employee to another resort it serves, with reasonable notice.`, "Duties: run the daily and evening entertainment programme and create a friendly atmosphere among the guests."])}
+      ${sec("Duration and probation", [`The agreement starts on <b>${blank(longDate(t.start), 30)}</b> and ends on <b>${blank(longDate(t.end), 30)}</b>, unless both parties renew it in writing.`, prob ? `The first <b>${prob} month${prob > 1 ? "s" : ""}</b> are a probation period; during probation either party may end the agreement with 7 days' notice.` : "There is no probation period."])}
+      ${sec("Working time", ["The daily programme and the shifts are set by the team leader and published in the Joy Boy team portal, with at least one weekly day off.", "Shifts include evenings, weekends and public holidays, as is usual in resort entertainment.", "The Employee checks in and out of every shift on the portal, at the shift's location."])}
+    </ul>`) +
+  page(2, `
+    <ul class="csec">
+      ${sec("Compensation", [`Starting salary: <b>${sal ? esc(money(sal, t.cur)) : blank("", 22) + " " + esc(t.cur || "")} ${per}</b>, paid monthly by ${esc(payMethod)}, no later than day ${esc(t.payday || "5")} of the following month.`, `The team leader reviews the Employee's performance every <b>${esc(String(t.review) === "1" ? "month" : (t.review || 3) + " months")}</b>. Salary increases follow that review and become valid when the Agency confirms them in writing.`, "Sales commissions, where they apply, are paid as listed in the team portal. Absence without a valid reason is unpaid."])}
+      ${sec("Accommodation and meals", [t.house === "no" ? "Housing and meals are not part of this agreement." : "During the agreement the Employee receives staff housing and meals at the resort, under the resort's staff-housing rules."])}
+      ${sec("Uniform and equipment", ["Costumes, uniforms, sound equipment and props remain the property of the Agency or the hotel.", "They are returned clean at the end of the agreement; damage caused by negligence may be charged to the Employee."])}
+      ${sec("Conduct", ["The Rules &amp; Memos and the Forbidden list on pages 3 and 4 are part of this agreement.", "Breaches are handled step by step: a verbal warning, a written warning, then a deduction or suspension. Serious or repeated breaches can end the agreement."])}
+      ${sec("Confidentiality and personal data", ["Guest information, hotel matters, programme plans, prices and salaries are confidential, during and after this agreement.", "The Agency uses the Employee's personal data only for employment, payroll and safety.", "The portal reads the phone's location only at shift check-in and check-out, and during roll calls in the Employee's own shift."])}
+      ${sec("Termination", [`After probation, either party may end this agreement with <b>${esc(t.notice || "30")} days'</b> written notice.`, "The Agency may end it without notice in case of serious misconduct, such as violence, theft, being drunk on duty or repeated breaches of the rules.", "At the end, the Employee returns all Agency property and receives the salary due up to the last working day."])}
+      ${sec("Copies", ["This agreement is signed in three originals: one for each party and one for the social insurance office."])}
+    </ul>`) +
+  page(3, `
+    <div class="chead2 big">RULES &amp; MEMOS</div><div class="crule"></div>
+    <ol class="crules">${HOUSE_RULES.map(([h, d]) => `<li><b>${esc(h)}</b> ${esc(d)}</li>`).join("")}</ol>`) +
+  page(4, `
+    <div class="chead2 big">FORBIDDEN</div><div class="crule"></div>
+    <ul class="cforbid">${FORBIDDEN.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
+    <p class="cwit"><b>IN WITNESS WHEREOF</b>, the parties sign this agreement on the date written on page 1. The Employee confirms having read the Rules &amp; Memos and the Forbidden list and agrees to follow them.</p>
+    ${acc && acc.name ? `<p class="cacc">✓ Accepted on the Joy Boy team portal by typing “${esc(acc.name)}”${acc.at ? ` on ${esc(longDate(acc.at))} at ${esc(new Date(acc.at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Africa/Cairo" }))} (Egypt time)` : ""}.</p>` : ""}
+    <div class="csealed">SIGNED AND DELIVERED</div>
+    <div class="csigs">${sign("The Employee", party.fullName)}${sign("For Joy Boy Agency", t.signer)}${sign("Team leader", "")}</div>`);
+}
+// The printable copy gets its own gradient ids: the on-screen original stays in the page (hidden), and an id that
+// points into a hidden element paints nothing in print.
+export function printContract(docEl){
+  let area = document.getElementById("printarea");
+  if (!area){ area = document.createElement("div"); area.id = "printarea"; document.body.appendChild(area); }
+  area.innerHTML = ""; const copy = docEl.cloneNode(true); copy.removeAttribute("id"); copy.innerHTML = copy.innerHTML.replace(/(id="|url\(#)cg/g, "$1pcg"); area.appendChild(copy);
+  document.body.classList.add("printing", "printing-doc");
+  const done = () => { document.body.classList.remove("printing", "printing-doc"); area.innerHTML = ""; };
+  window.addEventListener("afterprint", done, { once: true });
+  window.print();
+  setTimeout(done, 3000);                                          // Safari on iOS does not always fire afterprint
 }
