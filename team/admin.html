@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-9CLo0FGdCFq44spZjRSmuYzwJDqLS9uBtWVuMvBKZIs='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-u+0JnBRv09O/TX4/TcDPwTuAC+dG+5ES9cxKdFnRNqM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202610260957">
-<script src="firebase-config.js?v=202610260957"></script>
+<link rel="stylesheet" href="portal.css?v=202610261001">
+<script src="firebase-config.js?v=202610261001"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 <script>
 (function(){
@@ -382,7 +382,7 @@
 <div class="drawer" id="contract"><div class="bg" id="ct-bg"></div><div class="panel wide">
   <button class="close" id="ct-close" aria-label="Close">×</button>
   <p class="eyebrow">Employment contract · filled from the profile</p><h2 id="ct-title" style="font-size:22px;font-weight:800;margin-top:4px"></h2>
-  <p class="hint">Fill the terms, check the preview below, then print or save as PDF and sign two copies. Nothing here is saved — the salary comes from the drawer's Salary box. Egyptian law expects the contract in Arabic: have a lawyer check this text and add the Arabic version before signing.</p>
+  <p class="hint">Fill the terms, check the preview below, then print or save as PDF and sign two copies. Nothing here is saved — the salary comes from the drawer's Salary box.</p>
   <div class="grid" style="margin-top:14px">
     <label class="f"><span>Position</span><input class="in" id="ct-pos" maxlength="60"></label>
     <label class="f"><span>Place of work</span><select class="in" id="ct-hotel"></select></label>
@@ -404,7 +404,7 @@
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText, newHotelCode, CODE_EVERY_S, ROLL_WINDOW_MIN, rollId, rollState, distText, accText, firstWord, isOutside, guestItems, signupCount } from "./portal.js?v=202610260957";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText, newHotelCode, CODE_EVERY_S, ROLL_WINDOW_MIN, rollId, rollState, distText, accText, firstWord, isOutside, guestItems, signupCount } from "./portal.js?v=202610261001";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -1474,7 +1474,7 @@ async function drawQr(){
   const hid = $("qr-hotel").value; if (!hid){ $("qr-box").innerHTML = `<p class="hint">Pick a hotel first.</p>`; $("qr-link").textContent = ""; return; }
   const url = feedbackLink(); $("qr-link").textContent = url;
   try {
-    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202610260957"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
+    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202610261001"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
     const q = qrLib(0, "M"); q.addData(url); q.make();
     const who = $("qr-who").selectedOptions[0] ? $("qr-who").selectedOptions[0].textContent : "";
     const hotel = hotels.find(h => h.id === hid) || {};
@@ -1537,20 +1537,20 @@ function paintContract(){
     <h3>2. Term and probation</h3>
     <p>This contract starts on <b>${blank(longDate(v("ct-start")), 120)}</b> and ends on <b>${blank(longDate(v("ct-end")), 120)}</b>, unless both parties renew it in writing.${prob ? ` The first <b>${prob} month${prob > 1 ? "s" : ""}</b> are a probation period; during probation either party may end the contract with 7 days’ notice.` : ""}</p>
     <h3>3. Working time</h3>
-    <p>The daily programme and the shifts are set by the team leader and published in the Joy Boy team portal. Working hours stay within the limits of the Egyptian Labour Law, with at least one weekly day off. As is usual in resort entertainment, shifts include evenings, weekends and public holidays. The Employee checks in and out of every shift on the portal, at the shift’s location.</p>
+    <p>The daily programme and the shifts are set by the team leader and published in the Joy Boy team portal. Working hours follow the daily programme, with at least one weekly day off. As is usual in resort entertainment, shifts include evenings, weekends and public holidays. The Employee checks in and out of every shift on the portal, at the shift’s location.</p>
     <h3>4. Salary and performance</h3>
-    <p>The starting salary is <b>${sal ? esc(money(sal, v("ct-cur"))) : blank("", 90) + " " + esc(v("ct-cur"))} ${per}</b>, paid monthly by ${esc(payMethod)}, no later than day ${esc(v("ct-payday") || "5")} of the following month. The team leader reviews the Employee’s performance every <b>${esc(v("ct-review") === "1" ? "month" : v("ct-review") + " months")}</b>. Salary increases follow that review and become valid when the Agency confirms them in writing. Sales commissions, where they apply, are paid as listed in the team portal. Absence without a valid reason is unpaid; any deduction is made only as the Egyptian Labour Law allows.</p>
+    <p>The starting salary is <b>${sal ? esc(money(sal, v("ct-cur"))) : blank("", 90) + " " + esc(v("ct-cur"))} ${per}</b>, paid monthly by ${esc(payMethod)}, no later than day ${esc(v("ct-payday") || "5")} of the following month. The team leader reviews the Employee’s performance every <b>${esc(v("ct-review") === "1" ? "month" : v("ct-review") + " months")}</b>. Salary increases follow that review and become valid when the Agency confirms them in writing. Sales commissions, where they apply, are paid as listed in the team portal. Absence without a valid reason is unpaid.</p>
     ${v("ct-house") === "yes" ? `<h3>5. Housing and meals</h3><p>During the contract the Employee receives staff housing and meals at the resort, under the resort’s staff-housing rules.</p>` : `<h3>5. Housing and meals</h3><p>Housing and meals are not part of this contract.</p>`}
     <h3>6. Conduct — the Joy Boy House Rules</h3>
-    <p>The Joy Boy House Rules in <b>Annex A</b> are part of this contract. Breaches are handled step by step: a verbal warning, a written warning, then a deduction or suspension within the limits of the law; serious or repeated breaches can end the contract.</p>
+    <p>The Joy Boy House Rules in <b>Annex A</b> are part of this contract. Breaches are handled step by step: a verbal warning, a written warning, then a deduction or suspension; serious or repeated breaches can end the contract.</p>
     <h3>7. Costumes and equipment</h3>
-    <p>Costumes, uniforms, sound equipment and props remain the property of the Agency or the hotel. They are returned clean at the end of the contract; damage caused by negligence may be charged within the limits of the law.</p>
+    <p>Costumes, uniforms, sound equipment and props remain the property of the Agency or the hotel. They are returned clean at the end of the contract; damage caused by negligence may be charged to the Employee.</p>
     <h3>8. Confidentiality and personal data</h3>
-    <p>Guest information, hotel matters, programme plans, prices and salaries are confidential, during and after this contract. The Agency uses the Employee’s personal data only for employment, payroll and safety. The portal reads the phone’s location only at shift check-in and check-out and during roll calls in the Employee’s own shift (Personal Data Protection Law No. 151 of 2020).</p>
+    <p>Guest information, hotel matters, programme plans, prices and salaries are confidential, during and after this contract. The Agency uses the Employee’s personal data only for employment, payroll and safety. The portal reads the phone’s location only at shift check-in and check-out and during roll calls in the Employee’s own shift.</p>
     <h3>9. Ending the contract</h3>
-    <p>After probation, either party may end this contract with <b>${esc(v("ct-notice") || "30")} days’</b> written notice. The Agency may end it without notice in the cases of serious misconduct set out in the Egyptian Labour Law. At the end, the Employee returns all Agency property and receives the salary due up to the last working day.</p>
-    <h3>10. Law and copies</h3>
-    <p>This contract is governed by the laws of the Arab Republic of Egypt, in particular the Labour Law in force. It is signed in three originals: one for each party and one for the social insurance office.</p>
+    <p>After probation, either party may end this contract with <b>${esc(v("ct-notice") || "30")} days’</b> written notice. The Agency may end it without notice in case of serious misconduct, such as violence, theft, being drunk on duty or repeated breaches of Annex A. At the end, the Employee returns all Agency property and receives the salary due up to the last working day.</p>
+    <h3>10. Copies</h3>
+    <p>This contract is signed in three originals: one for each party and one for the social insurance office.</p>
     <div class="csigs">${sign("For the Agency", v("ct-signer"))}${sign("The Employee", p.fullName)}</div>
   </section>
   <section class="cpage">
