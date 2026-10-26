@@ -455,6 +455,44 @@ body.guest{display:block}
   body.printing #printarea .qrcard svg{width:56mm;height:56mm}
 }
 
+/* employment contract (admin → drawer → 📄 Contract): a white A4 sheet on screen, printed through #printarea */
+.drawer .panel.wide{width:min(900px,100%)}
+.cdocwrap{margin-top:16px;background:var(--raised);border-radius:14px;padding:14px;overflow-x:auto}
+.cdoc{color:#14111a;font:400 13px/1.55 "Instrument Sans",system-ui,sans-serif}
+.cdoc .cpage{background:#fff;max-width:760px;margin:0 auto 14px;padding:38px 44px;border-radius:6px;box-shadow:0 2px 14px rgba(0,0,0,.25)}
+.cdoc .chead{display:flex;justify-content:space-between;gap:16px;border-bottom:2px solid #14111a;padding-bottom:10px;margin-bottom:20px;font-size:11px}
+.cdoc .chead b{display:block;font:800 15px "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:.04em}
+.cdoc .chead span{color:#555}
+.cdoc .cno{text-align:right;font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:#333}
+.cdoc h1{font:800 26px/1.1 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.01em;color:#14111a}
+.cdoc .csub{color:#666;margin:2px 0 16px;font-size:12px;text-transform:uppercase;letter-spacing:.12em}
+.cdoc h3{font:700 13.5px "Instrument Sans",system-ui,sans-serif;margin:14px 0 3px;color:#14111a}
+.cdoc p{margin:0 0 6px}
+.cdoc ol{padding-left:28px;margin:4px 0 8px}
+.cdoc .cparties li{margin-bottom:4px}
+.cdoc .crules li{margin-bottom:9px}
+.cdoc .cblank{display:inline-block;border-bottom:1px solid #777;height:1.1em;vertical-align:baseline}
+.cdoc .cack{margin-top:18px;font-weight:700}
+.cdoc .csigs{display:grid;grid-template-columns:1fr 1fr;gap:34px;margin-top:34px}
+.cdoc .csig{display:flex;flex-direction:column;gap:3px;font-size:12px}
+.cdoc .csig .cline{border-bottom:1px solid #14111a;height:42px;margin-bottom:4px}
+@media(max-width:560px){.cdoc .cpage{padding:22px 18px}.cdoc .csigs{grid-template-columns:1fr;gap:18px}}
+@media print{
+  @page{size:A4;margin:10mm 14mm}
+  body.printing-doc #printarea .cdoc{display:block;font-size:8.9pt;line-height:1.34}
+  body.printing-doc #printarea .chead{margin-bottom:12px}
+  body.printing-doc #printarea h1{font-size:18pt}
+  body.printing-doc #printarea .csub{margin-bottom:10px}
+  body.printing-doc #printarea h3{margin:6px 0 1px;font-size:9.5pt}
+  body.printing-doc #printarea p{margin-bottom:3px}
+  body.printing-doc #printarea .crules li{margin-bottom:6px}
+  body.printing-doc #printarea .csigs{margin-top:12px}
+  body.printing-doc #printarea .csig .cline{height:26px}
+  body.printing-doc #printarea .cpage{box-shadow:none;border-radius:0;padding:0;margin:0;max-width:none;break-after:page}
+  body.printing-doc #printarea .cpage:last-child{break-after:auto}
+  body.printing-doc #printarea h3,body.printing-doc #printarea .csigs,body.printing-doc #printarea li{break-inside:avoid}
+}
+
 /* ── light theme (2026-09-12) — the morning shift reads the portal in direct sun.
    The toggle in the topbar writes html[data-theme]; a page without the toggle
    (the guest feedback card) follows the phone. ── */

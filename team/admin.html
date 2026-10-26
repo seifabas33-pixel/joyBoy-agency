@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-0wyEfkl449cgkl6SR8E/f8d9PosWFe1GUK1xzR1BPaA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-9CLo0FGdCFq44spZjRSmuYzwJDqLS9uBtWVuMvBKZIs='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202610131500">
-<script src="firebase-config.js?v=202610131500"></script>
+<link rel="stylesheet" href="portal.css?v=202610260957">
+<script src="firebase-config.js?v=202610260957"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 <script>
 (function(){
@@ -379,11 +379,32 @@
   <div class="actions"><button class="btn small" id="e-save" type="button">Save</button><span style="flex:1"></span><button class="btn ghost small" id="e-del" type="button" style="border-color:rgba(255,77,46,.6);color:#FFB3A3" hidden>Remove check-in</button></div>
   <p class="hint" id="e-hist" style="margin-top:12px"></p>
 </div></div>
+<div class="drawer" id="contract"><div class="bg" id="ct-bg"></div><div class="panel wide">
+  <button class="close" id="ct-close" aria-label="Close">×</button>
+  <p class="eyebrow">Employment contract · filled from the profile</p><h2 id="ct-title" style="font-size:22px;font-weight:800;margin-top:4px"></h2>
+  <p class="hint">Fill the terms, check the preview below, then print or save as PDF and sign two copies. Nothing here is saved — the salary comes from the drawer's Salary box. Egyptian law expects the contract in Arabic: have a lawyer check this text and add the Arabic version before signing.</p>
+  <div class="grid" style="margin-top:14px">
+    <label class="f"><span>Position</span><input class="in" id="ct-pos" maxlength="60"></label>
+    <label class="f"><span>Place of work</span><select class="in" id="ct-hotel"></select></label>
+    <label class="f"><span>Start date</span><input class="in" type="date" id="ct-start"></label>
+    <label class="f"><span>End date</span><input class="in" type="date" id="ct-end"></label>
+    <label class="f"><span>Probation</span><select class="in" id="ct-prob"><option value="0">None</option><option value="1">1 month</option><option value="2">2 months</option><option value="3" selected>3 months</option></select></label>
+    <label class="f"><span>Notice after probation (days)</span><input class="in" type="number" id="ct-notice" min="0" max="90" value="30"></label>
+    <label class="f"><span>Starting salary</span><input class="in" type="number" id="ct-salary" min="0" step="1" inputmode="numeric"></label>
+    <label class="f"><span>Currency · per</span><span style="display:flex;gap:8px"><select class="in" id="ct-cur"></select><select class="in" id="ct-per"><option value="month">month</option><option value="day">day</option></select></span></label>
+    <label class="f"><span>Performance review every</span><select class="in" id="ct-review"><option value="1">month</option><option value="2">2 months</option><option value="3" selected>3 months</option><option value="6">6 months</option></select></label>
+    <label class="f"><span>Paid by day of the next month</span><input class="in" type="number" id="ct-payday" min="1" max="28" value="5"></label>
+    <label class="f"><span>Signs for the agency</span><input class="in" id="ct-signer" maxlength="80" value="Moaz Moamen, Founder"></label>
+    <label class="f"><span>Housing &amp; meals</span><select class="in" id="ct-house"><option value="yes">Provided at the resort</option><option value="no">Not provided</option></select></label>
+  </div>
+  <div class="actions"><button class="btn small" id="ct-print" type="button">Print / save as PDF</button><span class="hint">Two pages: the contract, then Annex A — the house rules — with its own signature line.</span></div>
+  <div class="cdocwrap"><div class="cdoc" id="ct-doc"></div></div>
+</div></div>
 <footer class="small">Joy Boy Agency · Team admin · Personal data — do not share exports outside the office.</footer>
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText, newHotelCode, CODE_EVERY_S, ROLL_WINDOW_MIN, rollId, rollState, distText, accText, firstWord, isOutside, guestItems, signupCount } from "./portal.js?v=202610131500";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText, newHotelCode, CODE_EVERY_S, ROLL_WINDOW_MIN, rollId, rollState, distText, accText, firstWord, isOutside, guestItems, signupCount } from "./portal.js?v=202610260957";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -425,7 +446,7 @@ async function openDrawer(p){
       <div><h2>${esc(p.fullName || "—")}</h2><p style="color:var(--ink-3);font-size:13px">${esc(p.preferredName ? p.preferredName + " · " : "")}${esc(p.email)}</p>
       <p style="margin-top:10px">${badge(p.status)} <span class="hint" style="margin-left:8px">${completeness(p)}% complete</span></p>
       <div class="actions"><button class="btn ok small" data-st="approved">Approve</button><button class="btn danger small" data-st="rejected">Needs changes</button><button class="btn ghost small" data-st="pending">Back to pending</button>
-      ${waNumber(p.phone) ? `<a class="btn ghost small" href="https://wa.me/${waNumber(p.phone)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}<button class="btn ghost small" id="d-rename" type="button" title="Once approved, staff cannot change their legal name themselves">Correct the name</button></div>
+      ${waNumber(p.phone) ? `<a class="btn ghost small" href="https://wa.me/${waNumber(p.phone)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}<button class="btn ghost small" id="d-rename" type="button" title="Once approved, staff cannot change their legal name themselves">Correct the name</button><button class="btn ghost small" id="d-contract" type="button">📄 Contract</button></div>
       <label class="f" style="max-width:320px"><span>Hotel assignment</span><select class="in" id="d-hotel"><option value="">— not assigned —</option>${hotels.map(h => `<option value="${esc(h.id)}" ${h.id === p.hotelId ? "selected" : ""}>${esc(h.name)}${h.active === false ? " (closed)" : ""}</option>`).join("")}</select><span class="hint">Only approved staff with a hotel can check in.</span></label></div></div>
     <div class="kv">${kv("Gender", p.gender)}${kv("Date of birth", p.dob ? p.dob + " (" + age(p.dob) + ")" : "")}${kv("Nationality", p.nationality)}${kv("City", p.city)}${kv("WhatsApp", p.phone)}${kv("Emergency contact", [p.emergencyName, p.emergencyPhone, p.emergencyRelation].filter(Boolean).join(" · "))}
       ${kv("Document", p.idType ? `${p.idType} · ${p.idNumber || ""} · exp. ${p.idExpiry || "?"}` : "")}${kv("Payment", pay)}${kv("Payroll notes", p.payNotes)}
@@ -452,6 +473,7 @@ async function openDrawer(p){
     if (f.length < 3) return toast("The full name needs at least 3 letters.");
     try { await be.adminUpdate(p.uid, { fullName: f, preferredName: s2 }); p.fullName = f; p.preferredName = s2; toast("Name saved"); openDrawer(p); render(); } catch (ex) { toast("Could not save: " + (ex.message || ex)); }
   };
+  $("d-contract").onclick = () => openContract(p);
   $("panel").querySelectorAll("[data-st]").forEach(b => b.onclick = async () => { try { await saveNotes(); await be.adminUpdate(p.uid, { status: b.dataset.st, reviewedBy: user.email }); p.status = b.dataset.st; toast("Marked as " + LABEL[b.dataset.st]); render(); openDrawer(p); } catch (ex) { toast("Could not update: " + (ex.message || ex)); } });
   $("d-hotel").onchange = async () => { const id = $("d-hotel").value; try { await be.adminUpdate(p.uid, { hotelId: id || null, reviewedBy: user.email }); p.hotelId = id || null; toast(id ? "Assigned to " + hotelName(id) : "Assignment removed"); render(); } catch (ex) { toast("Could not assign: " + (ex.message || ex)); } };
   $("save-notes").onclick = async () => { try { await saveNotes(); toast("Notes saved"); } catch (ex) { toast("Could not save notes: " + (ex.message || ex)); } };
@@ -1452,7 +1474,7 @@ async function drawQr(){
   const hid = $("qr-hotel").value; if (!hid){ $("qr-box").innerHTML = `<p class="hint">Pick a hotel first.</p>`; $("qr-link").textContent = ""; return; }
   const url = feedbackLink(); $("qr-link").textContent = url;
   try {
-    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202610131500"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
+    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202610260957"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
     const q = qrLib(0, "M"); q.addData(url); q.make();
     const who = $("qr-who").selectedOptions[0] ? $("qr-who").selectedOptions[0].textContent : "";
     const hotel = hotels.find(h => h.id === hid) || {};
@@ -1460,6 +1482,99 @@ async function drawQr(){
     $("qr-box").innerHTML = `<div class="qrcard" id="qrcard"><div class="qrtitle">${today ? "What's on today?" : "How is your holiday going?"}</div>${q.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}<div class="qrwho">${esc(today || who === "The whole team" ? hotel.name || "" : who)}</div><div class="qrfoot">${today ? "Joy Boy Agency · activities · join in" : "Joy Boy Agency · scan &amp; tell us"}</div></div>`;
   } catch (ex) { $("qr-box").innerHTML = `<p class="hint">${esc(ex.message || String(ex))}</p>`; }
 }
+/* ── employment contract: filled in the browser from the profile + the salary box; nothing is stored or sent ── */
+const HOUSE_RULES = [
+  ["Always smile.", "With guests, with colleagues, with the hotel staff — on stage and off stage. A smile is part of the uniform."],
+  ["Never ignore a guest.", "Greet every guest you pass. When a guest asks you something, answer, or walk them to someone who can. No phone, chat or break comes before a guest."],
+  ["Bring the vibe.", "Energy and fun all day: join in, invite guests to join, keep the mood up. Never sit together in a group away from the guests during a shift."],
+  ["Smile to your colleagues too.", "Help each other, no gossip, no arguments in front of guests. Problems between colleagues go to the team leader, in private."],
+  ["Time is part of the show.", "Be at your spot, dressed and ready, 10 minutes before the shift starts, and check in on the portal there. Never leave a spot early or empty. Late or sick? Tell the team leader before the shift — not after."],
+  ["Respect everyone.", "Guests, colleagues, hotel staff, every nationality, culture and religion. No shouting, insults, discrimination or harassment of any kind."],
+  ["Keep the right attitude.", "Positive, polite and professional. No complaining in front of guests. Take feedback calmly and use it."],
+  ["Follow your team leader.", "The team leader decides the programme, your place, your costume and the instructions of the day — follow them. If you disagree, do it first and talk about it afterwards, in private."],
+  ["Always give your best effort.", "Every show, every game, every guest — whether the audience is two people or two hundred."],
+  ["Look the part.", "Clean uniform or costume, name badge on, neat grooming. Costumes and equipment are handled with care and returned after use."],
+  ["Guest boundaries.", "Never go to a guest's room. No romantic relationships with guests. Never ask guests for money or gifts. No alcohol on duty, no smoking where guests can see."],
+  ["Children's safety.", "Children always stay in view of parents or other staff — never alone with a child out of sight. Physical contact only as the activity needs."],
+  ["Phones.", "On silent during shifts, used only for check-in and work messages. No photos or videos of guests — and never of children — without the parent's and the agency's permission."],
+];
+let ctP = null;
+async function openContract(p){
+  ctP = p; const today = dayKey(new Date()); const plus = (d, m) => { const x = new Date(d + "T12:00:00Z"); x.setUTCMonth(x.getUTCMonth() + m); return x.toISOString().slice(0, 10); };
+  $("ct-title").textContent = p.fullName || p.email;
+  $("ct-pos").value = (p.skills || []).length ? "Animator — " + p.skills.slice(0, 2).join(" & ") : "Animator";
+  $("ct-hotel").innerHTML = `<option value="">— any resort the agency serves —</option>` + hotels.map(h => `<option value="${esc(h.id)}" ${h.id === p.hotelId ? "selected" : ""}>${esc(h.name)}</option>`).join("");
+  const start = p.availableFrom && p.availableFrom >= today ? p.availableFrom : today;
+  $("ct-start").value = start; $("ct-end").value = plus(start, 12);
+  $("ct-house").value = p.relocate === "No" ? "no" : "yes";
+  $("ct-cur").innerHTML = CURRENCIES.map(c => `<option>${c}</option>`).join(""); $("ct-cur").value = CURRENCY; $("ct-salary").value = "";
+  $("contract").classList.add("open"); paintContract();
+  try { const pay = await be.getPay(p.uid); if (ctP !== p) return;
+    if (pay){ $("ct-salary").value = pay.salary || ""; if (CURRENCIES.includes(pay.currency)) $("ct-cur").value = pay.currency; $("ct-per").value = pay.payType === "day" ? "day" : "month"; }
+  } catch {}
+  paintContract();
+}
+function paintContract(){
+  const p = ctP; if (!p) return;
+  const v = id => $(id).value, blank = (x, w = 160) => x ? esc(x) : `<span class="cblank" style="min-width:${w}px"></span>`;
+  const longDate = d => { if (!d) return ""; const x = new Date(d + "T12:00:00Z"); return isNaN(x) ? d : x.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }); };
+  const h = hotels.find(x => x.id === v("ct-hotel")), place = h ? `${h.name}${h.city ? ", " + h.city : ""}` : "any Red Sea resort the Agency serves";
+  const termM = (new Date(v("ct-end")) - new Date(v("ct-start"))) / 2629800000, prob = Math.max(0, Math.min(+v("ct-prob"), Math.floor(termM) || 0)), sal = +v("ct-salary"), per = v("ct-per") === "day" ? "per working day" : "per month";
+  const payMethod = p.payMethod ? p.payMethod.toLowerCase() : "bank transfer, InstaPay or mobile wallet";
+  const no = "JB-" + (v("ct-start") || dayKey(new Date())).slice(0, 4) + "-" + String(p.uid || "").slice(0, 6).toUpperCase();
+  const sign = (who, name) => `<div class="csig"><div class="cline"></div><b>${who}</b><span>${blank(name, 200)}</span><span>Date: <span class="cblank" style="min-width:120px"></span></span></div>`;
+  $("ct-doc").innerHTML = `
+  <section class="cpage">
+    <header class="chead"><div><b>JOY BOY AGENCY</b><span>Entertainment &amp; Animation · Red Sea, Egypt</span></div><div class="cno">Contract no. ${esc(no)}<br>Date: ${esc(longDate(dayKey(new Date())))}</div></header>
+    <h1>Employment Contract</h1><p class="csub">Entertainment &amp; animation staff</p>
+    <p><b>Between</b></p>
+    <ol class="cparties">
+      <li><b>Joy Boy Agency</b>, entertainment and animation agency, Red Sea, Egypt, represented by ${blank(v("ct-signer"), 200)} (“the Agency”); and</li>
+      <li><b>${blank(p.fullName, 220)}</b>, born on ${blank(longDate(p.dob), 120)}, nationality ${blank(p.nationality, 100)}, ${esc(p.idType || "ID / passport")} no. ${blank(p.idNumber, 150)}, living in ${blank(p.city, 120)}, phone ${blank(p.phone, 130)} (“the Employee”).</li>
+    </ol>
+    <h3>1. Position and place of work</h3>
+    <p>The Agency employs the Employee as <b>${blank(v("ct-pos"), 160)}</b> in its entertainment and animation team. The main place of work is <b>${esc(place)}</b>. The Agency may move the Employee to another resort it serves, with reasonable notice.</p>
+    <h3>2. Term and probation</h3>
+    <p>This contract starts on <b>${blank(longDate(v("ct-start")), 120)}</b> and ends on <b>${blank(longDate(v("ct-end")), 120)}</b>, unless both parties renew it in writing.${prob ? ` The first <b>${prob} month${prob > 1 ? "s" : ""}</b> are a probation period; during probation either party may end the contract with 7 days’ notice.` : ""}</p>
+    <h3>3. Working time</h3>
+    <p>The daily programme and the shifts are set by the team leader and published in the Joy Boy team portal. Working hours stay within the limits of the Egyptian Labour Law, with at least one weekly day off. As is usual in resort entertainment, shifts include evenings, weekends and public holidays. The Employee checks in and out of every shift on the portal, at the shift’s location.</p>
+    <h3>4. Salary and performance</h3>
+    <p>The starting salary is <b>${sal ? esc(money(sal, v("ct-cur"))) : blank("", 90) + " " + esc(v("ct-cur"))} ${per}</b>, paid monthly by ${esc(payMethod)}, no later than day ${esc(v("ct-payday") || "5")} of the following month. The team leader reviews the Employee’s performance every <b>${esc(v("ct-review") === "1" ? "month" : v("ct-review") + " months")}</b>. Salary increases follow that review and become valid when the Agency confirms them in writing. Sales commissions, where they apply, are paid as listed in the team portal. Absence without a valid reason is unpaid; any deduction is made only as the Egyptian Labour Law allows.</p>
+    ${v("ct-house") === "yes" ? `<h3>5. Housing and meals</h3><p>During the contract the Employee receives staff housing and meals at the resort, under the resort’s staff-housing rules.</p>` : `<h3>5. Housing and meals</h3><p>Housing and meals are not part of this contract.</p>`}
+    <h3>6. Conduct — the Joy Boy House Rules</h3>
+    <p>The Joy Boy House Rules in <b>Annex A</b> are part of this contract. Breaches are handled step by step: a verbal warning, a written warning, then a deduction or suspension within the limits of the law; serious or repeated breaches can end the contract.</p>
+    <h3>7. Costumes and equipment</h3>
+    <p>Costumes, uniforms, sound equipment and props remain the property of the Agency or the hotel. They are returned clean at the end of the contract; damage caused by negligence may be charged within the limits of the law.</p>
+    <h3>8. Confidentiality and personal data</h3>
+    <p>Guest information, hotel matters, programme plans, prices and salaries are confidential, during and after this contract. The Agency uses the Employee’s personal data only for employment, payroll and safety. The portal reads the phone’s location only at shift check-in and check-out and during roll calls in the Employee’s own shift (Personal Data Protection Law No. 151 of 2020).</p>
+    <h3>9. Ending the contract</h3>
+    <p>After probation, either party may end this contract with <b>${esc(v("ct-notice") || "30")} days’</b> written notice. The Agency may end it without notice in the cases of serious misconduct set out in the Egyptian Labour Law. At the end, the Employee returns all Agency property and receives the salary due up to the last working day.</p>
+    <h3>10. Law and copies</h3>
+    <p>This contract is governed by the laws of the Arab Republic of Egypt, in particular the Labour Law in force. It is signed in three originals: one for each party and one for the social insurance office.</p>
+    <div class="csigs">${sign("For the Agency", v("ct-signer"))}${sign("The Employee", p.fullName)}</div>
+  </section>
+  <section class="cpage">
+    <header class="chead"><div><b>JOY BOY AGENCY</b><span>Annex A to contract ${esc(no)}</span></div><div class="cno">${blank(p.fullName, 160)}</div></header>
+    <h1>The Joy Boy House Rules</h1><p class="csub">How we work — on every shift, in every resort</p>
+    <ol class="crules">${HOUSE_RULES.map(([t, d]) => `<li><b>${esc(t)}</b> ${esc(d)}</li>`).join("")}</ol>
+    <p class="cack">I have read the Joy Boy House Rules, I understand them, and I agree to follow them.</p>
+    <div class="csigs">${sign("The Employee", p.fullName)}${sign("Team leader", "")}</div>
+  </section>`;
+}
+["ct-pos","ct-hotel","ct-start","ct-end","ct-prob","ct-notice","ct-salary","ct-cur","ct-per","ct-review","ct-payday","ct-signer","ct-house"].forEach(id => $(id).addEventListener("input", paintContract));
+const closeCt = () => { $("contract").classList.remove("open"); ctP = null; $("ct-doc").innerHTML = ""; };
+$("ct-close").addEventListener("click", closeCt); $("ct-bg").addEventListener("click", closeCt);
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("contract").classList.contains("open")) closeCt(); });
+$("ct-print").addEventListener("click", () => {
+  let area = document.getElementById("printarea");
+  if (!area){ area = document.createElement("div"); area.id = "printarea"; document.body.appendChild(area); }
+  area.innerHTML = ""; area.appendChild($("ct-doc").cloneNode(true));
+  document.body.classList.add("printing", "printing-doc");
+  const done = () => { document.body.classList.remove("printing", "printing-doc"); area.innerHTML = ""; };
+  window.addEventListener("afterprint", done, { once: true });
+  window.print();
+  setTimeout(done, 3000);
+});
 $("qr-copy").addEventListener("click", async () => { try { await navigator.clipboard.writeText(feedbackLink()); toast("Link copied"); } catch { toast("Copy it from the line above"); } });
 $("qr-print").addEventListener("click", () => {
   const card = document.getElementById("qrcard");
