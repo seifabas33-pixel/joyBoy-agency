@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-jNbBsdsT6iWCsQVpSweLLU5dYueZiEymvbul+YwyQc4='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-yZt4GU1LVmxBPk/OOlSV2SH8ZaJTL/96RZ2+niZKKms=' 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-Cr1uLpvV9BrjDfyGRHylE0Ht42lA0E/as+JrXymqfIk='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202610261025">
-<script src="firebase-config.js?v=202610261025"></script>
+<link rel="stylesheet" href="portal.css?v=202610261038">
+<script src="firebase-config.js?v=202610261038"></script>
 <script>window.JB_ADMIN_PAGE = true;</script>
 <script>
 (function(){
@@ -382,7 +382,7 @@
 <div class="drawer" id="contract"><div class="bg" id="ct-bg"></div><div class="panel wide">
   <button class="close" id="ct-close" aria-label="Close">×</button>
   <p class="eyebrow">Employment contract · filled from the profile</p><h2 id="ct-title" style="font-size:22px;font-weight:800;margin-top:4px"></h2>
-  <p class="hint">Fill the terms, check the preview below, then print or save as PDF and sign two copies. Nothing here is saved — the salary comes from the drawer's Salary box.</p>
+  <p class="hint">Fill the terms and check the preview below. <b>Send</b> puts the contract on the employee's own portal page, where they read it and accept it by typing their full name; you can also print it for signatures. The salary comes from the drawer's Salary box.</p>
   <div class="grid" style="margin-top:14px">
     <label class="f"><span>Position</span><input class="in" id="ct-pos" maxlength="60"></label>
     <label class="f"><span>Place of work</span><select class="in" id="ct-hotel"></select></label>
@@ -397,14 +397,15 @@
     <label class="f"><span>Signs for the agency</span><input class="in" id="ct-signer" maxlength="80" value="Moaz Moamen, Founder"></label>
     <label class="f"><span>Housing &amp; meals</span><select class="in" id="ct-house"><option value="yes">Provided at the resort</option><option value="no">Not provided</option></select></label>
   </div>
-  <div class="actions"><button class="btn small" id="ct-print" type="button">Print / save as PDF</button><span class="hint">Four A4 pages: the agreement, then Rules &amp; Memos and the Forbidden list with the signatures. In the print dialog keep “Background graphics” on.</span></div>
+  <p class="hint" id="ct-state" style="margin-top:12px"></p>
+  <div class="actions"><button class="btn small" id="ct-send" type="button">Send to the employee's portal</button><button class="btn ghost small" id="ct-print" type="button">Print / save as PDF</button><span class="hint">Four A4 pages: the agreement, then Rules &amp; Memos and the Forbidden list with the signatures. In the print dialog keep “Background graphics” on.</span></div>
   <div class="cdocwrap"><div class="cdoc" id="ct-doc"></div></div>
 </div></div>
 <footer class="small">Joy Boy Agency · Team admin · Personal data — do not share exports outside the office.</footer>
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText, newHotelCode, CODE_EVERY_S, ROLL_WINDOW_MIN, rollId, rollState, distText, accText, firstWord, isOutside, guestItems, signupCount } from "./portal.js?v=202610261025";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, ADMINS, SKILLS, LANGS, age, toast, esc, completeness, waNumber, dayKey, hhmm, addDays, parseLatLng, attStatus, ATT_LABEL, ATT_OVERRIDES, attLabel, fenceDistM, fenceTolM, fenceProblem, toMin, hotelShifts, hotelSpots, slug, plannedSpot, shiftStatus, dayStatus, dayLabel, SHIFT_KEYS, SHIFT_DECISIONS, taskId, sortTasks, programmeText, money, monthKey, monthRange, salesItems, commissionOf, payrollCompute, ADJ_LABEL, CURRENCY, CURRENCIES, netText, scheduledShifts, rosterEntry, weekStart, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, commissionMap, unitsMap, itemPriceText, normItem, fromCairo, currentShift, pushState, PROPOSAL_INCLUDED, PROPOSAL_PROGRAMME, PROPOSAL_PER, proposalToken, proposalUrl, proposalPublic, proposalText, newHotelCode, CODE_EVERY_S, ROLL_WINDOW_MIN, rollId, rollState, distText, accText, firstWord, isOutside, guestItems, signupCount, contractHtml, printContract } from "./portal.js?v=202610261038";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -1474,7 +1475,7 @@ async function drawQr(){
   const hid = $("qr-hotel").value; if (!hid){ $("qr-box").innerHTML = `<p class="hint">Pick a hotel first.</p>`; $("qr-link").textContent = ""; return; }
   const url = feedbackLink(); $("qr-link").textContent = url;
   try {
-    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202610261025"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
+    if (!qrLib){ await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "qr.js?v=202610261038"; s.onload = ok; s.onerror = () => no(new Error("could not load the QR maker")); document.head.appendChild(s); }); qrLib = window.qrcode; }
     const q = qrLib(0, "M"); q.addData(url); q.make();
     const who = $("qr-who").selectedOptions[0] ? $("qr-who").selectedOptions[0].textContent : "";
     const hotel = hotels.find(h => h.id === hid) || {};
@@ -1483,36 +1484,9 @@ async function drawQr(){
   } catch (ex) { $("qr-box").innerHTML = `<p class="hint">${esc(ex.message || String(ex))}</p>`; }
 }
 /* ── employment contract: filled in the browser from the profile + the salary box; nothing is stored or sent ── */
-const HOUSE_RULES = [
-  ["Always smile.", "With guests, with colleagues, with the hotel staff — on stage and off stage. A smile is part of the uniform."],
-  ["Never ignore a guest.", "Greet every guest you pass. When a guest asks you something, answer, or walk them to someone who can. No phone, chat or break comes before a guest."],
-  ["Bring the vibe.", "Energy and fun all day: join in, invite guests to join, keep the mood up."],
-  ["Smile to your colleagues too.", "Help each other, no gossip. Problems between colleagues go to the team leader, in private."],
-  ["Time is part of the show.", "Be at your spot, dressed and ready, 10 minutes before the shift starts, and check in on the portal there. Late or sick? Tell the team leader before the shift — not after."],
-  ["Respect everyone.", "Guests, colleagues, hotel staff, every nationality, culture and religion."],
-  ["Keep the right attitude.", "Positive, polite and professional. Take feedback calmly and use it."],
-  ["Follow your team leader.", "The team leader decides the programme, your place, your costume and the instructions of the day — follow them. If you disagree, do it first and talk about it afterwards, in private."],
-  ["Always give your best effort.", "Every show, every game, every guest — whether the audience is two people or two hundred."],
-  ["Look the part.", "Clean uniform or costume, name badge on, neat grooming. Costumes and equipment are handled with care and returned after use."],
-  ["Keep children safe.", "Children always stay in view of parents or other staff. Physical contact only as the activity needs."],
-];
-const FORBIDDEN = [
-  "Going to a guest's room, or inviting guests to staff rooms.",
-  "Romantic relationships with guests.",
-  "Asking guests for money, tips or gifts.",
-  "Alcohol or drugs on duty; smoking where guests can see.",
-  "Shouting, insults, discrimination or harassment of any kind.",
-  "Arguing or complaining in front of guests.",
-  "Sitting together in a group away from the guests during a shift.",
-  "Leaving a spot early or empty, or leaving the hotel during a shift without the team leader's permission.",
-  "Using the phone during a shift for anything but check-in and work messages.",
-  "Photos or videos of guests — and never of children — without the parent's and the agency's permission.",
-  "Being alone with a child out of sight of parents or other staff.",
-  "Sharing guest information, hotel matters, programme plans, prices or salaries.",
-];
-let ctP = null;
+let ctP = null, ctSaved = null;
 async function openContract(p){
-  ctP = p; const today = dayKey(new Date()); const plus = (d, m) => { const x = new Date(d + "T12:00:00Z"); x.setUTCMonth(x.getUTCMonth() + m); return x.toISOString().slice(0, 10); };
+  ctP = p; ctSaved = null; const today = dayKey(new Date()); const plus = (d, m) => { const x = new Date(d + "T12:00:00Z"); x.setUTCMonth(x.getUTCMonth() + m); return x.toISOString().slice(0, 10); };
   $("ct-title").textContent = p.fullName || p.email;
   $("ct-pos").value = (p.skills || []).length ? "Animator — " + p.skills.slice(0, 2).join(" & ") : "Animator";
   $("ct-hotel").innerHTML = `<option value="">— any resort the agency serves —</option>` + hotels.map(h => `<option value="${esc(h.id)}" ${h.id === p.hotelId ? "selected" : ""}>${esc(h.name)}</option>`).join("");
@@ -1520,86 +1494,56 @@ async function openContract(p){
   $("ct-start").value = start; $("ct-end").value = plus(start, 12);
   $("ct-house").value = p.relocate === "No" ? "no" : "yes";
   $("ct-cur").innerHTML = CURRENCIES.map(c => `<option>${c}</option>`).join(""); $("ct-cur").value = CURRENCY; $("ct-salary").value = "";
-  $("contract").classList.add("open"); paintContract();
-  try { const pay = await be.getPay(p.uid); if (ctP !== p) return;
-    if (pay){ $("ct-salary").value = pay.salary || ""; if (CURRENCIES.includes(pay.currency)) $("ct-cur").value = pay.currency; $("ct-per").value = pay.payType === "day" ? "day" : "month"; }
-  } catch {}
-  paintContract();
+  $("ct-state").textContent = "Loading…"; $("contract").classList.add("open"); paintContract();
+  const [pay, sent] = await Promise.all([be.getPay(p.uid).catch(() => null), be.getContract(p.uid).catch(() => null)]);
+  if (ctP !== p) return;
+  if (pay){ $("ct-salary").value = pay.salary || ""; if (CURRENCIES.includes(pay.currency)) $("ct-cur").value = pay.currency; $("ct-per").value = pay.payType === "day" ? "day" : "month"; }
+  if (sent && sent.terms){ const t = sent.terms; ctSaved = sent;   // what the employee has: show those terms, so a resend starts from them
+    const set = (id, v) => { if (v != null && v !== "") $(id).value = v; };
+    set("ct-pos", t.pos); set("ct-start", t.start); set("ct-end", t.end); set("ct-prob", String(t.prob)); set("ct-notice", t.notice); set("ct-salary", t.salary || ""); set("ct-cur", t.cur); set("ct-per", t.per); set("ct-review", String(t.review)); set("ct-payday", t.payday); set("ct-signer", t.signer); set("ct-house", t.house);
+    if (t.hotelId != null) $("ct-hotel").value = t.hotelId; }
+  paintContractState(); paintContract();
 }
+function paintContractState(){
+  const c = ctSaved, fd = d => d ? new Date(d).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Africa/Cairo" }) : "";
+  $("ct-state").innerHTML = !c ? "Not sent yet — the employee does not see a contract on their portal."
+    : c.status === "accepted" ? `<b style="color:var(--t-ok)">✓ Accepted</b> ${esc(fd(c.acceptedAt))} — typed “${esc(c.acceptedName || "")}”. Sending again replaces it and asks them to accept again.`
+    : `<b>Sent</b> ${esc(fd(c.sentAt))}${c.sentBy ? " by " + esc(c.sentBy) : ""} — waiting for the employee to read and accept it.`;
+  $("ct-send").textContent = c ? "Send again" : "Send to the employee's portal";
+}
+function contractTerms(){
+  const v = id => $(id).value, p = ctP;
+  const h = hotels.find(x => x.id === v("ct-hotel"));
+  const termM = (new Date(v("ct-end")) - new Date(v("ct-start"))) / 2629800000;
+  return { no: "JB-" + (v("ct-start") || dayKey(new Date())).slice(0, 4) + "-" + String(p.uid || "").slice(0, 6).toUpperCase(), date: dayKey(new Date()),
+    pos: v("ct-pos").trim(), hotelId: v("ct-hotel"), place: h ? `${h.name}${h.city ? ", " + h.city : ""}` : "", start: v("ct-start"), end: v("ct-end"),
+    prob: Math.max(0, Math.min(+v("ct-prob"), Math.floor(termM) || 0)), notice: +v("ct-notice") || 30, salary: +v("ct-salary") || 0, cur: v("ct-cur"), per: v("ct-per"),
+    review: +v("ct-review") || 3, payday: +v("ct-payday") || 5, signer: v("ct-signer").trim(), house: v("ct-house"), payMethod: p.payMethod || "" };
+}
+const contractParty = p => ({ fullName: p.fullName || "", dob: p.dob || "", nationality: p.nationality || "", idType: p.idType || "", idNumber: p.idNumber || "", phone: p.phone || "", city: p.city || "" });
 function paintContract(){
-  const p = ctP; if (!p) return;
-  const v = id => $(id).value, blank = (x, w = 40) => x ? esc(x) : `<span class="cblank" style="min-width:${w}mm"></span>`;
-  const longDate = d => { if (!d) return ""; const x = new Date(d + "T12:00:00Z"); return isNaN(x) ? d : x.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }); };
-  const h = hotels.find(x => x.id === v("ct-hotel")), place = h ? `${h.name}${h.city ? ", " + h.city : ""}` : "any Red Sea resort the Agency serves";
-  const termM = (new Date(v("ct-end")) - new Date(v("ct-start"))) / 2629800000, prob = Math.max(0, Math.min(+v("ct-prob"), Math.floor(termM) || 0)), sal = +v("ct-salary"), per = v("ct-per") === "day" ? "per working day" : "per month";
-  const payMethod = p.payMethod ? p.payMethod.toLowerCase() : "bank transfer, InstaPay or mobile wallet";
-  const no = "JB-" + (v("ct-start") || dayKey(new Date())).slice(0, 4) + "-" + String(p.uid || "").slice(0, 6).toUpperCase();
-  const logo = "../media/img/logo.jpg";
-  const ribbon = n => `<svg class="cribbon" viewBox="0 0 210 44" preserveAspectRatio="none" aria-hidden="true"><defs>
-      <linearGradient id="cg1-${n}" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#2A1250"/><stop offset=".5" stop-color="#8B5CF6"/><stop offset=".8" stop-color="#F03FA8"/><stop offset="1" stop-color="#FF4D2E"/></linearGradient>
-      <linearGradient id="cg2-${n}" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#FF4D2E"/><stop offset="1" stop-color="#D63BC6"/></linearGradient></defs>
-    <path d="M0 0H210V42C204 26 192 15 170 11.5C140 7 95 7.2 45 6.6L0 6Z" fill="url(#cg1-${n})"/>
-    <path d="M210 42C204 26 192 15 170 11.5C186 16 199 25 210 34Z" fill="#FFD60A" opacity=".9"/>
-    <path d="M7 0H25C23 7 19 11.5 11 13.5C15 9 14 4 7 0Z" fill="url(#cg2-${n})"/></svg>`;
-  const foot = n => `<svg class="cfoot" viewBox="0 0 210 8" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="cg3-${n}" x1="0" x2="1"><stop offset="0" stop-color="#2A1250"/><stop offset=".55" stop-color="#8B5CF6"/><stop offset="1" stop-color="#F03FA8"/></linearGradient></defs>
-    <rect width="210" height="8" fill="url(#cg3-${n})"/><path d="M0 0H9L13 8H0Z" fill="#F03FA8"/><path d="M12 0H17L21 8H16Z" fill="#FF4D2E"/><path d="M20 0H23L27 8H24Z" fill="#FFD60A"/></svg>`;
-  const page = (n, body) => `<section class="cpage">${ribbon(n)}<img class="cwm" src="${logo}" alt="">
-    <header class="chd"><img class="clogo" src="${logo}" alt="Joy Boy Agency"><div class="ctitle"><b>EMPLOYMENT</b><i>AGREEMENT</i><span>joyboy-agency.com</span></div></header>
-    ${body}<div class="cpn"><span>${n}</span></div>${foot(n)}</section>`;
-  const sec = (title, items) => `<li><span class="csh">${title}</span><ul class="csub">${items.map(x => `<li>${x}</li>`).join("")}</ul></li>`;
-  const sign = (who, name) => `<div class="csig"><div class="cline"></div><b>${who}</b><span>${blank(name, 55)}</span><span>Date: <span class="cblank" style="min-width:30mm"></span></span></div>`;
-  const photo = p.photoThumb ? `<img class="cphoto" src="${esc(p.photoThumb)}" alt="">` : `<div class="cphoto"></div>`;
-  $("ct-doc").innerHTML =
-  page(1, `
-    <p class="cmade">This agreement is made on <b>${esc(longDate(dayKey(new Date())))}</b><small>Agreement no. ${esc(no)}</small></p>
-    <div class="chead2">Between</div>
-    <div class="cfirm"><span class="cm">Joy Boy Agency</span>, entertainment and animation agency, Red Sea, Egypt, represented by ${blank(v("ct-signer"), 50)} (“the Agency”).
-      <div><b>WhatsApp:</b> +20 102 128 1660 &nbsp;·&nbsp; <b>E-mail:</b> joyboyentertainmentagency@gmail.com</div></div>
-    <div class="chead2">And</div>
-    <div class="cptab">${photo}<table><tr><td><span>Full name:</span>${blank(p.fullName, 40)}</td><td><span>Nationality:</span>${blank(p.nationality, 25)}</td></tr>
-      <tr><td><span>Date of birth:</span>${blank(longDate(p.dob), 30)}</td><td><span>${esc(p.idType || "ID / passport")} no.:</span>${blank(p.idNumber, 30)}</td></tr>
-      <tr><td><span>Phone:</span>${blank(p.phone, 30)}</td><td><span>City:</span>${blank(p.city, 25)}</td></tr></table></div>
-    <p>(“the Employee”). The Agency wishes to employ the Employee, and the Employee wishes to work for the Agency, on the terms below.</p>
-    <p class="cagree">The parties agree as follows:</p>
-    <ul class="csec">
-      ${sec("Position", [`The Employee works as <b>${blank(v("ct-pos"), 40)}</b> in the Agency's entertainment and animation team.`, `Main place of work: <b>${esc(place)}</b>. The Agency may move the Employee to another resort it serves, with reasonable notice.`, "Duties: run the daily and evening entertainment programme and create a friendly atmosphere among the guests."])}
-      ${sec("Duration and probation", [`The agreement starts on <b>${blank(longDate(v("ct-start")), 30)}</b> and ends on <b>${blank(longDate(v("ct-end")), 30)}</b>, unless both parties renew it in writing.`, prob ? `The first <b>${prob} month${prob > 1 ? "s" : ""}</b> are a probation period; during probation either party may end the agreement with 7 days' notice.` : "There is no probation period."])}
-      ${sec("Working time", ["The daily programme and the shifts are set by the team leader and published in the Joy Boy team portal, with at least one weekly day off.", "Shifts include evenings, weekends and public holidays, as is usual in resort entertainment.", "The Employee checks in and out of every shift on the portal, at the shift's location."])}
-    </ul>`) +
-  page(2, `
-    <ul class="csec">
-      ${sec("Compensation", [`Starting salary: <b>${sal ? esc(money(sal, v("ct-cur"))) : blank("", 22) + " " + esc(v("ct-cur"))} ${per}</b>, paid monthly by ${esc(payMethod)}, no later than day ${esc(v("ct-payday") || "5")} of the following month.`, `The team leader reviews the Employee's performance every <b>${esc(v("ct-review") === "1" ? "month" : v("ct-review") + " months")}</b>. Salary increases follow that review and become valid when the Agency confirms them in writing.`, "Sales commissions, where they apply, are paid as listed in the team portal. Absence without a valid reason is unpaid."])}
-      ${sec("Accommodation and meals", [v("ct-house") === "yes" ? "During the agreement the Employee receives staff housing and meals at the resort, under the resort's staff-housing rules." : "Housing and meals are not part of this agreement."])}
-      ${sec("Uniform and equipment", ["Costumes, uniforms, sound equipment and props remain the property of the Agency or the hotel.", "They are returned clean at the end of the agreement; damage caused by negligence may be charged to the Employee."])}
-      ${sec("Conduct", ["The Rules &amp; Memos and the Forbidden list on pages 3 and 4 are part of this agreement.", "Breaches are handled step by step: a verbal warning, a written warning, then a deduction or suspension. Serious or repeated breaches can end the agreement."])}
-      ${sec("Confidentiality and personal data", ["Guest information, hotel matters, programme plans, prices and salaries are confidential, during and after this agreement.", "The Agency uses the Employee's personal data only for employment, payroll and safety.", "The portal reads the phone's location only at shift check-in and check-out, and during roll calls in the Employee's own shift."])}
-      ${sec("Termination", [`After probation, either party may end this agreement with <b>${esc(v("ct-notice") || "30")} days'</b> written notice.`, "The Agency may end it without notice in case of serious misconduct, such as violence, theft, being drunk on duty or repeated breaches of the rules.", "At the end, the Employee returns all Agency property and receives the salary due up to the last working day."])}
-      ${sec("Copies", ["This agreement is signed in three originals: one for each party and one for the social insurance office."])}
-    </ul>`) +
-  page(3, `
-    <div class="chead2 big">RULES &amp; MEMOS</div><div class="crule"></div>
-    <ol class="crules">${HOUSE_RULES.map(([t, d]) => `<li><b>${esc(t)}</b> ${esc(d)}</li>`).join("")}</ol>`) +
-  page(4, `
-    <div class="chead2 big">FORBIDDEN</div><div class="crule"></div>
-    <ul class="cforbid">${FORBIDDEN.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
-    <p class="cwit"><b>IN WITNESS WHEREOF</b>, the parties sign this agreement on the date written on page 1. The Employee confirms having read the Rules &amp; Memos and the Forbidden list and agrees to follow them.</p>
-    <div class="csealed">SIGNED AND DELIVERED</div>
-    <div class="csigs">${sign("The Employee", p.fullName)}${sign("For Joy Boy Agency", v("ct-signer"))}${sign("Team leader", "")}</div>`);
+  if (!ctP) return;
+  $("ct-doc").innerHTML = contractHtml(contractParty(ctP), contractTerms(), ctP.photoThumb || "");
 }
+$("ct-send").addEventListener("click", async () => {
+  const p = ctP; if (!p) return; const t = contractTerms();
+  if (!t.salary) return toast("Enter the starting salary first.");
+  if (!p.fullName || !t.start || !t.end) return toast("The contract needs the full name and both dates.");
+  if (ctSaved && !confirm(`Replace the contract ${p.fullName} already has? They will be asked to accept the new one.`)) return;
+  const btn = $("ct-send"); btn.disabled = true;
+  try {
+    await be.sendContract(p.uid, { uid: p.uid, party: contractParty(p), terms: t }, user.email);
+    ctSaved = await be.getContract(p.uid).catch(() => ({ status: "sent", terms: t }));
+    be.queueNotification({ title: "📄 Your contract is ready", body: "Open the Joy Boy team portal to read your employment agreement and accept it.", uids: [p.uid], url: new URL("./", location.href).href, tag: "contract", by: user.email }).catch(() => {});
+    toast(`Sent — ${firstWord(p.preferredName, p.fullName)} sees it on their portal now.`); paintContractState();
+  } catch (ex) { toast("Could not send: " + (ex.message || ex)); }
+  finally { btn.disabled = false; }
+});
 ["ct-pos","ct-hotel","ct-start","ct-end","ct-prob","ct-notice","ct-salary","ct-cur","ct-per","ct-review","ct-payday","ct-signer","ct-house"].forEach(id => $(id).addEventListener("input", paintContract));
 const closeCt = () => { $("contract").classList.remove("open"); ctP = null; $("ct-doc").innerHTML = ""; };
 $("ct-close").addEventListener("click", closeCt); $("ct-bg").addEventListener("click", closeCt);
 document.addEventListener("keydown", e => { if (e.key === "Escape" && $("contract").classList.contains("open")) closeCt(); });
-$("ct-print").addEventListener("click", () => {
-  let area = document.getElementById("printarea");
-  if (!area){ area = document.createElement("div"); area.id = "printarea"; document.body.appendChild(area); }
-  area.innerHTML = ""; const copy = $("ct-doc").cloneNode(true); copy.innerHTML = copy.innerHTML.replace(/(id="|url\(#)cg/g, "$1pcg"); area.appendChild(copy);
-  document.body.classList.add("printing", "printing-doc");
-  const done = () => { document.body.classList.remove("printing", "printing-doc"); area.innerHTML = ""; };
-  window.addEventListener("afterprint", done, { once: true });
-  window.print();
-  setTimeout(done, 3000);
-});
+$("ct-print").addEventListener("click", () => printContract($("ct-doc")));
 $("qr-copy").addEventListener("click", async () => { try { await navigator.clipboard.writeText(feedbackLink()); toast("Link copied"); } catch { toast("Copy it from the line above"); } });
 $("qr-print").addEventListener("click", () => {
   const card = document.getElementById("qrcard");

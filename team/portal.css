@@ -498,12 +498,17 @@ body.guest{display:block}
 .cdoc ul.cforbid li{position:relative;padding-left:7mm;margin-top:1.8mm}
 .cdoc ul.cforbid li::before{content:"✕";position:absolute;left:0;top:0;color:#FF4D2E;font-weight:800}
 .cdoc .cwit{margin-top:6mm}
+.cdoc .cacc{margin-top:3mm;padding:2mm 3mm;border-radius:2mm;background:#e9fbf6;color:#0d6b58;font-weight:700;font-size:9.5pt}
 .cdoc .csealed{margin-top:5mm;font:800 9pt "Instrument Sans",system-ui,sans-serif;letter-spacing:.06em;color:#D63BC6}
 .cdoc .csigs{display:grid;grid-template-columns:1fr 1fr;gap:10mm 14mm;margin-top:3mm}
 .cdoc .csig{display:flex;flex-direction:column;gap:1mm;font-size:9.5pt}
 .cdoc .csig .cline{border-bottom:.3mm solid #14111a;height:13mm}
 .cdoc .csig b{color:#14111a}
 .cdoc .cblank{display:inline-block;border-bottom:.3mm solid #777;height:1.1em;vertical-align:baseline}
+.ctcard .ctact{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.ctaccept{margin-top:16px;background:var(--surface);border:1px solid var(--line-2);border-radius:14px;padding:14px}
+.ctaccept label.chk{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.4}
+.ctaccept label.chk input{margin-top:3px;width:18px;height:18px;flex:none}
 .cdoc .cpn{position:absolute;right:16mm;bottom:12mm;width:9mm;height:9mm;border-radius:50%;background:conic-gradient(#FFD60A,#FF4D2E,#F03FA8,#8B5CF6,#FFD60A);display:grid;place-items:center}
 .cdoc .cpn span{width:7.4mm;height:7.4mm;border-radius:50%;background:#fff;display:grid;place-items:center;font:700 10pt "Instrument Sans",system-ui,sans-serif;color:#14111a}
 @media(max-width:900px){.cdocwrap .cdoc{zoom:.62}}

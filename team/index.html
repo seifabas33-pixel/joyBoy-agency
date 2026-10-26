@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-TE/FohW2p3Dd6C9GVGvucmbAumyuSe7Ud4msQw3eHfo='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://www.google.com 'sha256-SwJmpu7s2llph93nQC3R1Y8CiFJF6sJWp/5jEOwjoo8=' 'sha256-u0NmwEXlcSNz6L6S2oIT5pmBi29TeQCDLaofwKxXR54='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://apis.google.com https://www.gstatic.com https://www.google.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com https://firebaseinstallations.googleapis.com; frame-src https://joy-boy-agency.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://recaptcha.google.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Joy Boy Agency — Team portal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,8 +20,8 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com"><link rel="preconnect" href="https://identitytoolkit.googleapis.com"><link rel="preconnect" href="https://securetoken.googleapis.com">
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="portal.css?v=202610261025">
-<script src="firebase-config.js?v=202610261025"></script>
+<link rel="stylesheet" href="portal.css?v=202610261038">
+<script src="firebase-config.js?v=202610261038"></script>
 <script>
 (function(){
   var KEY = "jb-theme2", ORDER = ["auto", "light", "dark"];   // new key (2026-10-03): everyone starts again on Auto
@@ -228,6 +228,12 @@
       <details class="hist" id="pay-slips-wrap" hidden style="margin-top:12px"><summary>Payslips</summary><div id="pay-slips"></div></details>
       <p class="hint" style="margin-top:10px">Sales are recorded by the office when you hand in the money; commission is calculated automatically. A payslip appears here once the office marks the month as paid.</p>
     </div>
+    <div class="card ctcard" id="ctcard" hidden>
+      <p class="eyebrow">Your contract</p>
+      <h3 id="ct-head" style="font-size:20px;font-weight:800;margin-top:4px">Your employment agreement</h3>
+      <p class="hint" id="ct-msg" style="margin-top:6px"></p>
+      <div class="ctact"><button class="btn small" id="ct-open" type="button">Read my contract</button></div>
+    </div>
     <div class="card">
       <div class="pcard">
         <img class="avatar" id="p-avatar" alt="">
@@ -243,12 +249,25 @@
       <div class="kv" id="p-kv"></div>
     </div>
   </section>
+  <div class="drawer" id="ctview"><div class="bg" id="ctv-bg"></div><div class="panel wide">
+    <button class="close" id="ctv-close" aria-label="Close">×</button>
+    <p class="eyebrow">Your contract · Joy Boy Agency</p>
+    <p class="hint" style="margin-top:4px">Read all four pages: the agreement, the Rules &amp; Memos and the Forbidden list. Pinch to zoom, or save it as a PDF.</p>
+    <div class="cdocwrap"><div class="cdoc" id="ctv-doc"></div></div>
+    <div class="ctaccept" id="ctv-accept" hidden>
+      <label class="chk"><input type="checkbox" id="ctv-ok"><span>I have read the employment agreement, the Rules &amp; Memos and the Forbidden list, and I accept them.</span></label>
+      <label class="f" style="margin-top:12px"><span>Type your full name, exactly as on the contract: <b id="ctv-name"></b></span><input class="in" id="ctv-typed" maxlength="120" autocomplete="name"></label>
+      <div class="actions" style="margin:12px 0 0"><button class="btn" id="ctv-go" type="button">Accept the contract</button></div>
+    </div>
+    <p class="hint" id="ctv-done" style="margin-top:14px" hidden></p>
+    <div class="actions"><button class="btn ghost small" id="ctv-print" type="button">Save as PDF / print</button></div>
+  </div></div>
 </main>
 <footer class="small">Joy Boy Agency · Team portal · Questions? <a href="https://wa.me/201021281660">WhatsApp Mr. Moaz</a> · <a href="../legal.html#privacy">Privacy</a></footer>
 
 <script type="module">
 if (top !== self) { try { top.location = self.location; } catch (e) { document.body.hidden = true; } }
-import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState, hotelSpots, signupCount, firstWord } from "./portal.js?v=202610261025";
+import { initBackend, DEMO, isAdminEmail, isAdminUser, LANGS, SKILLS, NATIONS, PAY, age, shrink, shrinkToFit, blobToDataUrl, toast, esc, completeness, dayKey, hhmm, addDays, toMin, distanceM, fenceDistM, fenceTolM, fenceProblem, ATT_LABEL, hotelShifts, plannedSpot, currentShift, shiftStatus, dayStatus, dayLabel, shiftEndMin, SHIFT_OPEN_MIN, SHIFT_CLOSE_MIN, sortTasks, taskIsMine, money, monthKey, monthRange, salesItems, ADJ_LABEL, scheduledShifts, isOffDay, dayLabelShort, sumByCur, moneyMap, saleAmounts, saleCommissions, sumMaps, pushState, hotelSpots, signupCount, firstWord, contractHtml, printContract } from "./portal.js?v=202610261038";
 const $ = id => document.getElementById(id), show = (id, on = true) => $(id).hidden = !on;
 const err = m => { $("err").textContent = m || ""; show("err", !!m); };
 show("demo-banner", DEMO);
@@ -373,8 +392,40 @@ function renderProfile(){
   $("p-kv").innerHTML = rows.filter(r => r[1]).map(r => `<div><b>${r[0]}</b><span>${esc(r[1])}</span></div>`).join("") +
     (p.skills && p.skills.length ? `<div style="grid-column:1/-1"><b>Skills</b><div class="tags">${p.skills.map(s => `<i>${esc(s)}</i>`).join("")}</div></div>` : "") +
     (p.languages && p.languages.length ? `<div style="grid-column:1/-1"><b>Languages</b><div class="tags">${p.languages.map(s => `<i class="v">${esc(s)}</i>`).join("")}</div></div>` : "");
-  loadAttendance();
+  loadAttendance(); loadContract();
 }
+/* ── the employment contract the office sent: read it, accept it by typing the full name ── */
+let myContract = null;
+async function loadContract(){
+  try { myContract = await be.getContract(user.uid); } catch { myContract = null; }
+  show("ctcard", !!myContract); if (!myContract) return;
+  const c = myContract, acc = c.status === "accepted";
+  $("ct-head").textContent = acc ? "Contract accepted ✓" : "Your contract is ready";
+  $("ct-msg").textContent = acc ? `You accepted it on ${new Date(c.acceptedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}. You can open it again or save it as a PDF any time.`
+    : "The office sent you your employment agreement. Read it to the end, then accept it by typing your full name.";
+  $("ct-open").textContent = acc ? "Open my contract" : "Read and accept";
+}
+function openMyContract(){
+  const c = myContract; if (!c) return; const acc = c.status === "accepted";
+  $("ctv-doc").innerHTML = contractHtml(c.party, c.terms, profile.photoThumb || "", acc ? { name: c.acceptedName, at: c.acceptedAt } : null);
+  show("ctv-accept", !acc); show("ctv-done", acc);
+  if (acc) $("ctv-done").textContent = `✓ You accepted this contract by typing “${c.acceptedName}”.`;
+  $("ctv-name").textContent = (c.party || {}).fullName || ""; $("ctv-ok").checked = false; $("ctv-typed").value = "";
+  $("ctview").classList.add("open");
+}
+$("ct-open").addEventListener("click", openMyContract);
+const closeCtv = () => $("ctview").classList.remove("open");
+$("ctv-close").addEventListener("click", closeCtv); $("ctv-bg").addEventListener("click", closeCtv);
+$("ctv-print").addEventListener("click", () => printContract($("ctv-doc")));
+$("ctv-go").addEventListener("click", async () => {
+  const c = myContract, want = String((c.party || {}).fullName || "").replace(/\s+/g, " ").trim(), typed = $("ctv-typed").value.replace(/\s+/g, " ").trim();
+  if (!$("ctv-ok").checked) return toast("Tick the box to confirm you have read it.");
+  if (typed.toLowerCase() !== want.toLowerCase()) return toast(`Type your full name exactly as on the contract: ${want}`);
+  const btn = $("ctv-go"); btn.disabled = true;
+  try { await be.acceptContract(user.uid, (c.party || {}).fullName); toast("Thank you — your contract is accepted."); closeCtv(); await loadContract(); }
+  catch (ex) { toast(ex && ex.code === "permission-denied" ? "The contract could not be accepted — it may have been changed by the office. Close and open it again." : "Could not save — check your internet and try again."); }
+  finally { btn.disabled = false; }
+});
 /* ── attendance (approved staff assigned to a hotel) ── */
 let signups = [];
 let hotel = null, shifts = [], allShifts = [], plan = null, planTmrw = null, weekPlans = [], dayRec = null, recs = [], hist = [], reqs = [], cur = null, lastGeo = null;
