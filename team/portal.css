@@ -455,42 +455,64 @@ body.guest{display:block}
   body.printing #printarea .qrcard svg{width:56mm;height:56mm}
 }
 
-/* employment contract (admin → drawer → 📄 Contract): a white A4 sheet on screen, printed through #printarea */
+/* employment contract (admin → drawer → 📄 Contract): fixed A4 pages in the agency's colours, printed through #printarea.
+   Layout after the owner's reference draft (2026-10-26): corner ribbon, big two-line title beside the logo, faint logo
+   watermark, coloured section heads with round sub-bullets, party table with photo, numbered badge + stripe at the foot. */
 .drawer .panel.wide{width:min(900px,100%)}
 .cdocwrap{margin-top:16px;background:var(--raised);border-radius:14px;padding:14px;overflow-x:auto}
-.cdoc{color:#14111a;font:400 13px/1.55 "Instrument Sans",system-ui,sans-serif}
-.cdoc .cpage{background:#fff;max-width:760px;margin:0 auto 14px;padding:38px 44px;border-radius:6px;box-shadow:0 2px 14px rgba(0,0,0,.25)}
-.cdoc .chead{display:flex;justify-content:space-between;gap:16px;border-bottom:2px solid #14111a;padding-bottom:10px;margin-bottom:20px;font-size:11px}
-.cdoc .chead b{display:block;font:800 15px "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:.04em}
-.cdoc .chead span{color:#555}
-.cdoc .cno{text-align:right;font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:#333}
-.cdoc h1{font:800 26px/1.1 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.01em;color:#14111a}
-.cdoc .csub{color:#666;margin:2px 0 16px;font-size:12px;text-transform:uppercase;letter-spacing:.12em}
-.cdoc h3{font:700 13.5px "Instrument Sans",system-ui,sans-serif;margin:14px 0 3px;color:#14111a}
-.cdoc p{margin:0 0 6px}
-.cdoc ol{padding-left:28px;margin:4px 0 8px}
-.cdoc .cparties li{margin-bottom:4px}
-.cdoc .crules li{margin-bottom:9px}
-.cdoc .cblank{display:inline-block;border-bottom:1px solid #777;height:1.1em;vertical-align:baseline}
-.cdoc .cack{margin-top:18px;font-weight:700}
-.cdoc .csigs{display:grid;grid-template-columns:1fr 1fr;gap:34px;margin-top:34px}
-.cdoc .csig{display:flex;flex-direction:column;gap:3px;font-size:12px}
-.cdoc .csig .cline{border-bottom:1px solid #14111a;height:42px;margin-bottom:4px}
-@media(max-width:560px){.cdoc .cpage{padding:22px 18px}.cdoc .csigs{grid-template-columns:1fr;gap:18px}}
+.cdoc{color:#1d1828;font:400 10pt/1.45 "Instrument Sans",system-ui,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.cdoc .cpage{position:relative;width:210mm;height:297mm;margin:0 auto 14px;padding:54mm 18mm 26mm;background:#fff;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.25)}
+.cdoc .cribbon{position:absolute;left:0;top:0;width:100%;height:44mm}
+.cdoc .cfoot{position:absolute;left:0;bottom:0;width:100%;height:8mm}
+.cdoc .cwm{position:absolute;left:50%;top:56%;width:120mm;height:120mm;transform:translate(-50%,-50%);border-radius:50%;opacity:.055;filter:grayscale(1)}
+.cdoc .chd{position:absolute;left:18mm;right:18mm;top:15mm;display:flex;justify-content:space-between;align-items:center;gap:8mm}
+.cdoc .clogo{width:31mm;height:31mm;border-radius:50%;border:1.2mm solid #FFD60A;box-shadow:0 0 0 .6mm #fff,0 1.5mm 5mm rgba(42,18,80,.25)}
+.cdoc .ctitle{text-align:right;line-height:1}
+.cdoc .ctitle b{display:block;font:800 25pt/1 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:.05em;color:#14111a}
+.cdoc .ctitle i{display:block;font:800 25pt/1.05 "Bricolage Grotesque",system-ui,sans-serif;font-style:normal;letter-spacing:.16em;color:#E6338F}
+.cdoc .ctitle span{display:block;margin-top:2mm;font:600 10pt "Instrument Sans",system-ui,sans-serif;color:#1d1828}
+.cdoc .cmade{text-align:right;font-size:10.5pt;margin:-2mm 0 3mm}
+.cdoc .cmade small{display:block;font:500 8pt "IBM Plex Mono",monospace;color:#6b6478}
+.cdoc .chead2{text-align:center;margin:3mm 0 2mm;font:800 12pt "Instrument Sans",system-ui,sans-serif;color:#FF4D2E;text-decoration:underline;text-underline-offset:1mm}
+.cdoc .chead2.big{font:800 17pt "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:.04em;color:#D63BC6;margin:4mm 0 1mm}
+.cdoc .crule{height:.8mm;width:60mm;margin:0 auto 4mm;border-radius:1mm;background:linear-gradient(90deg,transparent,#FFD60A,#FF4D2E,#F03FA8,transparent)}
+.cdoc .cm{color:#D63BC6;font-weight:700}
+.cdoc .cfirm{margin:0 0 1mm}
+.cdoc .cfirm div{margin-top:.6mm}
+.cdoc .cptab{display:flex;gap:4mm;margin:1mm 0 3mm;align-items:stretch}
+.cdoc .cphoto{width:27mm;min-height:27mm;border-radius:2mm;object-fit:cover;background:linear-gradient(160deg,#8B5CF6,#F03FA8);flex:none}
+.cdoc .cptab table{flex:1;border-collapse:collapse;min-width:0;font-size:9.6pt}
+.cdoc .cptab td{border:.3mm solid #cfc8dc;padding:1.6mm 2.6mm;vertical-align:top;width:50%}
+.cdoc .cptab td span{color:#D63BC6;font-weight:600;margin-right:1mm}
+.cdoc .cagree{font-weight:800;margin:3mm 0 1mm}
+.cdoc ul.csec{list-style:disc;padding-left:5mm;margin:0}
+.cdoc ul.csec>li{margin-top:2.6mm}
+.cdoc ul.csec>li::marker{color:#14111a}
+.cdoc .csh{font-weight:800;color:#FF4D2E}
+.cdoc ul.csub{list-style:circle;padding-left:6mm;margin:.6mm 0 0}
+.cdoc ul.csub li{margin-top:.5mm}
+.cdoc ol.crules{padding-left:7mm;margin:0}
+.cdoc ol.crules li{margin-top:2mm}
+.cdoc ol.crules li::marker{color:#D63BC6;font-weight:800}
+.cdoc ul.cforbid{list-style:none;padding:0;margin:0}
+.cdoc ul.cforbid li{position:relative;padding-left:7mm;margin-top:1.8mm}
+.cdoc ul.cforbid li::before{content:"✕";position:absolute;left:0;top:0;color:#FF4D2E;font-weight:800}
+.cdoc .cwit{margin-top:6mm}
+.cdoc .csealed{margin-top:5mm;font:800 9pt "Instrument Sans",system-ui,sans-serif;letter-spacing:.06em;color:#D63BC6}
+.cdoc .csigs{display:grid;grid-template-columns:1fr 1fr;gap:10mm 14mm;margin-top:3mm}
+.cdoc .csig{display:flex;flex-direction:column;gap:1mm;font-size:9.5pt}
+.cdoc .csig .cline{border-bottom:.3mm solid #14111a;height:13mm}
+.cdoc .csig b{color:#14111a}
+.cdoc .cblank{display:inline-block;border-bottom:.3mm solid #777;height:1.1em;vertical-align:baseline}
+.cdoc .cpn{position:absolute;right:16mm;bottom:12mm;width:9mm;height:9mm;border-radius:50%;background:conic-gradient(#FFD60A,#FF4D2E,#F03FA8,#8B5CF6,#FFD60A);display:grid;place-items:center}
+.cdoc .cpn span{width:7.4mm;height:7.4mm;border-radius:50%;background:#fff;display:grid;place-items:center;font:700 10pt "Instrument Sans",system-ui,sans-serif;color:#14111a}
+@media(max-width:900px){.cdocwrap .cdoc{zoom:.62}}
+@media(max-width:560px){.cdocwrap .cdoc{zoom:.44}}
 @media print{
-  @page{size:A4;margin:10mm 14mm}
-  body.printing-doc #printarea .cdoc{display:block;font-size:8.9pt;line-height:1.34}
-  body.printing-doc #printarea .chead{margin-bottom:12px}
-  body.printing-doc #printarea h1{font-size:18pt}
-  body.printing-doc #printarea .csub{margin-bottom:10px}
-  body.printing-doc #printarea h3{margin:6px 0 1px;font-size:9.5pt}
-  body.printing-doc #printarea p{margin-bottom:3px}
-  body.printing-doc #printarea .crules li{margin-bottom:6px}
-  body.printing-doc #printarea .csigs{margin-top:12px}
-  body.printing-doc #printarea .csig .cline{height:26px}
-  body.printing-doc #printarea .cpage{box-shadow:none;border-radius:0;padding:0;margin:0;max-width:none;break-after:page}
+  @page{size:A4;margin:0}
+  body.printing-doc #printarea .cdoc{display:block;zoom:1}
+  body.printing-doc #printarea .cpage{box-shadow:none;margin:0;break-after:page}
   body.printing-doc #printarea .cpage:last-child{break-after:auto}
-  body.printing-doc #printarea h3,body.printing-doc #printarea .csigs,body.printing-doc #printarea li{break-inside:avoid}
 }
 
 /* ── light theme (2026-09-12) — the morning shift reads the portal in direct sun.
